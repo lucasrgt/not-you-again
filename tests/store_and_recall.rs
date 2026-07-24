@@ -35,10 +35,13 @@ fn init_is_idempotent_and_manages_existing_agent_files() {
 
     let installed_again = nya::init(&repo.root).unwrap();
     assert_eq!(installed_again, installed);
-    assert!(fs::read_to_string(repo.root.join(".nya/SKILL.md")).unwrap().contains("nya collect --all"));
+    let skill = fs::read_to_string(repo.root.join(".nya/SKILL.md")).unwrap();
+    assert!(skill.contains("nya collect --all"));
+    assert!(skill.contains("nya check --base <target-branch-or-revision>"));
     let agents = fs::read_to_string(repo.root.join("AGENTS.md")).unwrap();
     assert!(agents.contains("Original instructions."));
     assert_eq!(agents.matches("nya:instructions:start").count(), 1);
+    assert!(agents.contains("The default base is `HEAD`"));
 
     let plain = Repo::new(&[]);
     assert!(nya::init(&plain.root).unwrap().is_empty());

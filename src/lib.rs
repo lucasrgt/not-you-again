@@ -67,7 +67,7 @@ pub struct RecallRequest {
 #[serde(default, deny_unknown_fields)]
 #[rustfmt::skip]
 pub struct CheckRequest {
-    #[arg(long, help = "Git comparison base; defaults to HEAD")] pub base: Option<String>, #[arg(long, help = "Optional completed task text")] pub task: Option<String>,
+    #[arg(long, help = "Git comparison base for committed review; defaults to HEAD")] pub base: Option<String>, #[arg(long, help = "Task or review context for scar retrieval")] pub task: Option<String>,
 }
 
 #[derive(Args, Clone, Debug, Default, Deserialize)]
@@ -412,8 +412,8 @@ pub fn check(repo: &Path, request: CheckRequest) -> Result<CheckResult> {
 fn tools() -> Value {
     json!([
         {"name":"nya_remember","description":"Record a corrected repository scar.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"scar":{"type":"string"},"title":{"type":"string"},"lesson":{"type":"string"},"scope":{"type":"array","items":{"type":"string"}},"tags":{"type":"array","items":{"type":"string"}},"source":{"type":"string"},"github_review":{"type":"string"},"reported_by":{"type":"string"},"corrected_by":{"type":"string"},"recorded_by":{"type":"string"}}}},
-        {"name":"nya_recall","description":"Recall scars relevant to a task and paths.","inputSchema":{"type":"object","required":["repository","task"],"properties":{"repository":{"type":"string"},"task":{"type":"string"},"paths":{"type":"array","items":{"type":"string"}},"limit":{"type":"integer","minimum":1}}}},
-        {"name":"nya_check","description":"Audit a Git diff only for recurrence of known scars.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"base":{"type":"string"},"task":{"type":"string"}}}},
+        {"name":"nya_recall","description":"Recall scars at task start or whenever scope and context change.","inputSchema":{"type":"object","required":["repository","task"],"properties":{"repository":{"type":"string"},"task":{"type":"string"},"paths":{"type":"array","items":{"type":"string"}},"limit":{"type":"integer","minimum":1}}}},
+        {"name":"nya_check","description":"Audit an uncommitted or base-relative Git diff for known recurrence.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"base":{"type":"string"},"task":{"type":"string"}}}},
         {"name":"nya_collect","description":"Mine corrected failures from Git history and GitHub reviews.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"all":{"type":"boolean"},"since":{"type":"string"},"dry_run":{"type":"boolean"},"offline":{"type":"boolean"}}}}
     ])
 }

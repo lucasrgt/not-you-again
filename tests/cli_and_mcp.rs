@@ -334,6 +334,8 @@ fn cli_reports_empty_recall_and_invalid_repository() {
     assert!(help.contains("Existing scar ID") && help.contains("repeat for multiple scopes") && help.contains("#discussion_r"));
     let collect_help = String::from_utf8(bin().args(["collect", "--help"]).output().unwrap().stdout).unwrap();
     assert!(collect_help.contains("--all") && collect_help.contains("--since") && collect_help.contains("--dry-run") && collect_help.contains("--offline"));
+    let check_help = String::from_utf8(bin().args(["check", "--help"]).output().unwrap().stdout).unwrap();
+    assert!(check_help.contains("committed review") && check_help.contains("Task or review context"));
 }
 
 #[test]

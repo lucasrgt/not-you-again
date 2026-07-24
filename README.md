@@ -111,8 +111,8 @@ nya remember \
   --corrected-by "github:bob" \
   --recorded-by "agent:codex"
 
-# Audit the finished diff
-nya check
+# Audit the uncommitted finished diff
+nya check --task "Build the checkout modal"
 ```
 
 ### Terminal output
@@ -133,13 +133,28 @@ Spinners are written to standard error and cleared before the final result.
 This keeps standard output safe for scripts while still showing progress during
 long judge calls.
 
-### The three-command loop
+### The flexible task loop
 
 | Moment | Command | Result |
 | --- | --- | --- |
-| Before changing tracked files | `nya recall` | Relevant scars become task constraints |
+| Task start | `nya recall --task "<task>" --path <expected-path>` | Relevant scars become constraints before editing |
+| Scope change, context reset, or unfamiliar review | Rerun `nya recall` | The active context is reheated with applicable scars |
 | After correcting a real reusable failure | `nya remember` | The lesson and its provenance enter Git |
-| Before committing, pushing, or reporting completion | `nya check` | A fresh judge checks only for known recurrence |
+| Task review or pre-commit | `nya check --task "<completed task>"` | The uncommitted diff is audited against known scars |
+| Code review, pull request, or pre-push | `nya check --base <target> --task "<review context>"` | Committed branch work is audited against the selected base |
+| Any later useful checkpoint | Rerun `recall` or `check` | NYA can be consulted without depending on one fixed lifecycle |
+
+`recall` and `check` are intentionally repeatable. The minimum protocol is one
+recall at task start and one check after the final diff. Run them again when
+scope, context, ownership, or the reviewed diff changes.
+
+Plain `nya check` compares the working tree with `HEAD`, including staged,
+unstaged, and untracked work. After the work is committed, use `--base` so the
+review includes those commits:
+
+```bash
+nya check --base origin/main --task "Review the checkout modal branch"
+```
 
 A scar is backed by a real failure and a known correction. It is not a
 hypothetical risk, generic best practice, preference, design decision, or broad
@@ -474,10 +489,10 @@ sandbox can use `nya_check` as the external recurrence gate.
 
 ### Git hooks
 
-An ordinary pre-push hook can run:
+An ordinary pre-push hook can compare committed branch work with its target:
 
 ```bash
-nya check --base origin/main
+nya check --base origin/main --task "Pre-push branch review"
 ```
 
 Hooks provide fast feedback but can be bypassed. CI remains the authoritative

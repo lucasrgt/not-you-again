@@ -66,12 +66,16 @@ fn check_requires_focused_confirmation_before_blocking() {
 
 #[test]
 fn check_honors_explicit_base_for_committed_work() {
-    let (repo, _) = changed_repo();
-    repo.configure(judge(&empty_verdict()), 5);
+    let (repo, scar) = changed_repo();
+    repo.configure(judge(&finding(&scar.id, "src/new.rs")), 5);
     repo.commit_all("implementation");
+    let default = nya::check(&repo.root, CheckRequest::default()).unwrap();
+    assert!(default.passed);
+    assert_eq!(default.scars_checked, 0);
     let result = nya::check(&repo.root, CheckRequest { base: Some("HEAD^".into()), ..Default::default() }).unwrap();
-    assert!(result.passed);
+    assert!(!result.passed);
     assert_eq!(result.scars_checked, 1);
+    assert_eq!(result.findings[0].scar_id, scar.id);
 }
 
 #[test]
