@@ -14,14 +14,36 @@ The command is `nya`. The versioned repository directory is `.nya/`.
 
 ## Project status
 
-Not You Again is in early development. The version 0.1 architecture is
-approved, and the standalone repository is now open. Runtime implementation has
-not started.
+The version 0.1 core is implemented in source and covered by its permanent
+quality gates. It includes the Rust CLI, versioned scar files, SQLite FTS5
+recall, isolated two-stage recurrence checks, managed agent instructions, and
+the local stdio MCP server.
 
-The initial release will be a single native Rust binary with no hosted service
-and no required daemon.
+Prebuilt release binaries and package-manager distribution are not published
+yet. The current implementation builds as one native Rust binary with no hosted
+service and no required daemon.
 
 The normative design is documented in [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Build from source
+
+The current development build requires the stable Rust toolchain:
+
+```bash
+cargo build --release
+```
+
+The resulting executable is `target/release/nya`, or
+`target/release/nya.exe` on Windows.
+
+Run the complete local gates with:
+
+```bash
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+tokei src
+cargo llvm-cov --all-features --fail-under-lines 95
+```
 
 ## The problem
 
@@ -111,6 +133,14 @@ The command creates the versioned `.nya/` directory:
 The team commits this directory. Every clone receives the same scars and the
 same agent protocol.
 
+`nya init` also updates any existing root-level `AGENTS.md`, `CLAUDE.md`, and
+`GEMINI.md` with an idempotent managed instruction block. It preserves all
+human-authored content. If none of those files exists, it does not create one.
+
+The generated judge command is empty by design. Configure
+`.nya/config.toml` before the first relevant `nya check`. An empty judge command
+fails closed with exit code 2.
+
 ### 2. Recall before changing code
 
 At the beginning of a task, the agent describes the task and the paths it
@@ -165,13 +195,14 @@ Before the agent says the work is complete, it runs:
 nya check
 ```
 
-By default, `nya check` audits staged and unstaged changes relative to `HEAD`.
+By default, `nya check` audits staged changes, unstaged changes, and untracked
+files relative to `HEAD`. It excludes `.nya/` because scar storage and judge
+configuration are mechanism state, not task code.
 
 Other targets are available:
 
 ```bash
 nya check --base origin/main
-nya check --all
 nya check --format json
 ```
 
@@ -179,7 +210,8 @@ The check performs the following sequence:
 
 1. Resolve the Git diff and changed paths.
 2. Retrieve every exact scope match and the relevant unscoped scars.
-3. Build a bounded audit request with the diff and necessary file context.
+3. Build a bounded audit request from the diff. New untracked text files enter
+   the request in full.
 4. Start a fresh isolated judge process.
 5. Ask only whether the supplied scars were repeated.
 6. Validate the structured verdict.
@@ -280,15 +312,12 @@ The database lives inside the worktree's resolved Git directory:
 This location supports normal clones and linked worktrees while keeping the
 cache outside version control.
 
-The initial projection contains:
+The version 0.1 projection contains one FTS5 table with the searchable scar
+fields. The readable TOML files remain the only complete representation of a
+scar and its occurrences.
 
-1. `meta` for schema and index versions.
-2. `files` for source paths and content hashes.
-3. `scars` for normalized scar fields.
-4. `occurrences` for provenance and recurrence history.
-5. `scars_fts` for FTS5 search.
-
-Every command incrementally synchronizes the projection by content hash.
+Recall refreshes the projection transactionally from the versioned files. This
+keeps invalidation simple and makes the cache safe to discard.
 
 A missing, corrupt, or incompatible database is rebuilt automatically. Deleting
 the database never deletes a scar.
@@ -307,8 +336,8 @@ The CLI is the universal interface for:
 4. CI systems.
 5. Scripts and future adapters.
 
-The CLI supports concise human output and stable JSON input and output for
-agents and automation.
+The CLI supports concise human output and stable JSON output for agents and
+automation. MCP provides structured JSON input.
 
 ### MCP
 
@@ -356,6 +385,7 @@ command = [
   "codex", "exec", "--ephemeral",
   "--sandbox", "read-only",
   "--ignore-user-config",
+  "--skip-git-repo-check",
   "--output-schema", "{schema}",
   "-"
 ]
@@ -382,7 +412,7 @@ The runner owns model access only.
 `nya` owns:
 
 1. Scar retrieval.
-2. Diff and file context assembly.
+2. Diff assembly.
 3. Prompt construction.
 4. Verdict schema generation.
 5. Verdict validation.
@@ -401,8 +431,8 @@ The request contains only:
 1. The optional task description.
 2. The Git diff under review.
 3. Changed paths.
-4. Full changed-file contents when they fit the context budget.
-5. Changed hunks with surrounding context when full files do not fit.
+4. Changed hunks with their Git context.
+5. Full contents of new untracked text files.
 6. Exact scope matches.
 7. Relevant unscoped scars.
 
@@ -422,17 +452,29 @@ Every initialized repository contains `.nya/SKILL.md`.
 The skill remains deliberately short:
 
 ```markdown
+---
+name: not-you-again
+description: Prevent recurrence of repository-specific mistakes with the nya
+  CLI. Use for every task in a repository containing .nya, before changing
+  tracked files, after correcting a real reusable failure, and before reporting
+  implementation complete.
+---
+
 # Not You Again
 
-Use this skill in repositories containing `.nya/`.
+1. Before changing tracked files, run `nya recall` with the current task and
+   expected paths. Treat relevant scars as task constraints.
+2. After correcting a real reusable failure, run `nya remember` exactly once.
+   Never record hypotheses, preferences, general knowledge, or generic best
+   practices.
+3. After the final diff and repository checks are ready, run `nya check` before
+   committing, pushing, or reporting completion.
+4. Exit code 1 means a known scar recurred. Fix every confirmed recurrence and
+   rerun.
+5. Exit code 2 means the audit failed. Report the failure and never claim the
+   gate passed.
 
-1. Before changing code, run `nya recall` with the task and affected paths.
-2. After correcting a real mistake, run `nya remember` exactly once.
-3. Before reporting completion, run `nya check` and fix every confirmed
-   recurrence.
-
-Store only real failures with known corrections. Never store general knowledge,
-preferences, hypothetical risks, or generic best practices.
+Do not report a task complete until `nya check` exits with code 0.
 ```
 
 The skill teaches when to use the product. It does not contain scars and does
@@ -442,22 +484,47 @@ Skills and system prompts may be forgotten, truncated, or removed during
 context compaction. Not You Again therefore treats the skill as guidance, not
 as an enforcement boundary.
 
-The CLI, MCP server, Git hook, and CI continue to exist outside the agent's
-context.
+The CLI, MCP server, and CI continue to exist outside the agent's context.
+
+## Agent instruction bridge
+
+The skill cannot activate itself. `nya init` therefore installs the managed
+block from
+[`assets/AGENT_INSTRUCTIONS.md`](assets/AGENT_INSTRUCTIONS.md) into every
+recognized agent instruction file that already exists.
+
+The managed markers make repeated initialization safe:
+
+```markdown
+<!-- nya:instructions:start -->
+## Not You Again
+
+This repository uses Not You Again (`nya`) as a required
+recurrence-prevention gate for every task that changes tracked files.
+
+1. Before editing, read `.nya/SKILL.md`, then run `nya recall` with the current
+   task and expected paths. Treat every relevant scar as a task constraint.
+2. Use `nya remember` only after a real failure has been corrected and its
+   lesson is reusable.
+3. After the final diff is ready and repository checks pass, run `nya check`
+   before committing, pushing, or reporting completion.
+4. Do not report completion until `nya check` exits with code 0.
+5. Fix exit code 1 findings and rerun. Report exit code 2 as a failed audit.
+<!-- nya:instructions:end -->
+```
 
 ## Git hooks
 
-Install the local pre-push hook:
+The current core does not install or modify Git hooks. A repository may use an
+ordinary pre-push hook that invokes:
 
 ```bash
-nya hook install pre-push
+nya check --base origin/main
 ```
 
-The hook runs the recurrence audit against the relevant upstream or base diff.
-It chains an existing hook instead of overwriting it.
-
 Hooks provide fast local feedback, but they are not authoritative. They may be
-missing or bypassed.
+missing or bypassed. An idempotent hook installer remains a planned
+distribution feature.
 
 ## CI
 
@@ -555,41 +622,42 @@ There is one data path and one set of domain operations.
 The first release has no daemon, hosted service, plugin runtime, provider SDK,
 or in-process provider hierarchy.
 
-## Planned implementation
+## Implementation
 
-Not You Again will be implemented as one Rust crate:
+Not You Again is implemented as one Rust crate:
 
 ```text
 not-you-again/
   Cargo.toml
+  Cargo.lock
   README.md
-  LICENSE
+  ARCHITECTURE.md
+  .github/
+    workflows/
+      ci.yml
   src/
     main.rs
     lib.rs
-    scar.rs
-    repository.rs
-    index.rs
-    judge.rs
-    mcp.rs
   assets/
-    SKILL.md
+    AGENT_INSTRUCTIONS.md
+    config.toml
+    not-you-again/
+      SKILL.md
   tests/
-    cli/
-    fixtures/
+    common/
+    check.rs
+    cli_and_mcp.rs
+    store_and_recall.rs
 ```
 
-Module responsibilities are:
+The compact source layout is deliberate:
 
-| Module | Responsibility |
+| File | Responsibility |
 | --- | --- |
-| `repository` | Git discovery, `.nya/`, atomic writes, diffs, identities, hooks |
-| `scar` | Scar schema, validation, normalization, serialization |
-| `index` | SQLite projection, FTS5 search, deterministic ranking |
-| `judge` | Audit pack, command execution, verdict validation, confirmation |
-| `mcp` | Three stdio tool adapters over the library core |
-| `lib` | Domain operations |
-| `main` | CLI parsing, output, transport selection |
+| `src/lib.rs` | Domain model, repository operations, FTS5 recall, judge protocol, CLI, and MCP |
+| `src/main.rs` | Process exit adapter only |
+| `assets/` | Versioned templates copied or injected by `nya init` |
+| `tests/` | Cross-platform integration and protocol coverage |
 
 `main.rs` contains no domain logic. CLI and MCP call the same library
 operations.
@@ -605,7 +673,7 @@ Test code:      unlimited
 ```
 
 The production line limit includes CLI, MCP, indexing, repository operations,
-judge execution, hooks, and all maintained runtime logic.
+judge execution, and all maintained runtime logic.
 
 Production behavior may not be moved into scripts, generated files,
 integrations, or test helpers to evade the limit.
@@ -620,44 +688,24 @@ cargo llvm-cov --all-features --fail-under-lines 95
 The code budget is architectural pressure. Features are removed or delegated
 before the budget is increased.
 
-## Delivery plan
+## Delivery status
 
-### Slice 1: Durable scars
+The following core slices are implemented and tested:
 
-1. `nya init`
-2. TOML schema and validation
-3. `nya remember`
-4. Atomic writes
-5. Actor provenance
+1. Durable TOML scars, atomic writes, validation, and actor provenance.
+2. Disposable SQLite FTS5 recall with scope and occurrence ranking.
+3. Git diff assembly including untracked files.
+4. External judge execution, verdict validation, and focused confirmation.
+5. Canonical skill and managed agent instruction bridge.
+6. CLI and local stdio MCP transports over the same core.
+7. Cross-platform integration tests, 500 LOC enforcement, and 95 percent
+   coverage enforcement.
 
-### Slice 2: Relevant recall
-
-1. Derived SQLite and FTS5 index
-2. Automatic rebuild
-3. Path and task ranking
-4. `nya recall`
-
-### Slice 3: Recurrence audit
-
-1. Git diff and file context assembly
-2. Scar selection
-3. Judge command protocol
-4. Structured verdict validation
-5. Focused confirmation
-6. `nya check`
-
-### Slice 4: Agent loop
-
-1. Canonical `.nya/SKILL.md`
-2. `nya mcp`
-3. Pre-push hook
-4. End-to-end CLI and MCP fixtures
-
-### Slice 5: Distribution
+The distribution slice remains:
 
 1. Release binaries for Windows, macOS, and Linux
-2. Production LOC and coverage gates
-3. One-line CI documentation
+2. Package-manager installation paths
+3. Idempotent pre-push hook installation
 4. Static integration examples for Hermes, Codex, Claude Code, and Gemini CLI
 
 ## Explicitly deferred
@@ -743,14 +791,12 @@ and a correction is known, it can become a scar.
 
 ## Contributing
 
-The standalone repository is open while runtime implementation is being
-prepared. Contribution guidelines will be expanded with the first development
-release.
-
-The initial implementation will prioritize a small auditable core, strong
-fixtures, and behavior-preserving simplicity over feature breadth.
+The standalone repository contains the working version 0.1 core. Contributions
+should preserve the one-scar model, the three-action protocol, the production
+line budget, and the coverage gate.
 
 ## License
 
-The project license will be selected and published before the first public
-implementation release.
+No license has been selected yet. Until a license is published, the source is
+visible but no reuse permission is granted. A community release requires an
+explicit license choice.
