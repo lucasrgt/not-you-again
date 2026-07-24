@@ -54,8 +54,7 @@ A scar is a durable lesson created from a real failure and its correction.
 A scar is not a hypothetical risk, a generic best practice, a preference, a
 design decision, documentation, or a broad code review suggestion.
 
-The public model contains one concept only. There are no antibodies,
-candidates, graduation states, or enforcement classes.
+The public model contains one concept only. There are no candidates, graduation states, or enforcement classes.
 
 ## The three-action protocol
 
@@ -738,7 +737,7 @@ No. Tests and deterministic tooling remain independent project gates.
 ### Why keep only scars?
 
 One concept removes ambiguity. An agent never has to decide whether a lesson is
-a scar, antibody, candidate, policy, memory, or rule. If a real failure happened
+a scar, candidate, policy, memory, or rule. If a real failure happened
 and a correction is known, it can become a scar.
 
 ## Contributing
