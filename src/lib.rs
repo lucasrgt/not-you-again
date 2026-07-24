@@ -46,25 +46,25 @@ pub struct Scar {
 #[serde(default, deny_unknown_fields)]
 #[rustfmt::skip]
 pub struct RememberRequest {
-    #[arg(long)] pub scar: Option<String>, #[arg(long)] pub title: Option<String>, #[arg(long)] pub lesson: Option<String>,
-    #[arg(long)] pub scope: Vec<String>, #[arg(long = "tag")] pub tags: Vec<String>, #[arg(long)] pub source: Option<String>, #[arg(long)] pub github_review: Option<String>,
-    #[arg(long)] pub reported_by: Option<String>, #[arg(long)] pub corrected_by: Option<String>, #[arg(long)] pub recorded_by: Option<String>,
+    #[arg(long, help = "Existing scar ID to append to")] pub scar: Option<String>, #[arg(long, help = "Concise corrected failure")] pub title: Option<String>, #[arg(long, help = "Reusable correction lesson")] pub lesson: Option<String>,
+    #[arg(long, help = "Affected glob; repeat for multiple scopes")] pub scope: Vec<String>, #[arg(long = "tag", help = "Search tag; repeat for multiple tags")] pub tags: Vec<String>, #[arg(long, help = "Manually asserted source")] pub source: Option<String>, #[arg(long, help = "Verified GitHub #discussion_r permalink")] pub github_review: Option<String>,
+    #[arg(long, help = "Namespaced reporter for a manual source")] pub reported_by: Option<String>, #[arg(long, help = "Namespaced correcting actor")] pub corrected_by: Option<String>, #[arg(long, help = "Namespaced recording actor")] pub recorded_by: Option<String>,
 }
 
 #[derive(Args, Clone, Debug, Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 #[rustfmt::skip]
 pub struct RecallRequest {
-    #[arg(long, default_value = "")] pub task: String,
-    #[arg(long = "path")] #[serde(alias = "path")] pub paths: Vec<String>,
-    #[arg(long, default_value = "12")] pub limit: Option<usize>,
+    #[arg(long, default_value = "", help = "Current task text")] pub task: String,
+    #[arg(long = "path", help = "Expected path; repeat for multiple paths")] #[serde(alias = "path")] pub paths: Vec<String>,
+    #[arg(long, default_value = "12", help = "Maximum recalled scars")] pub limit: Option<usize>,
 }
 
 #[derive(Args, Clone, Debug, Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 #[rustfmt::skip]
 pub struct CheckRequest {
-    #[arg(long)] pub base: Option<String>, #[arg(long)] pub task: Option<String>,
+    #[arg(long, help = "Git comparison base; defaults to HEAD")] pub base: Option<String>, #[arg(long, help = "Optional completed task text")] pub task: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]

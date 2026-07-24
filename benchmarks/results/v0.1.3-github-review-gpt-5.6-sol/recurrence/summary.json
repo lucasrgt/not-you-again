@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "started_at": "2026-07-24T18:41:19.183117+00:00",
+  "source_pr": "https://github.com/lucasrgt/nya-github-review-benchmark/pull/1",
+  "source_comment": "https://github.com/lucasrgt/nya-github-review-benchmark/pull/1#discussion_r3647349286",
+  "scar_sha256": "a0dd287e9f96d86993f5cadfd42b17d03e2e25e8070d6f0a88072d38388251e4",
+  "nya_version": "nya 0.1.3",
+  "codex_version": "codex-cli 0.144.0",
+  "model": "gpt-5.6-sol",
+  "order": [
+    "baseline",
+    "nya"
+  ],
+  "task": "Change load_document to accept a dictionary cache as its first argument. Repeated loads of the same document ID must call the loader only once. Update the tests and keep the public function name.",
+  "results": {
+    "baseline": {
+      "outcome": "recurrence",
+      "task_ok": true,
+      "scar_ok": false,
+      "detail": "overlapping document IDs remain isolated by organization",
+      "tests_exit": 0,
+      "agent_exit": 0,
+      "elapsed_seconds": 45.252,
+      "recall_observed": false,
+      "check_observed": false
+    },
+    "nya": {
+      "outcome": "pass",
+      "task_ok": true,
+      "scar_ok": true,
+      "detail": "overlapping document IDs remain isolated by organization",
+      "tests_exit": 0,
+      "agent_exit": 0,
+      "elapsed_seconds": 94.571,
+      "recall_observed": true,
+      "check_observed": false,
+      "gate_exit": 0,
+      "gate": {
+        "passed": true,
+        "scars_checked": 1,
+        "findings": []
+      }
+    }
+  },
+  "prevented": true,
+  "finished_at": "2026-07-24T18:43:43.723169+00:00"
+}

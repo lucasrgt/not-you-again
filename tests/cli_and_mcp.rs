@@ -260,6 +260,10 @@ fn cli_reports_empty_recall_and_invalid_repository() {
     let output = bin().arg("--repository").arg(outside.path()).arg("init").output().unwrap();
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8(output.stderr).unwrap().contains("Git repository"));
+
+    let remember_help = bin().args(["remember", "--help"]).output().unwrap();
+    let help = String::from_utf8(remember_help.stdout).unwrap();
+    assert!(help.contains("Existing scar ID") && help.contains("repeat for multiple scopes") && help.contains("#discussion_r"));
 }
 
 #[test]

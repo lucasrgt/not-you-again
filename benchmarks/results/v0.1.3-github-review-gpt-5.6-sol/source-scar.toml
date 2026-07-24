@@ -1,0 +1,18 @@
+schema = 1
+id = "NYA-01KYAP8ZD63BM3A0G3NRP4T5AS"
+title = "Profile cache keyed only by user_id leaked profiles across tenants"
+lesson = "Include every isolation boundary, including tenant_id, in shared cache keys and cover same-identifier cross-tenant access with a regression test."
+scope = ["profiles.py,test_profiles.py"]
+tags = [
+    "cache",
+    "multi-tenant",
+]
+created_at = "2026-07-24T18:30:18Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T18:20:31Z"
+source = "https://github.com/lucasrgt/nya-github-review-benchmark/pull/1#discussion_r3647349286"
+reported_by = "github:lucasrgt"
+corrected_by = "git:lucas.tinoco@hotmail.com"
+recorded_by = "git:lucas.tinoco@hotmail.com"
+commit = "8fac668"

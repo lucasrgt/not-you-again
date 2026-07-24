@@ -485,6 +485,23 @@ This is a single smoke run, not a general prevention rate. Read the
 [protocol](benchmarks/README.md), [auditable report](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/REPORT.md),
 and [machine-readable summary](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/summary.json).
 
+### Real GitHub review proof
+
+The v0.1.3 workflow starts with a
+[real line-level review comment](https://github.com/lucasrgt/nya-github-review-benchmark/pull/1#discussion_r3647349286).
+A fresh agent corrected the defect and used the released binary to turn that
+exact permalink into a versioned scar. A later paired smoke then measured the
+scar in two fresh synthetic tasks.
+
+| Valid pairs | Baseline recurrences | Avoided by NYA | Remaining NYA recurrences |
+| ---: | ---: | ---: | ---: |
+| 2 | 1 | 1 | 0 |
+
+One baseline already passed and contributes no prevention evidence. A
+preliminary read-only sandbox attempt is disclosed and excluded. Read the
+[complete report](benchmarks/results/v0.1.3-github-review-gpt-5.6-sol/REPORT.md)
+and [machine-readable summary](benchmarks/results/v0.1.3-github-review-gpt-5.6-sol/summary.json).
+
 ---
 
 ## Build and contribute

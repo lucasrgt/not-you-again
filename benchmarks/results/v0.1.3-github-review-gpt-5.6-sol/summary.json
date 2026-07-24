@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "run": "v0.1.3-github-review-gpt-5.6-sol",
+  "nya_version": "0.1.3",
+  "codex_version": "0.144.0",
+  "model": "gpt-5.6-sol",
+  "source": {
+    "repository": "https://github.com/lucasrgt/nya-github-review-benchmark",
+    "pull_request": "https://github.com/lucasrgt/nya-github-review-benchmark/pull/1",
+    "review_comment": "https://github.com/lucasrgt/nya-github-review-benchmark/pull/1#discussion_r3647349286",
+    "review_comment_id": 3647349286,
+    "reported_by": "github:lucasrgt",
+    "occurred_at": "2026-07-24T18:20:31Z",
+    "correcting_commit": "9681e4fbdf4e53152f7fd99282e772d795dee9de",
+    "merge_commit": "e043caa8cb91594d029143d98b9ce5621f1497f7",
+    "scar_id": "NYA-01KYAP8ZD63BM3A0G3NRP4T5AS",
+    "scar_sha256": "a0dd287e9f96d86993f5cadfd42b17d03e2e25e8070d6f0a88072d38388251e4"
+  },
+  "correction": {
+    "agent_exit": 0,
+    "tests_passed": 2,
+    "scar_written": true,
+    "source_verified": true,
+    "check_exit": 0,
+    "scars_checked": 1,
+    "pull_request_merged": true
+  },
+  "pairs": [
+    {
+      "path": "attempt-2-explicit-boundary-baseline-passed",
+      "baseline": "pass",
+      "nya": "pass",
+      "prevented": false
+    },
+    {
+      "path": "recurrence",
+      "baseline": "recurrence",
+      "nya": "pass",
+      "prevented": true
+    }
+  ],
+  "excluded_attempts": [
+    {
+      "path": "attempt-1-windows-sandbox-blocked",
+      "reason": "Both temporary repositories were mounted read-only by the native Windows Codex sandbox."
+    }
+  ],
+  "valid_pairs": 2,
+  "baseline_recurrences": 1,
+  "avoided": 1,
+  "remaining_nya_recurrences": 0,
+  "baseline_already_passed": 1
+}

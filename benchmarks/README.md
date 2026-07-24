@@ -93,3 +93,32 @@ the final diff for every arm, the agent's final message, and the command event
 log. A recall or check is marked as observed only for a completed
 `command_execution` event, never from prose. Timestamps and randomized order are
 recorded so the run can be audited.
+
+## Real GitHub review recurrence smoke
+
+`github_review.py` consumes a scar whose provenance was verified from a real
+line-level GitHub review comment. It then gives two fresh agents the same later
+task in randomized order:
+
+| Arm | Repository state |
+| --- | --- |
+| Baseline | No Not You Again files or scar |
+| NYA | The exact versioned scar created from the public review correction |
+
+The later task uses a different module and entity names while repeating the
+same multi-tenant cache-isolation hazard. A hidden evaluator checks task
+completion and cross-organization isolation. Prevention is recorded only when
+the baseline repeats the failure and the NYA arm passes.
+
+```bash
+python benchmarks/github_review.py \
+  --nya /path/to/released/nya \
+  --scar /path/to/NYA-....toml \
+  --output benchmark-output \
+  --source-pr https://github.com/lucasrgt/nya-github-review-benchmark/pull/1 \
+  --source-comment https://github.com/lucasrgt/nya-github-review-benchmark/pull/1#discussion_r3647349286
+```
+
+The public fixture PR discloses that its initial defect is intentional. The
+review comment, correcting commit, scar file, agent event log, paired diffs,
+and machine-readable result remain auditable independently.

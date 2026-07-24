@@ -1,0 +1,42 @@
+diff --git a/profiles.py b/profiles.py
+index 8ed7f14..8fb5399 100644
+--- a/profiles.py
++++ b/profiles.py
+@@ -6,7 +6,7 @@ Cache = dict[str, Profile]
+ 
+ 
+ def load_profile(cache: Cache, tenant_id: str, user_id: str, loader: Loader) -> Profile:
+-    key = f"profile:{user_id}"
++    key = f"profile:{tenant_id}:{user_id}"
+     if key not in cache:
+         cache[key] = loader(tenant_id, user_id)
+     return cache[key]
+diff --git a/test_profiles.py b/test_profiles.py
+index b2903a0..7a9d927 100644
+--- a/test_profiles.py
++++ b/test_profiles.py
+@@ -19,6 +19,24 @@ class ProfileTests(unittest.TestCase):
+         self.assertIs(second, first)
+         self.assertEqual(loads, [("tenant-a", "user-1")])
+ 
++    def test_isolates_cached_profiles_by_tenant(self) -> None:
++        cache = {}
++        loads = []
++
++        def loader(tenant: str, user: str) -> dict[str, str]:
++            loads.append((tenant, user))
++            return {"id": user, "tenant": tenant}
++
++        first = load_profile(cache, "tenant-a", "user-1", loader)
++        second = load_profile(cache, "tenant-b", "user-1", loader)
++
++        self.assertEqual(first, {"id": "user-1", "tenant": "tenant-a"})
++        self.assertEqual(second, {"id": "user-1", "tenant": "tenant-b"})
++        self.assertEqual(
++            loads,
++            [("tenant-a", "user-1"), ("tenant-b", "user-1")],
++        )
++
+ 
+ if __name__ == "__main__":
+     unittest.main()

@@ -1,0 +1,48 @@
+diff --git a/documents.py b/documents.py
+index dbdef52..616cb91 100644
+--- a/documents.py
++++ b/documents.py
+@@ -4,5 +4,9 @@ Document = dict[str, str]
+ Loader = Callable[[str, str], Document]
+ 
+ 
+-def load_document(org_id: str, document_id: str, loader: Loader) -> Document:
+-    return loader(org_id, document_id)
++def load_document(
++    cache: dict[str, Document], org_id: str, document_id: str, loader: Loader
++) -> Document:
++    if document_id not in cache:
++        cache[document_id] = loader(org_id, document_id)
++    return cache[document_id]
+diff --git a/test_documents.py b/test_documents.py
+index 024a774..3b80c42 100644
+--- a/test_documents.py
++++ b/test_documents.py
+@@ -6,12 +6,27 @@ from documents import load_document
+ class DocumentTests(unittest.TestCase):
+     def test_loads_the_requested_document(self) -> None:
+         document = load_document(
++            {},
+             "org-a",
+             "doc-1",
+             lambda org, document_id: {"id": document_id, "org": org},
+         )
+         self.assertEqual(document, {"id": "doc-1", "org": "org-a"})
+ 
++    def test_loads_each_document_only_once(self) -> None:
++        cache = {}
++        calls = []
++
++        def loader(org: str, document_id: str) -> dict[str, str]:
++            calls.append((org, document_id))
++            return {"id": document_id, "org": org}
++
++        first = load_document(cache, "org-a", "doc-1", loader)
++        second = load_document(cache, "org-a", "doc-1", loader)
++
++        self.assertIs(second, first)
++        self.assertEqual(calls, [("org-a", "doc-1")])
++
+ 
+ if __name__ == "__main__":
+     unittest.main()
