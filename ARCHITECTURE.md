@@ -2,8 +2,9 @@
 
 ## Status
 
-The version 0.1 architecture is approved. Runtime implementation has not
-started.
+The version 0.1 architecture is approved and the core runtime is implemented.
+The source gates currently enforce 500 production lines and at least 95 percent
+line coverage.
 
 ## Purpose
 
@@ -41,7 +42,7 @@ flowchart LR
     MCP --> CORE
     CORE --> STORE["Versioned .nya store"]
     CORE --> INDEX["Derived SQLite index"]
-    CORE --> RUNNER["Configured judge command"]
+    CORE --> RUNNER["Resolved local judge"]
     RUNNER --> JUDGE["Fresh isolated LLM context"]
 
     STORE --> INDEX
@@ -62,6 +63,7 @@ Consumer repositories commit:
 
 ```text
 .nya/
+  .gitignore
   config.toml
   SKILL.md
   scars/
@@ -76,8 +78,32 @@ The derived database lives at:
 <git-dir>/nya/index-v1.sqlite3
 ```
 
-It contains normalized scars, occurrences, file hashes, metadata, and an FTS5
-projection. Missing, corrupt, or incompatible indexes rebuild automatically.
+It contains an FTS5 projection of searchable scar fields. Complete scars and
+occurrences remain only in the versioned TOML files. Missing, corrupt, or
+incompatible indexes rebuild automatically.
+
+## Configuration boundary
+
+The committed `.nya/config.toml` defines shared check policy. It never selects
+a provider, model, credential, or executable.
+
+Each developer selects a judge once with:
+
+```bash
+nya setup --judge codex
+```
+
+The resulting user configuration is stored in the operating system
+configuration directory. A repository may optionally override that choice with
+an ignored `.nya/config.local.toml`, created by:
+
+```bash
+nya setup --local --judge claude
+```
+
+Resolution is strict and deterministic. Repository-local configuration wins
+over user configuration. Missing or invalid configuration fails closed. The
+agent always runs `nya check` and never chooses a provider itself.
 
 ## Recall
 
@@ -104,8 +130,8 @@ Fuzzy similarity never merges scars automatically.
 
 ## Check
 
-`nya check` resolves the target diff, retrieves relevant scars, assembles
-bounded file context, and invokes a fresh judge.
+`nya check` resolves tracked and untracked changes outside `.nya/`, retrieves
+relevant scars, assembles a bounded diff, and invokes a fresh judge.
 
 The judge may answer one question only:
 
@@ -125,9 +151,11 @@ Exit codes are:
 | `1` | At least one recurrence was confirmed |
 | `2` | Repository, configuration, runner, timeout, or verdict failure |
 
-## Judge command
+## Judge execution
 
-The judge is a configured subprocess, not an in-process provider integration.
+The judge is a resolved subprocess, not an in-process provider integration.
+Built-in profiles cover Codex, Claude Code, and Hermes. A custom argv command
+can implement the same protocol.
 
 ```text
 stdin   one UTF-8 audit prompt
@@ -147,7 +175,8 @@ the connected host model to judge itself.
 ## Skill
 
 `.nya/SKILL.md` teaches the three-action protocol. It contains no scars and no
-product logic.
+product logic. `nya init` also installs an idempotent managed bridge into
+existing root-level `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files.
 
 The skill is guidance rather than enforcement because agents can forget
 instructions or lose them during context compaction. CLI, MCP, hooks, and CI
@@ -176,46 +205,25 @@ Test code:      unlimited
 ```
 
 The line budget includes CLI, MCP, indexing, repository operations, judge
-execution, hooks, and all maintained runtime behavior.
+execution, and all maintained runtime behavior.
 
-## Delivery slices
+## Delivery status
 
-### Slice 1: Durable scars
+### Implemented core
 
-1. `nya init`
-2. Scar schema and validation
-3. `nya remember`
-4. Atomic writes
-5. Actor provenance
+1. Durable scars, atomic writes, schema validation, and actor provenance.
+2. SQLite FTS5 recall, automatic rebuild, scope ranking, and occurrence ranking.
+3. Tracked and untracked diff assembly, scar selection, judge execution,
+   verdict validation, and focused confirmation.
+4. Layered project, user, and repository-local judge configuration.
+5. Canonical skill, managed agent instructions, CLI, local stdio MCP, and
+   end-to-end fixtures.
 
-### Slice 2: Relevant recall
-
-1. SQLite and FTS5 projection
-2. Automatic rebuild
-3. Path and task ranking
-4. `nya recall`
-
-### Slice 3: Recurrence audit
-
-1. Diff and file context assembly
-2. Scar selection
-3. Judge command protocol
-4. Verdict validation
-5. Focused confirmation
-6. `nya check`
-
-### Slice 4: Agent loop
-
-1. Canonical skill
-2. Local stdio MCP server
-3. Pre-push hook
-4. End-to-end fixtures
-
-### Slice 5: Distribution
+### Remaining distribution
 
 1. Windows, macOS, and Linux binaries
-2. Production line and coverage gates
-3. CI documentation
+2. Package-manager installation paths
+3. Idempotent pre-push hook installation
 4. Static host integration examples
 
 ## Deferred scope
