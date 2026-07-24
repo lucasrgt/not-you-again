@@ -47,7 +47,7 @@ pub struct Scar {
 #[rustfmt::skip]
 pub struct RememberRequest {
     #[arg(long)] pub scar: Option<String>, #[arg(long)] pub title: Option<String>, #[arg(long)] pub lesson: Option<String>,
-    #[arg(long)] pub scope: Vec<String>, #[arg(long = "tag")] pub tags: Vec<String>, #[arg(long)] pub source: Option<String>,
+    #[arg(long)] pub scope: Vec<String>, #[arg(long = "tag")] pub tags: Vec<String>, #[arg(long)] pub source: Option<String>, #[arg(long)] pub github_review: Option<String>,
     #[arg(long)] pub reported_by: Option<String>, #[arg(long)] pub corrected_by: Option<String>, #[arg(long)] pub recorded_by: Option<String>,
 }
 
@@ -98,57 +98,49 @@ struct JudgeConfig { command: Vec<String>, timeout_seconds: u64, isolate_home: b
 struct SetupRequest { #[arg(long)] judge: String, #[arg(long)] local: bool, #[arg(last = true)] command: Vec<String> }
 
 #[derive(Deserialize)]
-struct Verdict {
-    findings: Vec<Finding>,
-}
+#[rustfmt::skip]
+struct Verdict { findings: Vec<Finding> }
 
-fn normalize(value: &str) -> String {
-    value.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase()
-}
+#[derive(Deserialize)]
+#[rustfmt::skip]
+struct GitHubUser { login: String }
 
-fn git(repo: &Path, args: &[&str]) -> Result<String> {
-    let out = Command::new("git").arg("-C").arg(repo).args(args).output().context("failed to start git")?;
-    ensure!(out.status.success(), "git {} failed: {}", args.join(" "), String::from_utf8_lossy(&out.stderr).trim());
-    Ok(String::from_utf8(out.stdout)?.trim().to_owned())
-}
+#[derive(Deserialize)]
+#[rustfmt::skip]
+struct GitHubReview { html_url: String, created_at: String, user: GitHubUser }
 
-pub fn repository(start: &Path) -> Result<PathBuf> {
-    Ok(PathBuf::from(git(start, &["rev-parse", "--show-toplevel"]).context("not inside a Git repository")?))
-}
+#[rustfmt::skip]
+fn normalize(value: &str) -> String { value.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase() }
 
+#[rustfmt::skip]
+fn git(repo: &Path, args: &[&str]) -> Result<String> { let out = Command::new("git").arg("-C").arg(repo).args(args).output().context("failed to start git")?; ensure!(out.status.success(), "git {} failed: {}", args.join(" "), String::from_utf8_lossy(&out.stderr).trim()); Ok(String::from_utf8(out.stdout)?.trim().to_owned()) }
+
+#[rustfmt::skip]
+pub fn repository(start: &Path) -> Result<PathBuf> { Ok(PathBuf::from(git(start, &["rev-parse", "--show-toplevel"]).context("not inside a Git repository")?)) }
+
+#[rustfmt::skip]
 fn validate(scar: &Scar) -> Result<()> {
     ensure!(scar.schema == 1, "{} has unsupported schema {}", scar.id, scar.schema);
     ensure!(scar.id.starts_with("NYA-") && !scar.title.trim().is_empty() && !scar.lesson.trim().is_empty(), "invalid scar {}", scar.id);
     ensure!(!scar.occurrences.is_empty(), "{} has no occurrences", scar.id);
-    for scope in &scar.scope {
-        Pattern::new(scope).with_context(|| format!("invalid scope in {}", scar.id))?;
-    }
-    for actor in scar.occurrences.iter().flat_map(|o| [&o.reported_by, &o.corrected_by, &o.recorded_by, &o.recorded_for]).flatten() {
-        ensure!(actor.contains(':'), "actor must be namespaced: {actor}");
-    }
+    for scope in &scar.scope { Pattern::new(scope).with_context(|| format!("invalid scope in {}", scar.id))?; }
+    for actor in scar.occurrences.iter().flat_map(|o| [&o.reported_by, &o.corrected_by, &o.recorded_by, &o.recorded_for]).flatten() { ensure!(actor.contains(':'), "actor must be namespaced: {actor}"); }
     Ok(())
 }
 
+#[rustfmt::skip]
 fn scars(repo: &Path) -> Result<Vec<Scar>> {
     let dir = repo.join(".nya/scars");
     ensure!(dir.is_dir(), "{} is not initialized; run nya init", repo.display());
     let mut paths = fs::read_dir(dir)?.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.extension().is_some_and(|e| e == "toml")).collect::<Vec<_>>();
     paths.sort();
-    paths
-        .into_iter()
-        .map(|path| {
-            let scar: Scar = toml::from_str(&fs::read_to_string(&path)?).with_context(|| format!("invalid scar {}", path.display()))?;
-            validate(&scar)?;
-            Ok(scar)
-        })
-        .collect()
+    paths.into_iter().map(|path| { let scar: Scar = toml::from_str(&fs::read_to_string(&path)?).with_context(|| format!("invalid scar {}", path.display()))?; validate(&scar)?; Ok(scar) }).collect()
 }
 
+#[rustfmt::skip]
 fn atomic(path: &Path, text: &str) -> Result<()> {
     let mut tmp = NamedTempFile::new_in(path.parent().context("path has no parent")?)?;
-    tmp.write_all(text.as_bytes())?;
-    tmp.as_file().sync_all()?;
-    tmp.persist(path).map_err(|e| e.error)?;
+    tmp.write_all(text.as_bytes())?; tmp.as_file().sync_all()?; tmp.persist(path).map_err(|e| e.error)?;
     Ok(())
 }
 
@@ -184,13 +176,26 @@ pub fn init(repo: &Path) -> Result<Vec<String>> {
     Ok(installed)
 }
 
-fn inferred_actor(repo: &Path) -> Option<String> {
-    git(repo, &["config", "user.email"]).ok().filter(|s| !s.is_empty()).map(|s| format!("git:{s}"))
+#[rustfmt::skip]
+fn inferred_actor(repo: &Path) -> Option<String> { git(repo, &["config", "user.email"]).ok().filter(|s| !s.is_empty()).map(|s| format!("git:{s}")) }
+
+#[rustfmt::skip]
+fn github_review(url: &str) -> Result<GitHubReview> {
+    let (base, id) = url.split_once("#discussion_r").context("--github-review must be a GitHub pull-request review comment permalink")?;
+    let parts = base.strip_prefix("https://").context("--github-review must use https")?.split('/').collect::<Vec<_>>(); ensure!(parts.len() == 5 && parts[3] == "pull" && parts[4].parse::<u64>().is_ok() && id.parse::<u64>().is_ok(), "invalid GitHub review permalink");
+    let endpoint = format!("repos/{}/{}/pulls/comments/{id}", parts[1], parts[2]); let program = std::env::var_os("NYA_GH").unwrap_or_else(|| "gh".into());
+    let out = Command::new(program).args(["api", "--hostname", parts[0], &endpoint]).output().context("failed to start GitHub CLI; install and authenticate `gh`")?; ensure!(out.status.success(), "gh api failed: {}", String::from_utf8_lossy(&out.stderr).trim());
+    let review: GitHubReview = serde_json::from_slice(&out.stdout).context("GitHub returned an invalid review comment")?; ensure!(review.html_url == url, "GitHub returned a different review comment permalink"); Ok(review)
 }
 
 pub fn remember(repo: &Path, request: RememberRequest) -> Result<Scar> {
     let repo = repository(repo)?;
     let mut all = scars(&repo)?;
+    ensure!(
+        request.github_review.is_none() || (request.source.is_none() && request.reported_by.is_none()),
+        "--github-review supplies source and reporter; do not combine it with --source or --reported-by"
+    );
+    let review = request.github_review.as_deref().map(github_review).transpose()?;
     let title_match = request.title.as_ref().map(|t| normalize(t));
     let found = request.scar.as_ref().and_then(|id| all.iter().position(|s| &s.id == id)).or_else(|| title_match.as_ref().and_then(|title| all.iter().position(|s| normalize(&s.title) == *title)));
     if let (Some(id), None) = (&request.scar, found) {
@@ -198,9 +203,9 @@ pub fn remember(repo: &Path, request: RememberRequest) -> Result<Scar> {
     }
     let actor = inferred_actor(&repo);
     let occurrence = Occurrence {
-        occurred_at: Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
-        source: request.source,
-        reported_by: request.reported_by,
+        occurred_at: review.as_ref().map(|value| value.created_at.clone()).unwrap_or_else(|| Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true)),
+        source: review.as_ref().map(|value| value.html_url.clone()).or(request.source),
+        reported_by: review.as_ref().map(|value| format!("github:{}", value.user.login)).or(request.reported_by),
         corrected_by: request.corrected_by.or_else(|| actor.clone()),
         recorded_by: request.recorded_by.or(actor),
         recorded_for: None,
@@ -343,9 +348,8 @@ fn setup(repo: &Path, request: SetupRequest) -> Result<PathBuf> {
     Ok(path)
 }
 
-fn schema() -> Value {
-    json!({"type":"object","additionalProperties":false,"required":["findings"],"properties":{"findings":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["scar_id","path","line","evidence","reason"],"properties":{"scar_id":{"type":"string"},"path":{"type":"string"},"line":{"type":"integer","minimum":1},"evidence":{"type":"string","minLength":1},"reason":{"type":"string","minLength":1}}}}}})
-}
+#[rustfmt::skip]
+fn schema() -> Value { json!({"type":"object","additionalProperties":false,"required":["findings"],"properties":{"findings":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["scar_id","path","line","evidence","reason"],"properties":{"scar_id":{"type":"string"},"path":{"type":"string"},"line":{"type":"integer","minimum":1},"evidence":{"type":"string","minLength":1},"reason":{"type":"string","minLength":1}}}}}}) }
 
 #[rustfmt::skip]
 fn judge(config: &JudgeConfig, prompt: &str) -> Result<Verdict> {
@@ -418,7 +422,7 @@ pub fn check(repo: &Path, request: CheckRequest) -> Result<CheckResult> {
 
 fn tools() -> Value {
     json!([
-        {"name":"nya_remember","description":"Record a corrected repository scar.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"scar":{"type":"string"},"title":{"type":"string"},"lesson":{"type":"string"},"scope":{"type":"array","items":{"type":"string"}},"tags":{"type":"array","items":{"type":"string"}},"source":{"type":"string"},"reported_by":{"type":"string"},"corrected_by":{"type":"string"},"recorded_by":{"type":"string"}}}},
+        {"name":"nya_remember","description":"Record a corrected repository scar.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"scar":{"type":"string"},"title":{"type":"string"},"lesson":{"type":"string"},"scope":{"type":"array","items":{"type":"string"}},"tags":{"type":"array","items":{"type":"string"}},"source":{"type":"string"},"github_review":{"type":"string"},"reported_by":{"type":"string"},"corrected_by":{"type":"string"},"recorded_by":{"type":"string"}}}},
         {"name":"nya_recall","description":"Recall scars relevant to a task and paths.","inputSchema":{"type":"object","required":["repository","task"],"properties":{"repository":{"type":"string"},"task":{"type":"string"},"paths":{"type":"array","items":{"type":"string"}},"limit":{"type":"integer","minimum":1}}}},
         {"name":"nya_check","description":"Audit a Git diff only for recurrence of known scars.","inputSchema":{"type":"object","required":["repository"],"properties":{"repository":{"type":"string"},"base":{"type":"string"},"task":{"type":"string"}}}}
     ])

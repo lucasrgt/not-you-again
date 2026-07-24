@@ -99,8 +99,9 @@ nya remember \
   --title "Literal colors bypass semantic design tokens" \
   --lesson "Use semantic design tokens and verify every supported theme." \
   --scope "src/**/*.tsx" \
-  --source "https://github.com/acme/store/pull/142#discussion_r123" \
-  --reported-by "github:alice"
+  --github-review "https://github.com/acme/store/pull/142#discussion_r123" \
+  --corrected-by "github:bob" \
+  --recorded-by "agent:codex"
 
 # Audit the finished diff
 nya check
@@ -246,7 +247,6 @@ Recall is deterministic and does not call an LLM. It combines:
 1. Exact scope matches against requested or changed paths.
 2. SQLite FTS5 relevance across task, title, lesson, tags, and scope.
 3. Independent occurrence count.
-4. A modest recency boost.
 
 Only relevant scars enter the agent context. A missing, corrupt, or incompatible
 index is rebuilt automatically, and deleting it never deletes a scar.
@@ -263,6 +263,32 @@ nya remember \
 ```
 
 Fuzzy similarity never merges scars automatically.
+
+#### Corrected GitHub review comments
+
+When a reusable correction came from a line-level GitHub pull request review,
+pass its `#discussion_r...` permalink:
+
+```bash
+nya remember \
+  --title "Cache keys must preserve tenant isolation" \
+  --lesson "Include tenant identity in every cache key for tenant-owned data." \
+  --scope "src/cache/**" \
+  --github-review "https://github.com/acme/store/pull/142#discussion_r123" \
+  --corrected-by "github:bob" \
+  --recorded-by "agent:codex"
+```
+
+`nya` uses the authenticated [GitHub CLI](https://cli.github.com/) to verify
+the review comment and records its canonical permalink, author, and creation
+time. Install `gh` and run `gh auth login` before using this option. GitHub
+Enterprise permalinks are supported through the same `gh` authentication.
+
+The review body is never stored or interpreted as instructions. The developer
+or correcting agent must explicitly distill the corrected failure into a
+concise title and reusable lesson. `--github-review` cannot be combined with
+`--source` or `--reported-by`, so verified and manually asserted provenance
+cannot be confused.
 
 ---
 
@@ -335,6 +361,7 @@ Add `--local` when the custom command applies only to the current repository.
 | `.nya/SKILL.md` | Teaches the three-command loop | Created by `nya init` |
 | Agent instruction bridge | Activates the skill from existing harness files | Created by `nya init` |
 | MCP | Exposes the same core as three typed tools | Optional |
+| GitHub review permalink | Verifies reporter, source, and time through `gh` | Optional |
 | Git hook | Provides fast local feedback | Optional |
 | CI | Enforces the final recurrence gate | Recommended |
 

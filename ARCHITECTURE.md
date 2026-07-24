@@ -2,9 +2,8 @@
 
 ## Status
 
-The version 0.1 architecture is approved and the core runtime is implemented.
-The source gates currently enforce 500 production lines and at least 95 percent
-line coverage.
+This document defines the current runtime architecture. Source gates enforce
+500 production lines and at least 95 percent line coverage.
 
 ## Purpose
 
@@ -75,7 +74,7 @@ Each scar is a readable TOML file. Git is the durable source of truth.
 The derived database lives at:
 
 ```text
-<git-dir>/nya/index-v1.sqlite3
+.nya/index-v1.sqlite3
 ```
 
 It contains an FTS5 projection of searchable scar fields. Complete scars and
@@ -114,7 +113,6 @@ Ranking uses:
 1. Exact scope matches.
 2. FTS5 relevance across task text, title, lesson, tags, and scope.
 3. Independent occurrence count.
-4. A modest latest-occurrence recency boost.
 
 Every exact scope match is included.
 
@@ -125,6 +123,12 @@ or exact normalized title match.
 
 Every occurrence preserves reporter, corrector, recorder, represented actor,
 source, commit, and time when available. The system never invents a reporter.
+
+For a line-level GitHub pull request review, `--github-review` verifies the
+permalink through the authenticated `gh` CLI and derives the canonical source,
+reporter, and occurrence time. The review body does not enter the scar or the
+agent prompt. The correcting actor still states the title and lesson
+explicitly.
 
 Fuzzy similarity never merges scars automatically.
 
@@ -207,28 +211,9 @@ Test code:      unlimited
 The line budget includes CLI, MCP, indexing, repository operations, judge
 execution, and all maintained runtime behavior.
 
-## Delivery status
-
-### Implemented core
-
-1. Durable scars, atomic writes, schema validation, and actor provenance.
-2. SQLite FTS5 recall, automatic rebuild, scope ranking, and occurrence ranking.
-3. Tracked and untracked diff assembly, scar selection, judge execution,
-   verdict validation, and focused confirmation.
-4. Layered project, user, and repository-local judge configuration.
-5. Canonical skill, managed agent instructions, CLI, local stdio MCP, and
-   end-to-end fixtures.
-
-### Remaining distribution
-
-1. Windows, macOS, and Linux binaries
-2. Package-manager installation paths
-3. Idempotent pre-push hook installation
-4. Static host integration examples
-
 ## Deferred scope
 
 Version 0.1 excludes hosted storage, a public scar corpus, remote MCP,
 host-model judging, provider SDKs, embeddings, LLM deduplication, deterministic
-per-scar checkers, review harvesting, organization-wide synchronization, a
-plugin runtime, and a GUI.
+per-scar checkers, automatic bulk review harvesting, organization-wide
+synchronization, a plugin runtime, and a GUI.

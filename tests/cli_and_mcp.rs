@@ -1,6 +1,6 @@
 mod common;
 
-use common::{Repo, empty_verdict, finding, judge};
+use common::{EnvGuard, Repo, empty_verdict, fake_gh, fake_program, finding, judge};
 use serde_json::{Value, json};
 use std::{
     io::{Cursor, Write},
@@ -49,6 +49,139 @@ fn cli_covers_human_json_and_exit_code_contracts() {
     let error = command(&repo, &["check"]);
     assert_eq!(error.status.code(), Some(2));
     assert!(String::from_utf8(error.stderr).unwrap().contains("has no command"));
+}
+
+#[test]
+fn github_review_permalink_becomes_verified_scar_provenance() {
+    let repo = Repo::new(&[]);
+    assert!(command(&repo, &["init"]).status.success());
+    let permalink = "https://github.com/acme/store/pull/142#discussion_r123";
+    let review = json!({
+        "html_url": permalink,
+        "created_at": "2026-07-24T12:34:56Z",
+        "user": {"login": "alice"}
+    })
+    .to_string();
+    let gh = fake_gh(&repo.root, &review);
+    let _gh = EnvGuard::set("NYA_GH", &gh);
+    let remembered = bin()
+        .arg("--repository")
+        .arg(&repo.root)
+        .args([
+            "--format",
+            "json",
+            "remember",
+            "--title",
+            "Tenant-safe cache keys",
+            "--lesson",
+            "Include tenant identity in every cache key.",
+            "--scope",
+            "src/**",
+            "--github-review",
+            permalink,
+            "--corrected-by",
+            "github:bob",
+            "--recorded-by",
+            "agent:codex",
+        ])
+        .output()
+        .unwrap();
+    assert!(remembered.status.success(), "{}", String::from_utf8_lossy(&remembered.stderr));
+    let scar: Value = serde_json::from_slice(&remembered.stdout).unwrap();
+    let occurrence = &scar["occurrences"][0];
+    assert_eq!(occurrence["source"], permalink);
+    assert_eq!(occurrence["occurred_at"], "2026-07-24T12:34:56Z");
+    assert_eq!(occurrence["reported_by"], "github:alice");
+    assert_eq!(occurrence["corrected_by"], "github:bob");
+    assert_eq!(occurrence["recorded_by"], "agent:codex");
+    let stored = std::fs::read_to_string(repo.root.join(format!(".nya/scars/{}.toml", scar["id"].as_str().unwrap()))).unwrap();
+    assert!(stored.contains(permalink) && stored.contains("github:alice") && stored.contains("agent:codex"));
+
+    let appended = nya::remember(
+        &repo.root,
+        nya::RememberRequest {
+            scar: scar["id"].as_str().map(str::to_owned),
+            github_review: Some(permalink.into()),
+            corrected_by: Some("github:bob".into()),
+            recorded_by: Some("agent:codex".into()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert_eq!(appended.occurrences.len(), 2);
+
+    let conflict =
+        bin().arg("--repository").arg(&repo.root).args(["remember", "--title", "Conflict", "--lesson", "Reject ambiguity.", "--github-review", permalink, "--source", "manual"]).output().unwrap();
+    assert_eq!(conflict.status.code(), Some(2));
+    assert!(String::from_utf8(conflict.stderr).unwrap().contains("supplies source and reporter"));
+
+    let invalid = bin()
+        .arg("--repository")
+        .arg(&repo.root)
+        .args(["remember", "--title", "Invalid", "--lesson", "Reject invalid links.", "--github-review", "https://github.com/acme/store/pull/142"])
+        .output()
+        .unwrap();
+    assert_eq!(invalid.status.code(), Some(2));
+
+    assert!(
+        nya::remember(
+            &repo.root,
+            nya::RememberRequest {
+                title: Some("HTTP link".into()),
+                lesson: Some("Require verified links.".into()),
+                github_review: Some("http://github.com/acme/store/pull/142#discussion_r123".into()),
+                ..Default::default()
+            }
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("https")
+    );
+
+    let failed = fake_program(&repo.root, "failed-gh", "eprintln!(\"denied\"); std::process::exit(7);");
+    let _failed = EnvGuard::set("NYA_GH", &failed);
+    assert!(
+        nya::remember(&repo.root, nya::RememberRequest { title: Some("API failure".into()), lesson: Some("Fail closed.".into()), github_review: Some(permalink.into()), ..Default::default() })
+            .unwrap_err()
+            .to_string()
+            .contains("gh api failed")
+    );
+    drop(_failed);
+
+    let malformed = fake_program(&repo.root, "malformed-gh", "print!(\"not-json\");");
+    let malformed_guard = EnvGuard::set("NYA_GH", &malformed);
+    assert!(
+        nya::remember(&repo.root, nya::RememberRequest { title: Some("Malformed response".into()), lesson: Some("Fail closed.".into()), github_review: Some(permalink.into()), ..Default::default() })
+            .unwrap_err()
+            .to_string()
+            .contains("invalid review comment")
+    );
+    drop(malformed_guard);
+
+    let mismatch = json!({
+        "html_url": "https://github.com/acme/store/pull/142#discussion_r999",
+        "created_at": "2026-07-24T12:34:56Z",
+        "user": {"login": "alice"}
+    })
+    .to_string();
+    let mismatch = fake_gh(&repo.root, &mismatch);
+    let mismatch_guard = EnvGuard::set("NYA_GH", &mismatch);
+    assert!(
+        nya::remember(&repo.root, nya::RememberRequest { title: Some("Mismatched response".into()), lesson: Some("Fail closed.".into()), github_review: Some(permalink.into()), ..Default::default() })
+            .unwrap_err()
+            .to_string()
+            .contains("different review comment")
+    );
+    drop(mismatch_guard);
+
+    let missing = repo.root.join(if cfg!(windows) { "missing-gh.exe" } else { "missing-gh" });
+    let _missing = EnvGuard::set("NYA_GH", &missing);
+    assert!(
+        nya::remember(&repo.root, nya::RememberRequest { title: Some("Missing CLI".into()), lesson: Some("Fail closed.".into()), github_review: Some(permalink.into()), ..Default::default() })
+            .unwrap_err()
+            .to_string()
+            .contains("install and authenticate")
+    );
 }
 
 #[test]
@@ -134,6 +267,10 @@ fn in_process_cli_dispatch_covers_each_agent_action() {
     let repo = Repo::new(&["AGENTS.md"]);
     let root = repo.root.to_string_lossy().to_string();
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "init"]).unwrap(), 0);
+    let config_home = tempfile::tempdir().unwrap();
+    let user_config = config_home.path().join("config.toml");
+    let _config = EnvGuard::set("NYA_CONFIG", &user_config);
+    assert_eq!(nya::run_cli(["nya", "--repository", &root, "setup", "--judge", "codex"]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "setup", "--local", "--judge", "codex"]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "--format", "json", "remember", "--title", "Direct scar", "--lesson", "Use the direct path.", "--scope", "src/**",]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "recall", "--task", "direct path"]).unwrap(), 0);

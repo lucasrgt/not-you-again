@@ -2,6 +2,7 @@
 
 use serde::Serialize;
 use std::{
+    ffi::{OsStr, OsString},
     fs,
     path::{Path, PathBuf},
     process::Command,
@@ -11,6 +12,11 @@ use tempfile::TempDir;
 pub struct Repo {
     _temp: TempDir,
     pub root: PathBuf,
+}
+
+pub struct EnvGuard {
+    key: &'static str,
+    previous: Option<OsString>,
 }
 
 #[derive(Serialize)]
@@ -84,6 +90,38 @@ pub fn output(root: &Path, args: &[&str]) -> String {
     let value = Command::new("git").arg("-C").arg(root).args(args).output().unwrap();
     assert!(value.status.success());
     String::from_utf8(value.stdout).unwrap().trim().to_owned()
+}
+
+pub fn fake_gh(root: &Path, response: &str) -> PathBuf {
+    let literal = format!("{response:?}");
+    fake_program(root, "fake-gh", &format!("print!(\"{{}}\", {literal});"))
+}
+
+pub fn fake_program(root: &Path, name: &str, body: &str) -> PathBuf {
+    let source = root.join(format!("{name}.rs"));
+    let binary = root.join(if cfg!(windows) { format!("{name}.exe") } else { name.to_owned() });
+    fs::write(&source, format!("fn main() {{ {body} }}")).unwrap();
+    let status = Command::new("rustc").arg(&source).arg("-o").arg(&binary).status().unwrap();
+    assert!(status.success(), "failed to compile fake gh");
+    binary
+}
+
+impl EnvGuard {
+    pub fn set(key: &'static str, value: impl AsRef<OsStr>) -> Self {
+        let previous = std::env::var_os(key);
+        unsafe { std::env::set_var(key, value) };
+        Self { key, previous }
+    }
+}
+
+impl Drop for EnvGuard {
+    fn drop(&mut self) {
+        if let Some(value) = &self.previous {
+            unsafe { std::env::set_var(self.key, value) };
+        } else {
+            unsafe { std::env::remove_var(self.key) };
+        }
+    }
 }
 
 pub fn empty_verdict() -> String {
