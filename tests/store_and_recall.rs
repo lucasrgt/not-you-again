@@ -28,7 +28,7 @@ fn init_is_idempotent_and_manages_existing_agent_files() {
     let config = fs::read_to_string(repo.root.join(".nya/config.toml")).unwrap();
     assert!(config.contains("timeout_seconds = 120"));
     assert!(!config.contains("judge"));
-    assert_eq!(fs::read_to_string(repo.root.join(".nya/.gitignore")).unwrap(), "config.local.toml\n");
+    assert_eq!(fs::read_to_string(repo.root.join(".nya/.gitignore")).unwrap(), "config.local.toml\nindex-v1.sqlite3\n");
     fs::write(repo.root.join(".nya/config.local.toml"), "judge = \"codex\"\n").unwrap();
     assert_eq!(output(&repo.root, &["check-ignore", ".nya/config.local.toml"]), ".nya/config.local.toml");
 
@@ -95,7 +95,9 @@ fn recall_combines_exact_scope_fts_and_occurrence_rank() {
 
     let all = nya::recall(&repo.root, RecallRequest::default()).unwrap();
     assert_eq!(all[0].id, memo.id);
-    assert!(repo.git_dir().join("nya/index-v1.sqlite3").is_file());
+    assert!(repo.root.join(".nya/index-v1.sqlite3").is_file());
+    assert_eq!(output(&repo.root, &["check-ignore", ".nya/index-v1.sqlite3"]), ".nya/index-v1.sqlite3");
+    assert!(!repo.git_dir().join("nya").exists());
 }
 
 #[test]
@@ -104,7 +106,7 @@ fn corrupt_index_is_disposable_and_rebuilt() {
     nya::init(&repo.root).unwrap();
     nya::remember(&repo.root, remember("Magic string", "Use the central constant.", &[])).unwrap();
     nya::recall(&repo.root, RecallRequest::default()).unwrap();
-    let index = repo.git_dir().join("nya/index-v1.sqlite3");
+    let index = repo.root.join(".nya/index-v1.sqlite3");
     fs::write(&index, b"not sqlite").unwrap();
     let recalled = nya::recall(&repo.root, RecallRequest { task: "Replace magic string".into(), ..Default::default() }).unwrap();
     assert_eq!(recalled.len(), 1);

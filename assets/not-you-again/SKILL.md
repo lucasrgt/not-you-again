@@ -11,4 +11,7 @@ description: Prevent recurrence of repository-specific mistakes with the nya CLI
 4. Exit code 1 means a known scar recurred. Fix every confirmed recurrence and rerun.
 5. Exit code 2 means the audit failed. Report the failure and never claim the gate passed.
 
+If the built-in judge reports a network-disabled agent sandbox, do not retry it
+from the same shell. Delegate `nya check` to the host, MCP server, or CI.
+
 Do not report a task complete until `nya check` exits with code 0.

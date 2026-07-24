@@ -10,4 +10,5 @@ This repository uses Not You Again (`nya`) as a required recurrence-prevention g
 5. Exit code 1 means a known scar was repeated. Fix every confirmed recurrence and run `nya check` again.
 6. Exit code 2 means the audit could not be completed. Report the failure explicitly and never claim that the recurrence gate passed.
 7. Tests, linters, and prior review do not replace `nya check`. Never skip the gate because the change appears small.
+8. If the built-in judge reports a network-disabled agent sandbox, do not retry it from the same shell. Delegate `nya check` to the host, MCP server, or CI.
 <!-- nya:instructions:end -->

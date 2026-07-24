@@ -55,8 +55,12 @@ impl Repo {
     }
 
     pub fn configure(&self, command: Vec<String>, timeout_seconds: u64) {
+        self.configure_as("test", command, timeout_seconds);
+    }
+
+    pub fn configure_as(&self, judge: &str, command: Vec<String>, timeout_seconds: u64) {
         let policy = toml::to_string(&Config { schema: 1, check: Check { timeout_seconds } }).unwrap();
-        let user = toml::to_string(&UserConfig { schema: 1, judge: "test".into(), command }).unwrap();
+        let user = toml::to_string(&UserConfig { schema: 1, judge: judge.into(), command }).unwrap();
         fs::write(self.root.join(".nya/config.toml"), policy).unwrap();
         fs::write(self.root.join(".nya/config.local.toml"), user).unwrap();
     }
@@ -121,6 +125,19 @@ pub fn failing_judge() -> Vec<String> {
         vec!["powershell".into(), "-NoProfile".into(), "-Command".into(), "[Console]::In.ReadToEnd() | Out-Null; [Console]::Error.Write('runner failed'); exit 7".into()]
     } else {
         vec!["sh".into(), "-c".into(), "cat >/dev/null; printf runner-failed >&2; exit 7".into()]
+    }
+}
+
+pub fn isolated_home_judge() -> Vec<String> {
+    if cfg!(windows) {
+        vec![
+            "powershell".into(),
+            "-NoProfile".into(),
+            "-Command".into(),
+            "if (-not (Test-Path -LiteralPath $env:CODEX_HOME -PathType Container)) { exit 9 }; [Console]::In.ReadToEnd() | Out-Null; Write-Output '{\"findings\":[]}'".into(),
+        ]
+    } else {
+        vec!["sh".into(), "-c".into(), "test -d \"$CODEX_HOME\" || exit 9; cat >/dev/null; printf '%s' '{\"findings\":[]}'".into()]
     }
 }
 

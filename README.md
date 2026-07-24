@@ -118,6 +118,11 @@ A scar is backed by a real failure and a known correction. It is not a
 hypothetical risk, generic best practice, preference, design decision, or broad
 review suggestion.
 
+The built-in Codex judge needs provider network access. When a task agent runs
+inside a network-disabled shell, `nya check` fails fast with exit code 2 instead
+of retrying. Delegate that final command to the host, the NYA MCP server, a Git
+hook outside the agent sandbox, or CI.
+
 ### Repository initialization
 
 `nya init` creates:
@@ -126,6 +131,7 @@ review suggestion.
 .nya/
   .gitignore
   config.toml
+  index-v1.sqlite3  # generated and ignored after the first recall
   SKILL.md
   scars/
 ```
@@ -226,7 +232,7 @@ commit = "9e1b7a2"
 | Shared policy | `.nya/config.toml` | Yes | Repository check behavior |
 | Canonical skill | `.nya/SKILL.md` | Yes | Teaches agents when to use `nya` |
 | Local judge override | `.nya/config.local.toml` | No | Repository-specific personal selection |
-| Search index | `<git-dir>/nya/index-v1.sqlite3` | No | Disposable SQLite FTS5 projection |
+| Search index | `.nya/index-v1.sqlite3` | No | Disposable SQLite FTS5 projection |
 
 Actor identifiers are namespaced strings such as `github:alice`,
 `git:bob@example.com`, `agent:codex`, or `ci:github-actions`. Not You Again may
@@ -350,7 +356,8 @@ nya_check
 
 Each tool requires an explicit repository root and calls the same domain
 operation as the CLI. The server does not expose generic file, SQL, memory,
-prompt, or model tools.
+prompt, or model tools. Harnesses that launch MCP servers outside their task
+sandbox can use `nya_check` as the external recurrence gate.
 
 ### Git hooks
 
@@ -361,7 +368,8 @@ nya check --base origin/main
 ```
 
 Hooks provide fast feedback but can be bypassed. CI remains the authoritative
-enforcement boundary.
+enforcement boundary. A hook invoked from a network-disabled task sandbox
+delegates the check rather than trying to bypass that sandbox.
 
 ### CI
 
@@ -384,7 +392,7 @@ an explicit unversioned configuration path.
 Not You Again is local-first:
 
 1. Scars stay inside the repository.
-2. The SQLite index stays inside the local Git directory.
+2. The ignored SQLite index stays inside `.nya/` and contains no unique data.
 3. No hosted account or central scar service is required.
 4. Judge processes start in a new empty temporary directory.
 5. Diff, code, and scar content are marked as untrusted data.

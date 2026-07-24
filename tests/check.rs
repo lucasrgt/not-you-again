@@ -1,6 +1,6 @@
 mod common;
 
-use common::{Repo, conditional, empty_verdict, failing_judge, finding, judge, recording_judge, slow_judge};
+use common::{Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, recording_judge, slow_judge};
 use nya::{CheckRequest, RememberRequest};
 use std::fs;
 
@@ -72,6 +72,13 @@ fn check_honors_explicit_base_for_committed_work() {
     let result = nya::check(&repo.root, CheckRequest { base: Some("HEAD^".into()), ..Default::default() }).unwrap();
     assert!(result.passed);
     assert_eq!(result.scars_checked, 1);
+}
+
+#[test]
+fn codex_judge_receives_an_isolated_writable_home() {
+    let (repo, _) = changed_repo();
+    repo.configure_as("codex", isolated_home_judge(), 5);
+    assert!(nya::check(&repo.root, CheckRequest::default()).unwrap().passed);
 }
 
 #[test]

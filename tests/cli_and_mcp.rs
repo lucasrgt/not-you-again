@@ -104,6 +104,19 @@ fn check_prefers_repository_local_config_and_falls_back_to_user_config() {
 }
 
 #[test]
+fn builtin_codex_judge_requests_external_execution_in_a_network_sandbox() {
+    let repo = Repo::new(&[]);
+    nya::init(&repo.root).unwrap();
+    nya::remember(&repo.root, nya::RememberRequest { title: Some("No literal copy".into()), lesson: Some("Use the catalog.".into()), scope: vec!["src/**".into()], ..Default::default() }).unwrap();
+    repo.commit_all("scar");
+    repo.write("src/app.rs", "literal\n");
+    repo.configure_as("codex", vec![], 5);
+    let output = bin().env("CODEX_SANDBOX_NETWORK_DISABLED", "1").arg("--repository").arg(&repo.root).arg("check").output().unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8(output.stderr).unwrap().contains("host, MCP server, or CI"));
+}
+
+#[test]
 fn cli_reports_empty_recall_and_invalid_repository() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
