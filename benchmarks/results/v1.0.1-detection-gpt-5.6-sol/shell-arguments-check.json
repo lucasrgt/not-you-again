@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 1,
+  "findings": [
+    {
+      "scar_id": "NYA-01KYB70VXSMKC93F25A2A6FF0H",
+      "path": "src/search.ts",
+      "line": 11,
+      "evidence": "const { stdout } = await execute(`rg \"${pattern}\" \"${directory}\"`);",
+      "reason": "Dynamic pattern and directory values are interpolated into a shell command executed via exec, directly repeating the scar."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 1,
+  "findings": [
+    {
+      "scar_id": "NYA-01KYB71VP44E34G1VXY5SE49A8",
+      "path": "src/user.py",
+      "line": 10,
+      "evidence": "return {\"username\": user.display_name or user.username}",
+      "reason": "The existing username field now returns display_name when present, changing the username API contract instead of keeping it stable and adding separate presentation behavior."
+    }
+  ]
+}

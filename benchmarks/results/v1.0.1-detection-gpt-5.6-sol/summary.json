@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "benchmark": "persisted-scar-detection",
+  "started_at": "2026-07-24T23:22:22.400553+00:00",
+  "completed_at": "2026-07-24T23:23:47.992960+00:00",
+  "nya": "nya 1.0.1",
+  "nya_sha256": "de4b4db529015be49322ef1d84d541b41e182b2e0de1fe4a19c203b7a1d82e46",
+  "source_archive": "https://github.com/lucasrgt/not-you-again/releases/download/v1.0.1/nya-v1.0.1-x86_64-pc-windows-msvc.zip",
+  "source_archive_sha256": "ed812d6f5d4f752f2437a0379256d5718cd411e609b5462715b650bba45778e8",
+  "judge": "codex-cli 0.144.0 (gpt-5.6-sol)",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "total": 5,
+  "detected": 5,
+  "results": [
+    {
+      "case": "design-token",
+      "scar_id": "NYA-01KYB6ZRM495BG7RTCWJH3322E",
+      "path": "src/Button.tsx",
+      "scar_recalled": true,
+      "scars_checked": 1,
+      "check_exit": 1,
+      "finding_count": 1,
+      "matching_findings": 1,
+      "detected": true,
+      "seconds": 19.172
+    },
+    {
+      "case": "localized-string",
+      "scar_id": "NYA-01KYB70BX4YZMDEB70R1DN5HCZ",
+      "path": "src/session.ts",
+      "scar_recalled": true,
+      "scars_checked": 1,
+      "check_exit": 1,
+      "finding_count": 1,
+      "matching_findings": 1,
+      "detected": true,
+      "seconds": 15.843
+    },
+    {
+      "case": "shell-arguments",
+      "scar_id": "NYA-01KYB70VXSMKC93F25A2A6FF0H",
+      "path": "src/search.ts",
+      "scar_recalled": true,
+      "scars_checked": 1,
+      "check_exit": 1,
+      "finding_count": 1,
+      "matching_findings": 1,
+      "detected": true,
+      "seconds": 16.281
+    },
+    {
+      "case": "aware-datetime",
+      "scar_id": "NYA-01KYB71CCJWWCBBRX1B0TR0346",
+      "path": "src/lease.py",
+      "scar_recalled": true,
+      "scars_checked": 1,
+      "check_exit": 1,
+      "finding_count": 1,
+      "matching_findings": 1,
+      "detected": true,
+      "seconds": 15.11
+    },
+    {
+      "case": "api-compatibility",
+      "scar_id": "NYA-01KYB71VP44E34G1VXY5SE49A8",
+      "path": "src/user.py",
+      "scar_recalled": true,
+      "scars_checked": 1,
+      "check_exit": 1,
+      "finding_count": 1,
+      "matching_findings": 1,
+      "detected": true,
+      "seconds": 16.329
+    }
+  ]
+}

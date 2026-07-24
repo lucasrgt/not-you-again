@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 1,
+  "findings": [
+    {
+      "scar_id": "NYA-01KYB71CCJWWCBBRX1B0TR0346",
+      "path": "src/lease.py",
+      "line": 9,
+      "evidence": "return datetime.now() >= parse_expiry(expires_at)",
+      "reason": "This compares a naive current datetime with a parsed service timestamp that can be offset-aware, directly repeating the scar."
+    }
+  ]
+}

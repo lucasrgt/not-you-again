@@ -1,0 +1,14 @@
+schema = 1
+id = "NYA-01KYB6ZRM495BG7RTCWJH3322E"
+title = "Literal component colors bypass semantic design tokens"
+lesson = "Component colors must reference role-based CSS custom properties. Add a semantic token when a role is missing instead of placing a literal color in a component."
+scope = ["src/**/*.tsx"]
+tags = ["benchmark"]
+created_at = "2026-07-24T23:22:22Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T23:22:22Z"
+source = "benchmark:seeded-prior-review/design-token"
+reported_by = "benchmark:reviewer"
+corrected_by = "benchmark:developer"
+recorded_by = "benchmark:runner"

@@ -1,0 +1,18 @@
+diff --git a/src/search.ts b/src/search.ts
+index 4ce414b..5ba7247 100644
+--- a/src/search.ts
++++ b/src/search.ts
+@@ -1,3 +1,13 @@
++import { exec } from "node:child_process";
++import { promisify } from "node:util";
++
++const execute = promisify(exec);
++
+ export function normalizeDirectory(directory: string): string {
+   return directory.trim();
+ }
++
++export async function countMatches(pattern: string, directory: string) {
++  const { stdout } = await execute(`rg "${pattern}" "${directory}"`);
++  return stdout.trim().split("\n").filter(Boolean).length;
++}

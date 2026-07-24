@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 1,
+  "findings": [
+    {
+      "scar_id": "NYA-01KYB6ZRM495BG7RTCWJH3322E",
+      "path": "src/Button.tsx",
+      "line": 9,
+      "evidence": "background: \"#b91c1c\",\n+    color: \"#ffffff\",",
+      "reason": "The destructive component style uses literal hex colors instead of role-based CSS custom properties."
+    }
+  ]
+}

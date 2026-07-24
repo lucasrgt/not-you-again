@@ -572,6 +572,23 @@ This is a single smoke run, not a general prevention rate. Read the
 [protocol](benchmarks/README.md), [auditable report](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/REPORT.md),
 and [machine-readable summary](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/summary.json).
 
+### Persisted scar detection proof
+
+The v1.0.1 detection benchmark tests the narrower product invariant directly.
+Five fresh repositories each receive one committed scar followed by a concrete
+recurrence in the matching scope. The released NYA binary then runs its real
+two-stage `gpt-5.6-sol` judge.
+
+| Persisted scars | Recalled | Blocked with exit 1 | Exact ID, path, and diff evidence |
+| ---: | ---: | ---: | ---: |
+| 5 | 5 | 5 | 5 |
+
+All five known recurrences were detected and blocked. Read the
+[detection report](benchmarks/results/v1.0.1-detection-gpt-5.6-sol/REPORT.md)
+and [machine-readable summary](benchmarks/results/v1.0.1-detection-gpt-5.6-sol/summary.json).
+This benchmark measures detection of persisted failures, not a general agent
+prevention rate.
+
 ### Real GitHub review proof
 
 The v0.1.3 workflow starts with a

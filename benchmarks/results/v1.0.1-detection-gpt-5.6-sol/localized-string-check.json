@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 1,
+  "findings": [
+    {
+      "scar_id": "NYA-01KYB70BX4YZMDEB70R1DN5HCZ",
+      "path": "src/session.ts",
+      "line": 5,
+      "evidence": "\"Your session expired. Sign in again.\"",
+      "reason": "The changed code places a user-facing English sentence directly in a TypeScript module instead of referencing a key from src/messages.ts, directly repeating the supplied scar."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "schema": 1,
+    "id": "NYA-01KYB71VP44E34G1VXY5SE49A8",
+    "title": "A presentation change silently changed an existing API field",
+    "lesson": "Keep the username field stable and add a display_name field for presentation. New display behavior must not change or remove the existing username contract.",
+    "scope": [
+      "src/**/*.py"
+    ],
+    "tags": [
+      "benchmark"
+    ],
+    "created_at": "2026-07-24T23:23:31Z",
+    "occurrences": [
+      {
+        "occurred_at": "2026-07-24T23:23:31Z",
+        "source": "benchmark:seeded-prior-review/api-compatibility",
+        "reported_by": "benchmark:reviewer",
+        "corrected_by": "benchmark:developer",
+        "recorded_by": "benchmark:runner",
+        "recorded_for": null,
+        "commit": null
+      }
+    ]
+  }
+]

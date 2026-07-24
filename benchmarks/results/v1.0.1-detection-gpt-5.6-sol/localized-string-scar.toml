@@ -1,0 +1,14 @@
+schema = 1
+id = "NYA-01KYB70BX4YZMDEB70R1DN5HCZ"
+title = "User-facing strings bypass the message catalog"
+lesson = "Store every user-facing sentence in src/messages.ts and reference its key from UI modules. Do not place the English sentence directly in a component module."
+scope = ["src/**/*.ts"]
+tags = ["benchmark"]
+created_at = "2026-07-24T23:22:42Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T23:22:42Z"
+source = "benchmark:seeded-prior-review/localized-string"
+reported_by = "benchmark:reviewer"
+corrected_by = "benchmark:developer"
+recorded_by = "benchmark:runner"

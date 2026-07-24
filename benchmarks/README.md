@@ -122,3 +122,31 @@ python benchmarks/github_review.py \
 The public fixture PR discloses that its initial defect is intentional. The
 review comment, correcting commit, scar file, agent event log, paired diffs,
 and machine-readable result remain auditable independently.
+
+## Persisted scar detection benchmark
+
+`detection.py` measures the narrower product invariant directly. It creates
+five fresh repositories, commits one known scar into each repository, injects
+the corresponding recurrence, and invokes the real two-stage `nya check`
+judge.
+
+A case passes only when:
+
+1. `nya recall` returns the persisted scar.
+2. `nya check` exits with code 1.
+3. The JSON verdict identifies the exact scar ID and changed path.
+4. The finding includes verbatim evidence from the diff.
+
+```bash
+python benchmarks/detection.py \
+  --nya /path/to/released/nya \
+  --output benchmark-output \
+  --model gpt-5.6-sol \
+  --source-archive https://github.com/owner/repository/releases/download/v1.0.1/nya.zip \
+  --source-archive-sha256 <verified-archive-sha256>
+```
+
+The output contains every seeded scar, injected diff, recall result, check
+verdict, stderr log, a machine-readable summary, and a Markdown report. This
+benchmark measures detection of already-known recurrences. It does not measure
+whether an agent avoids producing them without a final gate.

@@ -1,0 +1,10 @@
+diff --git a/src/session.ts b/src/session.ts
+index 9eb1297..65800a5 100644
+--- a/src/session.ts
++++ b/src/session.ts
+@@ -1,3 +1,5 @@
+ import { message } from "./messages";
+ 
+ export const profileSavedMessage = (): string => message("profile.saved");
++export const sessionExpiredMessage = (): string =>
++  "Your session expired. Sign in again.";

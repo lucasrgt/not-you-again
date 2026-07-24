@@ -3,3 +3,4 @@ assets/config.toml text eol=lf
 assets/gitignore text eol=lf
 assets/not-you-again/SKILL.md text eol=lf
 assets/logo.png binary
+benchmarks/results/**/*.diff -whitespace

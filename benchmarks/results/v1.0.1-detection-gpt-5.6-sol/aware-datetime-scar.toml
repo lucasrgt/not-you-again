@@ -1,0 +1,14 @@
+schema = 1
+id = "NYA-01KYB71CCJWWCBBRX1B0TR0346"
+title = "Offset-aware service timestamps were compared with a naive current time"
+lesson = "Parse service timestamps as aware datetimes. Preserve explicit offsets, support the Z suffix, and interpret missing offsets as UTC before comparing with an aware UTC current time."
+scope = ["src/**/*.py"]
+tags = ["benchmark"]
+created_at = "2026-07-24T23:23:15Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T23:23:15Z"
+source = "benchmark:seeded-prior-review/aware-datetime"
+reported_by = "benchmark:reviewer"
+corrected_by = "benchmark:developer"
+recorded_by = "benchmark:runner"

@@ -1,0 +1,26 @@
+[
+  {
+    "schema": 1,
+    "id": "NYA-01KYB70VXSMKC93F25A2A6FF0H",
+    "title": "Dynamic process arguments were interpolated into a shell command",
+    "lesson": "Invoke external programs without a shell. Pass every dynamic value as a separate execFile or spawn argument so shell metacharacters remain data.",
+    "scope": [
+      "src/**/*.ts"
+    ],
+    "tags": [
+      "benchmark"
+    ],
+    "created_at": "2026-07-24T23:22:58Z",
+    "occurrences": [
+      {
+        "occurred_at": "2026-07-24T23:22:58Z",
+        "source": "benchmark:seeded-prior-review/shell-arguments",
+        "reported_by": "benchmark:reviewer",
+        "corrected_by": "benchmark:developer",
+        "recorded_by": "benchmark:runner",
+        "recorded_for": null,
+        "commit": null
+      }
+    ]
+  }
+]
