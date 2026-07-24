@@ -1,10 +1,24 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Not You Again cat mascot" width="280">
+  <img src="assets/logo.png" alt="Not You Again cat mascot" width="360">
 </p>
 
 <h1 align="center">Not You Again</h1>
 
 <p align="center"><strong>A repository-local immune system for coding agents.</strong></p>
+
+<p align="center">
+  <a href="#quick-install-with-your-agent">Quick Install</a> |
+  <a href="#getting-started">Getting Started</a> |
+  <a href="#integrations">Integrations</a> |
+  <a href="ARCHITECTURE.md">Architecture</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/lucasrgt/not-you-again/actions/workflows/ci.yml"><img src="https://github.com/lucasrgt/not-you-again/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F?style=flat-square" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/runtime-single%20Rust%20binary-B7410E?style=flat-square&logo=rust&logoColor=white" alt="Single Rust binary">
+  <img src="https://img.shields.io/badge/storage-local--first-5B3FD8?style=flat-square" alt="Local-first">
+</p>
 
 Not You Again gives a Git repository a durable record of mistakes that actually
 happened and the corrections that resolved them. Coding agents retrieve the
@@ -13,43 +27,19 @@ declaring a task complete.
 
 The command is `nya`. The versioned repository directory is `.nya/`.
 
-## Why
+<table>
+<tr><td><b>One durable concept</b></td><td>A scar records a real failure and the correction that resolved it. No generic memory types or policy classes.</td></tr>
+<tr><td><b>Three agent actions</b></td><td><code>recall</code> before editing, <code>remember</code> after a real correction, and <code>check</code> before completion.</td></tr>
+<tr><td><b>Repository-owned memory</b></td><td>Readable TOML scars travel through Git with the team. SQLite is only a disposable local search index.</td></tr>
+<tr><td><b>Narrow LLM judgment</b></td><td>The judge may detect only recurrence of supplied scars. It cannot invent new review concerns.</td></tr>
+<tr><td><b>Agent and language independent</b></td><td>Any shell or MCP-capable agent can use it in any Git codebase, regardless of programming language.</td></tr>
+</table>
 
-Review comments and corrections do not reliably survive across tasks. Agent
-instructions may be forgotten, skills may not activate, and long conversations
-may be compacted. A mistake corrected today can quietly return months later.
+---
 
-General memory systems mix preferences, facts, architecture, procedures, and
-mistakes into one growing context. Not You Again stores only scars:
+## Quick install with your agent
 
-```text
-real failure
-    -> known correction
-    -> durable scar
-    -> relevant recall
-    -> isolated recurrence check
-```
-
-A scar is a reusable lesson backed by a real failure and its correction. It is
-not a hypothetical risk, generic best practice, preference, design decision,
-or broad review suggestion.
-
-## Three commands
-
-| Moment | Action | Command |
-| --- | --- | --- |
-| A task is starting | Retrieve relevant scars | `nya recall` |
-| A real correction happened | Record the lesson | `nya remember` |
-| Work is about to finish | Check for recurrence | `nya check` |
-
-There is one public concept and one workflow. Agents never choose between
-memory types, enforcement classes, or competing review modes.
-
-## Installation
-
-### Agent bootstrap
-
-> Copy this prompt into any coding agent with terminal access.
+Copy this prompt into any coding agent with terminal access:
 
 ```text
 Set up Not You Again in this Git repository.
@@ -80,25 +70,57 @@ selected judge, changed files, and any action still required.
 
 ### Manual installation
 
-Download the latest binary for your operating system and architecture from
+Download the binary for your operating system and architecture from
 [GitHub Releases](https://github.com/lucasrgt/not-you-again/releases), verify
 the published checksum, and place `nya` in your `PATH`.
-
-Confirm the installation:
 
 ```bash
 nya --version
 ```
 
-## Quick start
+---
 
-### Initialize the repository
+## Getting started
 
 ```bash
+# Initialize the repository
 nya init
+
+# Select one personal judge
+nya setup --judge codex
+
+# Retrieve relevant scars before editing
+nya recall \
+  --task "Build the checkout modal" \
+  --path src/checkout/CheckoutModal.tsx
+
+# Record a real corrected failure
+nya remember \
+  --title "Literal colors bypass semantic design tokens" \
+  --lesson "Use semantic design tokens and verify every supported theme." \
+  --scope "src/**/*.tsx" \
+  --source "https://github.com/acme/store/pull/142#discussion_r123" \
+  --reported-by "github:alice"
+
+# Audit the finished diff
+nya check
 ```
 
-This creates:
+### The three-command loop
+
+| Moment | Command | Result |
+| --- | --- | --- |
+| Before changing tracked files | `nya recall` | Relevant scars become task constraints |
+| After correcting a real reusable failure | `nya remember` | The lesson and its provenance enter Git |
+| Before committing, pushing, or reporting completion | `nya check` | A fresh judge checks only for known recurrence |
+
+A scar is backed by a real failure and a known correction. It is not a
+hypothetical risk, generic best practice, preference, design decision, or broad
+review suggestion.
+
+### Repository initialization
+
+`nya init` creates:
 
 ```text
 .nya/
@@ -109,88 +131,52 @@ This creates:
 ```
 
 Commit `.nya/` so every clone receives the same scars and agent protocol.
+Initialization is idempotent and preserves human-authored content while adding
+a managed block to existing root-level `AGENTS.md`, `CLAUDE.md`, and
+`GEMINI.md` files.
 
-Initialization also adds an idempotent managed block to existing root-level
-`AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files without replacing their
-human-authored content.
+---
 
-### Configure a judge
+## How recurrence checking works
 
-Judge selection belongs to each developer, not to the repository:
-
-```bash
-nya setup --judge codex
-nya setup --judge claude
-nya setup --judge hermes
+```text
+real failure
+    -> known correction
+    -> durable scar
+    -> relevant recall
+    -> isolated recurrence check
 ```
 
-Use an ignored repository-local override when necessary:
+`nya check` performs a narrow, fail-closed audit:
 
-```bash
-nya setup --local --judge claude
-```
+1. Resolve staged, unstaged, and untracked changes relative to `HEAD`.
+2. Retrieve exact scope matches and relevant unscoped scars.
+3. Build a bounded request containing only the diff and selected scars.
+4. Start a fresh isolated judge process.
+5. Accept findings only for supplied scars and concrete changed code.
+6. Confirm every proposed finding with a second focused judge call.
+7. Return human output, JSON output, and a stable exit code.
 
-### Recall before editing
-
-Describe the task and expected paths:
-
-```bash
-nya recall \
-  --task "Build the checkout modal" \
-  --path src/checkout/CheckoutModal.tsx
-```
-
-Recall is deterministic and does not call an LLM. It combines exact scope
-matches with SQLite FTS5 ranking across the task, title, lesson, tags, and
-scope. Only relevant scars enter the agent context.
-
-### Remember a correction
-
-After correcting a real reusable failure:
-
-```bash
-nya remember \
-  --title "Literal colors bypass semantic design tokens" \
-  --lesson "Use semantic design tokens and verify every supported theme." \
-  --scope "src/**/*.tsx" \
-  --source "https://github.com/acme/store/pull/142#discussion_r123" \
-  --reported-by "github:alice"
-```
-
-An exact normalized title match or explicit `--scar <id>` appends an occurrence
-to an existing scar. Otherwise, `nya` creates a new scar. Fuzzy similarity
-never merges scars automatically.
-
-### Check before completion
-
-```bash
-nya check
-```
-
-The default check covers staged changes, unstaged changes, and untracked files
-relative to `HEAD`. `.nya/` is excluded from the audited diff.
-
-To compare against another base or receive structured output:
+Use another comparison base or structured output when needed:
 
 ```bash
 nya check --base origin/main
 nya check --format json
 ```
 
-## Recurrence checking
+### Exit codes
 
-`nya check`:
+| Code | Meaning | Required action |
+| --- | --- | --- |
+| `0` | No supplied scar was repeated | Continue |
+| `1` | At least one recurrence was confirmed | Fix every finding and rerun |
+| `2` | Configuration, repository, runner, timeout, or verdict failure | Treat the audit as failed |
 
-1. Resolves the Git diff and changed paths.
-2. Retrieves exact scope matches and relevant unscoped scars.
-3. Builds a bounded audit request from the diff and scars.
-4. Starts a fresh isolated judge process.
-5. Accepts findings only for supplied scars and concrete changed code.
-6. Confirms each proposed finding with a second focused judge call.
-7. Returns human output, JSON output, and a stable exit code.
+Provider and protocol failures never produce a passing result.
 
-The judge cannot introduce a new review concern. Every finding must identify a
-known scar, file, line, and concrete evidence:
+### Findings
+
+Every finding must identify a known scar and concrete evidence in changed code:
 
 ```json
 {
@@ -202,22 +188,14 @@ known scar, file, line, and concrete evidence:
 }
 ```
 
-Generic advice, unrelated bugs, new preferences, and speculative risks are
-outside the judge's authority.
+The judge has no authority to report generic advice, unrelated bugs, new
+preferences, or speculative risks.
 
-### Exit codes
+---
 
-| Code | Meaning |
-| --- | --- |
-| `0` | No supplied scar was repeated |
-| `1` | At least one recurrence was confirmed |
-| `2` | Configuration, repository, runner, timeout, or verdict failure |
+## Scars and storage
 
-Provider and protocol failures never produce a passing result.
-
-## Storage
-
-Git is the durable source of truth. Each scar is a readable TOML file under
+Git is the durable source of truth. Every scar is a readable TOML file under
 `.nya/scars/`:
 
 ```toml
@@ -242,26 +220,76 @@ recorded_for = "github:bob"
 commit = "9e1b7a2"
 ```
 
+| Data | Location | Versioned | Purpose |
+| --- | --- | --- | --- |
+| Scars | `.nya/scars/*.toml` | Yes | Durable team knowledge |
+| Shared policy | `.nya/config.toml` | Yes | Repository check behavior |
+| Canonical skill | `.nya/SKILL.md` | Yes | Teaches agents when to use `nya` |
+| Local judge override | `.nya/config.local.toml` | No | Repository-specific personal selection |
+| Search index | `<git-dir>/nya/index-v1.sqlite3` | No | Disposable SQLite FTS5 projection |
+
 Actor identifiers are namespaced strings such as `github:alice`,
 `git:bob@example.com`, `agent:codex`, or `ci:github-actions`. Not You Again may
 infer a recorder or corrector from the active adapter and Git identity. It
 never invents a reporter.
 
-### SQLite index
+### Recall
 
-SQLite is a disposable search projection stored outside version control:
+Recall is deterministic and does not call an LLM. It combines:
 
-```text
-<git-dir>/nya/index-v1.sqlite3
+1. Exact scope matches against requested or changed paths.
+2. SQLite FTS5 relevance across task, title, lesson, tags, and scope.
+3. Independent occurrence count.
+4. A modest recency boost.
+
+Only relevant scars enter the agent context. A missing, corrupt, or incompatible
+index is rebuilt automatically, and deleting it never deletes a scar.
+
+### Remember
+
+An exact normalized title match or explicit `--scar <id>` appends an occurrence
+to an existing scar. Otherwise, `nya` creates a new scar.
+
+```bash
+nya remember \
+  --scar NYA-01J2M6Y7R2W8Y0F7K5Q3C9A1B4 \
+  --source "https://github.com/acme/store/pull/188#discussion_r456"
 ```
 
-The readable TOML files remain the complete representation of every scar.
-Recall refreshes the index transactionally. A missing, corrupt, or incompatible
-database is rebuilt automatically, and deleting it never deletes a scar.
+Fuzzy similarity never merges scars automatically.
+
+---
 
 ## Configuration
 
-The committed `.nya/config.toml` contains shared check policy:
+### Judge selection
+
+Each developer chooses one judge without modifying shared repository policy:
+
+```bash
+nya setup --judge codex
+nya setup --judge claude
+nya setup --judge hermes
+```
+
+| Scope | Path | Precedence |
+| --- | --- | --- |
+| Repository-local personal override | `.nya/config.local.toml` | First |
+| User configuration on Windows | `%APPDATA%\nya\config.toml` | Second |
+| User configuration on macOS | `~/Library/Application Support/nya/config.toml` | Second |
+| User configuration on Linux | `$XDG_CONFIG_HOME/nya/config.toml` | Second |
+
+Linux falls back to `~/.config/nya/config.toml` when `$XDG_CONFIG_HOME` is not
+set. Use a local override when one repository needs a different judge:
+
+```bash
+nya setup --local --judge claude
+```
+
+No provider, model, credential, personal judge, or executable belongs in the
+committed `.nya/config.toml`.
+
+### Shared policy
 
 ```toml
 schema = 1
@@ -270,38 +298,16 @@ schema = 1
 timeout_seconds = 120
 ```
 
-Personal judge configuration is stored at:
-
-```text
-Windows  %APPDATA%\nya\config.toml
-macOS    ~/Library/Application Support/nya/config.toml
-Linux    $XDG_CONFIG_HOME/nya/config.toml
-```
-
-Linux falls back to `~/.config/nya/config.toml` when `$XDG_CONFIG_HOME` is not
-set. Repository-local selection uses the ignored `.nya/config.local.toml`.
-
-Configuration resolves in this order:
-
-1. `.nya/config.local.toml`
-2. User configuration
-3. Exit code `2` with a setup instruction
-
-No provider, model, credential, personal judge, or executable belongs in
-committed project configuration.
-
 ### Custom judges
 
-Configure an explicit command after `--`:
+Any provider CLI, local model, or internal gateway can implement the judge
+protocol:
 
 ```bash
 nya setup --judge company -- /opt/company/bin/recurrence-judge
 ```
 
-Add `--local` when the command applies only to the current repository.
-
-`nya` executes the argument array without a shell. It writes the audit request
-to stdin and expects one verdict JSON object on stdout:
+`nya` executes the argument array without a shell and uses this protocol:
 
 ```text
 stdin   one UTF-8 audit prompt
@@ -311,16 +317,20 @@ exit 0  a parseable verdict was produced
 exit !0 runner failure
 ```
 
-## Agent integration
+Add `--local` when the custom command applies only to the current repository.
 
-Every initialized repository contains `.nya/SKILL.md`. The skill teaches agents
-when to call `recall`, `remember`, and `check`; it does not contain scars or
-implement product behavior.
+---
 
-`nya init` copies a managed instruction block from
-[`assets/AGENT_INSTRUCTIONS.md`](assets/AGENT_INSTRUCTIONS.md) into recognized
-agent instruction files. Skills and prompts remain guidance. The CLI, MCP
-server, hooks, and CI provide execution boundaries outside agent context.
+## Integrations
+
+| Surface | Role | Required |
+| --- | --- | --- |
+| CLI | Universal interface for agents, humans, hooks, CI, and scripts | Yes |
+| `.nya/SKILL.md` | Teaches the three-command loop | Created by `nya init` |
+| Agent instruction bridge | Activates the skill from existing harness files | Created by `nya init` |
+| MCP | Exposes the same core as three typed tools | Optional |
+| Git hook | Provides fast local feedback | Optional |
+| CI | Enforces the final recurrence gate | Recommended |
 
 ### MCP
 
@@ -330,7 +340,7 @@ Start the local stdio server:
 nya mcp
 ```
 
-It exposes three typed tools:
+It exposes exactly three tools:
 
 ```text
 nya_remember
@@ -338,12 +348,9 @@ nya_recall
 nya_check
 ```
 
-Each tool requires an explicit repository root and calls the same core operation
-as the CLI. The server does not expose generic file, SQL, memory, prompt, or
-model tools.
-
-Shell-capable agents can use the CLI directly. MCP is an optional transport for
-hosts that prefer typed tools.
+Each tool requires an explicit repository root and calls the same domain
+operation as the CLI. The server does not expose generic file, SQL, memory,
+prompt, or model tools.
 
 ### Git hooks
 
@@ -353,12 +360,12 @@ An ordinary pre-push hook can run:
 nya check --base origin/main
 ```
 
-Local hooks provide fast feedback. CI remains the authoritative enforcement
-boundary because hooks can be missing or bypassed.
+Hooks provide fast feedback but can be bypassed. CI remains the authoritative
+enforcement boundary.
 
 ### CI
 
-Install a pinned `nya` binary, configure an ephemeral judge, and check the pull
+Install a pinned binary, configure an ephemeral judge, and check the pull
 request diff:
 
 ```bash
@@ -370,37 +377,40 @@ nya check --base "$BASE_REF" --format json
 Provider credentials stay in the CI environment. `NYA_CONFIG` gives the runner
 an explicit unversioned configuration path.
 
+---
+
 ## Security and privacy
 
-Not You Again is local-first. Scars stay in the repository and the derived
-index stays in the local Git directory. No hosted account or central scar
-service is required.
+Not You Again is local-first:
 
-The configured judge may send the bounded audit request to a cloud model.
-Teams should select a runner compatible with their privacy, security, and data
+1. Scars stay inside the repository.
+2. The SQLite index stays inside the local Git directory.
+3. No hosted account or central scar service is required.
+4. Judge processes start in a new empty temporary directory.
+5. Diff, code, and scar content are marked as untrusted data.
+6. Malformed output, timeouts, provider errors, and nonzero exits fail closed.
+
+The configured judge may send the bounded audit request to a cloud model. Teams
+should choose a runner compatible with their privacy, security, and data
 residency requirements. A local model or approved internal gateway can
-implement the same judge protocol.
-
-The judge runs in a new empty temporary directory with no repository write
-tools. The request marks diff, code, and scar content as untrusted data and
-instructs the judge to ignore embedded instructions.
+implement the same protocol.
 
 `nya setup` never asks for credentials. Custom commands should load secrets
-from their provider or CI environment rather than command arguments. Malformed
-output, timeouts, provider errors, and nonzero runner exits fail closed.
+from their provider or CI environment rather than command arguments.
+
+---
 
 ## Scope
 
-Not You Again:
+| Not You Again does | Not You Again does not |
+| --- | --- |
+| Store repository-specific corrected failures | Store general knowledge or preferences |
+| Retrieve scars relevant to a task | Copy the entire scar store into every prompt |
+| Audit recurrence of known scars | Perform open-ended AI review |
+| Work with any language through Git diffs | Replace tests, typecheckers, formatters, or linters |
+| Support shell and MCP-capable agents | Require a hosted service or agent harness |
 
-1. Stores repository-specific failures shared through Git.
-2. Retrieves only scars relevant to the task.
-3. Audits only whether known scars recur.
-4. Works with any programming language through Git diffs.
-5. Complements tests, typecheckers, formatters, and linters.
-
-Not You Again is not a general memory system, open-ended AI reviewer, hosted
-corpus, agent harness, or replacement for deterministic project gates.
+---
 
 ## Architecture
 
@@ -425,6 +435,8 @@ flowchart LR
 CLI and MCP call the same domain operations. No daemon or hosted service is
 required. See [ARCHITECTURE.md](ARCHITECTURE.md) for the normative design.
 
+---
+
 ## Build and contribute
 
 Build the native binary with the stable Rust toolchain:
@@ -444,6 +456,19 @@ tokei src
 cargo llvm-cov --all-features --fail-under-lines 95
 ```
 
-The implementation keeps maintained runtime code at or below 500 lines and
-line coverage at or above 95 percent. Contributions should preserve the
-one-scar model, three-command protocol, shared core, and fail-closed check.
+| Invariant | Gate |
+| --- | --- |
+| Maintained runtime code | At most 500 lines |
+| Line coverage | At least 95 percent without rounding |
+| Product model | One scar and three commands |
+| Failure behavior | Judge and protocol failures fail closed |
+| Transport behavior | CLI and MCP call the same core |
+
+Contributions should preserve the one-scar model, three-command protocol,
+shared core, and fail-closed check.
+
+---
+
+## License
+
+Not You Again is available under the [MIT License](LICENSE).
