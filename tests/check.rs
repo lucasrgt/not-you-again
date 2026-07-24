@@ -77,7 +77,10 @@ fn check_honors_explicit_base_for_committed_work() {
 #[test]
 fn judge_configuration_and_process_fail_closed() {
     let (repo, _) = changed_repo();
-    assert!(nya::check(&repo.root, CheckRequest::default()).unwrap_err().to_string().contains("judge.command is empty"));
+    assert!(nya::check(&repo.root, CheckRequest::default()).unwrap_err().to_string().contains("judge is not configured"));
+
+    repo.configure(vec![], 5);
+    assert!(nya::check(&repo.root, CheckRequest::default()).unwrap_err().to_string().contains("has no command"));
 
     repo.configure(vec!["missing-nya-judge-command".into()], 1);
     assert!(nya::check(&repo.root, CheckRequest::default()).unwrap_err().to_string().contains("failed to start"));
@@ -119,7 +122,7 @@ fn judge_cannot_invent_scars_paths_or_incomplete_findings() {
 #[test]
 fn unsupported_or_malformed_config_fails_closed() {
     let (repo, _) = changed_repo();
-    fs::write(repo.root.join(".nya/config.toml"), "schema = 2\n[judge]\ncommand = [\"unused\"]\ntimeout_seconds = 1\n").unwrap();
+    fs::write(repo.root.join(".nya/config.toml"), "schema = 2\n[check]\ntimeout_seconds = 1\n").unwrap();
     assert!(nya::check(&repo.root, CheckRequest::default()).unwrap_err().to_string().contains("unsupported config schema"));
     fs::write(repo.root.join(".nya/config.toml"), "not toml =").unwrap();
     assert!(nya::check(&repo.root, CheckRequest::default()).is_err());

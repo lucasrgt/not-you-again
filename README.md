@@ -125,6 +125,7 @@ The command creates the versioned `.nya/` directory:
 
 ```text
 .nya/
+  .gitignore
   config.toml
   SKILL.md
   scars/
@@ -137,11 +138,53 @@ same agent protocol.
 `GEMINI.md` with an idempotent managed instruction block. It preserves all
 human-authored content. If none of those files exists, it does not create one.
 
-The generated judge command is empty by design. Configure
-`.nya/config.toml` before the first relevant `nya check`. An empty judge command
-fails closed with exit code 2.
+The generated `.nya/.gitignore` excludes `config.local.toml`. Team policy and
+scars remain versioned while personal judge selection never enters Git.
 
-### 2. Recall before changing code
+### 2. Configure the judge once per machine
+
+Each developer selects a judge in their user configuration:
+
+```bash
+nya setup --judge codex
+```
+
+Built-in profiles are available for Codex, Claude Code, and Hermes:
+
+```bash
+nya setup --judge codex
+nya setup --judge claude
+nya setup --judge hermes
+```
+
+The user configuration lives in the operating system configuration directory:
+
+```text
+Windows  %APPDATA%\nya\config.toml
+macOS    ~/Library/Application Support/nya/config.toml
+Linux    $XDG_CONFIG_HOME/nya/config.toml
+```
+
+When `$XDG_CONFIG_HOME` is unset, Linux uses `~/.config/nya/config.toml`.
+
+No judge, provider, model, credential, or executable is stored in the committed
+`.nya/config.toml`.
+
+If one repository needs a different judge, create an ignored local override:
+
+```bash
+nya setup --local --judge claude
+```
+
+This writes `.nya/config.local.toml`. Resolution is deterministic:
+
+1. `.nya/config.local.toml`
+2. The user configuration
+3. Exit code 2 with an explicit setup instruction
+
+`nya check` never guesses between multiple installed agents.
+
+### 3. Recall before changing code
 
 At the beginning of a task, the agent describes the task and the paths it
 expects to touch:
@@ -166,7 +209,7 @@ Exact scope matches are never silently dropped by relevance ranking.
 The output contains only the scars relevant to the task. The complete scar
 store is never copied into the agent prompt.
 
-### 3. Remember after a real correction
+### 4. Remember after a real correction
 
 Suppose a pull request review identifies literal colors that bypass the
 repository's semantic design tokens. After the problem is corrected, the agent
@@ -187,7 +230,7 @@ creates a new scar.
 
 Fuzzy similarity never merges scars automatically.
 
-### 4. Check before reporting completion
+### 5. Check before reporting completion
 
 Before the agent says the work is complete, it runs:
 
@@ -368,34 +411,37 @@ Agents using Hermes, Codex, Claude Code, Gemini CLI, or another MCP-capable host
 can configure `nya mcp` as a local tool server. Agents with shell access can use
 the CLI directly and do not need MCP.
 
-## The judge command
+## Judge configuration
 
 The implementing agent is not allowed to approve its own task.
 
 `nya check` starts a new headless model invocation with a fresh context. It does
 not resume the implementer's conversation.
 
-The judge command is configured as an argv array in `.nya/config.toml`:
+The committed `.nya/config.toml` contains shared check policy only:
 
 ```toml
 schema = 1
 
-[judge]
-command = [
-  "codex", "exec", "--ephemeral",
-  "--sandbox", "read-only",
-  "--ignore-user-config",
-  "--skip-git-repo-check",
-  "--output-schema", "{schema}",
-  "-"
-]
+[check]
+timeout_seconds = 120
 ```
 
-The Codex CLI command is the first documented profile, not a core dependency.
-A team may replace it with any command that implements the judge protocol.
+Personal execution configuration is created by `nya setup`. Built-in profiles
+resolve to isolated argv arrays at runtime, so a Codex user and a Claude Code
+user can run the same repository gate without modifying shared files.
+
+Custom judges are configured with an explicit command after `--`:
+
+```bash
+nya setup --judge company -- /opt/company/bin/recurrence-judge
+```
+
+Add `--local` when the custom command applies only to the current repository.
 
 `nya` executes the argv array directly without a shell. It replaces `{schema}`
-with a temporary JSON Schema path and writes the audit prompt to stdin.
+with a temporary JSON Schema path, replaces `{schema_json}` with the inline
+schema, and writes the audit prompt plus the schema to stdin.
 
 The protocol is:
 
@@ -420,7 +466,7 @@ The runner owns model access only.
 7. Final exit codes.
 
 A provider CLI, local model wrapper, or internal gateway can become the judge
-without changing scar files or core code.
+without changing scar files, project policy, or core code.
 
 ## Judge isolation
 
@@ -531,11 +577,15 @@ distribution feature.
 CI is the final enforcement boundary:
 
 ```bash
+export NYA_CONFIG="$RUNNER_TEMP/nya-config.toml"
+nya setup --judge codex
 nya check --base "$BASE_REF" --format json
 ```
 
 CI installs a pinned `nya` binary and uses the same check path as local
-development.
+development. `NYA_CONFIG` gives an ephemeral runner an explicit unversioned
+configuration path. Provider credentials remain in the CI environment and are
+never written by `nya`.
 
 A dedicated GitHub Action is not required for the first release. A normal CLI
 step keeps the integration portable across CI providers.
@@ -573,8 +623,9 @@ data residency, and security requirements.
 
 Sensitive repositories may use a local model or an approved internal gateway.
 
-The command array is executed without a shell. Credentials are not stored in
-`.nya/config.toml`; they remain with the selected CLI or CI environment.
+The command array is executed without a shell. `nya setup` never asks for
+credentials. Custom commands must load credentials from their provider or CI
+environment rather than placing secrets in an argv array.
 
 Malformed output, extra stdout, timeouts, provider errors, and nonzero runner
 exits fail closed.
@@ -609,7 +660,7 @@ flowchart LR
     MCP --> CORE
     CORE --> STORE["Versioned .nya store"]
     CORE --> INDEX["Derived SQLite index"]
-    CORE --> RUNNER["Configured judge command"]
+    CORE --> RUNNER["Resolved local judge"]
     RUNNER --> JUDGE["Fresh isolated LLM context"]
 
     STORE --> INDEX
@@ -641,6 +692,7 @@ not-you-again/
   assets/
     AGENT_INSTRUCTIONS.md
     config.toml
+    gitignore
     not-you-again/
       SKILL.md
   tests/
@@ -762,8 +814,8 @@ Both paths call the same core.
 
 ### Can a different model act as the judge?
 
-Yes. The configured command can use any provider or local model that satisfies
-the stdin and stdout protocol.
+Yes. A built-in profile or custom command can use any provider or local model
+that satisfies the stdin and stdout protocol.
 
 ### Can the implementing agent and judge use the same model family?
 

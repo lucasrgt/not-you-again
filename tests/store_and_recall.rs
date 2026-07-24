@@ -1,6 +1,6 @@
 mod common;
 
-use common::Repo;
+use common::{Repo, output};
 use nya::{RecallRequest, RememberRequest};
 use std::fs;
 
@@ -25,7 +25,12 @@ fn init_is_idempotent_and_manages_existing_agent_files() {
     assert_eq!(installed, ["AGENTS.md", "CLAUDE.md"]);
     assert!(repo.root.join(".nya/scars").is_dir());
     assert!(fs::read_to_string(repo.root.join(".nya/SKILL.md")).unwrap().contains("name: not-you-again"));
-    assert!(fs::read_to_string(repo.root.join(".nya/config.toml")).unwrap().contains("timeout_seconds = 120"));
+    let config = fs::read_to_string(repo.root.join(".nya/config.toml")).unwrap();
+    assert!(config.contains("timeout_seconds = 120"));
+    assert!(!config.contains("judge"));
+    assert_eq!(fs::read_to_string(repo.root.join(".nya/.gitignore")).unwrap(), "config.local.toml\n");
+    fs::write(repo.root.join(".nya/config.local.toml"), "judge = \"codex\"\n").unwrap();
+    assert_eq!(output(&repo.root, &["check-ignore", ".nya/config.local.toml"]), ".nya/config.local.toml");
 
     let installed_again = nya::init(&repo.root).unwrap();
     assert_eq!(installed_again, installed);

@@ -42,7 +42,7 @@ flowchart LR
     MCP --> CORE
     CORE --> STORE["Versioned .nya store"]
     CORE --> INDEX["Derived SQLite index"]
-    CORE --> RUNNER["Configured judge command"]
+    CORE --> RUNNER["Resolved local judge"]
     RUNNER --> JUDGE["Fresh isolated LLM context"]
 
     STORE --> INDEX
@@ -63,6 +63,7 @@ Consumer repositories commit:
 
 ```text
 .nya/
+  .gitignore
   config.toml
   SKILL.md
   scars/
@@ -80,6 +81,29 @@ The derived database lives at:
 It contains an FTS5 projection of searchable scar fields. Complete scars and
 occurrences remain only in the versioned TOML files. Missing, corrupt, or
 incompatible indexes rebuild automatically.
+
+## Configuration boundary
+
+The committed `.nya/config.toml` defines shared check policy. It never selects
+a provider, model, credential, or executable.
+
+Each developer selects a judge once with:
+
+```bash
+nya setup --judge codex
+```
+
+The resulting user configuration is stored in the operating system
+configuration directory. A repository may optionally override that choice with
+an ignored `.nya/config.local.toml`, created by:
+
+```bash
+nya setup --local --judge claude
+```
+
+Resolution is strict and deterministic. Repository-local configuration wins
+over user configuration. Missing or invalid configuration fails closed. The
+agent always runs `nya check` and never chooses a provider itself.
 
 ## Recall
 
@@ -127,9 +151,11 @@ Exit codes are:
 | `1` | At least one recurrence was confirmed |
 | `2` | Repository, configuration, runner, timeout, or verdict failure |
 
-## Judge command
+## Judge execution
 
-The judge is a configured subprocess, not an in-process provider integration.
+The judge is a resolved subprocess, not an in-process provider integration.
+Built-in profiles cover Codex, Claude Code, and Hermes. A custom argv command
+can implement the same protocol.
 
 ```text
 stdin   one UTF-8 audit prompt
@@ -189,7 +215,8 @@ execution, and all maintained runtime behavior.
 2. SQLite FTS5 recall, automatic rebuild, scope ranking, and occurrence ranking.
 3. Tracked and untracked diff assembly, scar selection, judge execution,
    verdict validation, and focused confirmation.
-4. Canonical skill, managed agent instructions, CLI, local stdio MCP, and
+4. Layered project, user, and repository-local judge configuration.
+5. Canonical skill, managed agent instructions, CLI, local stdio MCP, and
    end-to-end fixtures.
 
 ### Remaining distribution

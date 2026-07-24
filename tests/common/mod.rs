@@ -16,13 +16,19 @@ pub struct Repo {
 #[derive(Serialize)]
 struct Config {
     schema: u8,
-    judge: Judge,
+    check: Check,
 }
 
 #[derive(Serialize)]
-struct Judge {
-    command: Vec<String>,
+struct Check {
     timeout_seconds: u64,
+}
+
+#[derive(Serialize)]
+struct UserConfig {
+    schema: u8,
+    judge: String,
+    command: Vec<String>,
 }
 
 impl Repo {
@@ -49,8 +55,10 @@ impl Repo {
     }
 
     pub fn configure(&self, command: Vec<String>, timeout_seconds: u64) {
-        let body = toml::to_string(&Config { schema: 1, judge: Judge { command, timeout_seconds } }).unwrap();
-        fs::write(self.root.join(".nya/config.toml"), body).unwrap();
+        let policy = toml::to_string(&Config { schema: 1, check: Check { timeout_seconds } }).unwrap();
+        let user = toml::to_string(&UserConfig { schema: 1, judge: "test".into(), command }).unwrap();
+        fs::write(self.root.join(".nya/config.toml"), policy).unwrap();
+        fs::write(self.root.join(".nya/config.local.toml"), user).unwrap();
     }
 
     pub fn commit_all(&self, message: &str) {

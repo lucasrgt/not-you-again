@@ -48,7 +48,59 @@ fn cli_covers_human_json_and_exit_code_contracts() {
     repo.configure(vec![], 5);
     let error = command(&repo, &["check"]);
     assert_eq!(error.status.code(), Some(2));
-    assert!(String::from_utf8(error.stderr).unwrap().contains("judge.command"));
+    assert!(String::from_utf8(error.stderr).unwrap().contains("has no command"));
+}
+
+#[test]
+fn setup_separates_user_and_repository_local_judges() {
+    let repo = Repo::new(&[]);
+    assert!(command(&repo, &["init"]).status.success());
+    let home = tempfile::tempdir().unwrap();
+    let global = home.path().join("config.toml");
+
+    for judge in ["codex", "claude", "hermes"] {
+        let output = bin().env("NYA_CONFIG", &global).arg("--repository").arg(&repo.root).args(["setup", "--judge", judge]).output().unwrap();
+        assert!(output.status.success());
+        let body = std::fs::read_to_string(&global).unwrap();
+        assert!(body.contains(&format!("judge = \"{judge}\"")));
+        assert!(body.contains("command = []"));
+    }
+
+    let local = command(&repo, &["setup", "--local", "--judge", "claude"]);
+    assert!(local.status.success());
+    assert!(std::fs::read_to_string(repo.root.join(".nya/config.local.toml")).unwrap().contains("judge = \"claude\""));
+
+    let unknown = bin().env("NYA_CONFIG", &global).arg("setup").args(["--judge", "company"]).output().unwrap();
+    assert_eq!(unknown.status.code(), Some(2));
+    assert!(String::from_utf8(unknown.stderr).unwrap().contains("requires a command"));
+
+    let mut custom = bin();
+    custom.env("NYA_CONFIG", &global).args(["setup", "--judge", "company", "--"]).args(judge(&empty_verdict()));
+    assert!(custom.output().unwrap().status.success());
+    assert!(std::fs::read_to_string(global).unwrap().contains("judge = \"company\""));
+}
+
+#[test]
+fn check_prefers_repository_local_config_and_falls_back_to_user_config() {
+    let repo = Repo::new(&[]);
+    nya::init(&repo.root).unwrap();
+    let scar =
+        nya::remember(&repo.root, nya::RememberRequest { title: Some("No literal copy".into()), lesson: Some("Use the message catalog.".into()), scope: vec!["src/**".into()], ..Default::default() })
+            .unwrap();
+    repo.commit_all("scar");
+    repo.write("src/app.rs", "literal\n");
+    repo.configure(judge(&empty_verdict()), 5);
+
+    let home = tempfile::tempdir().unwrap();
+    let global = home.path().join("config.toml");
+    std::fs::copy(repo.root.join(".nya/config.local.toml"), &global).unwrap();
+    std::fs::remove_file(repo.root.join(".nya/config.local.toml")).unwrap();
+    let fallback = bin().env("NYA_CONFIG", &global).arg("--repository").arg(&repo.root).arg("check").output().unwrap();
+    assert_eq!(fallback.status.code(), Some(0));
+
+    repo.configure(judge(&finding(&scar.id, "src/app.rs")), 5);
+    let overridden = bin().env("NYA_CONFIG", &global).arg("--repository").arg(&repo.root).arg("check").output().unwrap();
+    assert_eq!(overridden.status.code(), Some(1));
 }
 
 #[test]
@@ -69,6 +121,7 @@ fn in_process_cli_dispatch_covers_each_agent_action() {
     let repo = Repo::new(&["AGENTS.md"]);
     let root = repo.root.to_string_lossy().to_string();
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "init"]).unwrap(), 0);
+    assert_eq!(nya::run_cli(["nya", "--repository", &root, "setup", "--local", "--judge", "codex"]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "--format", "json", "remember", "--title", "Direct scar", "--lesson", "Use the direct path.", "--scope", "src/**",]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "recall", "--task", "direct path"]).unwrap(), 0);
     repo.commit_all("direct scar");

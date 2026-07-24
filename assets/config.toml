@@ -1,5 +1,4 @@
 schema = 1
 
-[judge]
-command = []
+[check]
 timeout_seconds = 120
