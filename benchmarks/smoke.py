@@ -226,6 +226,23 @@ def load_module(path: Path):
     return module
 
 
+def command_observed(events: str, subcommand: str) -> bool:
+    pattern = re.compile(rf"\bnya(?:\.exe)?\s+{re.escape(subcommand)}\b", re.I)
+    for line in events.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        item = event.get("item", {})
+        if (
+            event.get("type") == "item.completed"
+            and item.get("type") == "command_execution"
+            and pattern.search(item.get("command", ""))
+        ):
+            return True
+    return False
+
+
 def evaluate(case: Case, root: Path):
     if case.name == "design-token":
         body = (root / "src/Button.tsx").read_text(encoding="utf-8")
@@ -374,8 +391,8 @@ def execute_arm(
             "agent_exit": result.returncode,
             "seconds": elapsed,
             "model_observed": model_match.group(1).strip() if model_match else None,
-            "nya_recall_observed": bool(re.search(r"\bnya(?:\.exe)?\s+recall\b", log, re.I)),
-            "nya_check_observed": bool(re.search(r"\bnya(?:\.exe)?\s+check\b", log, re.I)),
+            "nya_recall_command_observed": command_observed(result.stdout, "recall"),
+            "nya_check_command_observed": command_observed(result.stdout, "check"),
             "nya_gate_exit": gate_exit,
             "nya_gate_findings": gate_findings,
         }
@@ -396,14 +413,15 @@ def render_report(summary):
     by_case = {}
     for result in summary["results"]:
         by_case.setdefault(result["case"], {})[result["arm"]] = result
+    nya_results = [pair["nya"] for pair in by_case.values()]
     for name in [case.name for case in CASES if case.name in by_case]:
         baseline, nya = by_case[name]["baseline"], by_case[name]["nya"]
         avoided = baseline["outcome"] == "recurrence" and nya["outcome"] == "pass"
         lines.append(
             f"| `{name}` | {baseline['outcome']} | {nya['outcome']} | "
             f"{'yes' if avoided else 'no'} | "
-            f"{'yes' if nya['nya_recall_observed'] else 'no'} | "
-            f"{'yes' if nya['nya_check_observed'] else 'no'} | "
+            f"{'yes' if nya['nya_recall_command_observed'] else 'no'} | "
+            f"{'yes' if nya['nya_check_command_observed'] else 'no'} | "
             f"{nya['nya_gate_exit']} |"
         )
     lines += [
@@ -412,6 +430,14 @@ def render_report(summary):
         f"{summary['baseline_recurrences']} observed baseline recurrences**.",
         f"Remaining NYA recurrences blocked by the host gate: "
         f"**{summary['recurrences_blocked']}**.",
+        "",
+        f"Completed NYA recall commands: "
+        f"**{sum(result['nya_recall_command_observed'] for result in nya_results)} of {len(nya_results)}**.",
+        f"Completed task-agent check commands: "
+        f"**{sum(result['nya_check_command_observed'] for result in nya_results)} of {len(nya_results)}**. "
+        "Network-disabled task agents delegate this gate.",
+        f"Completed host gates: "
+        f"**{sum(result['nya_gate_exit'] in (0, 1) for result in nya_results)} of {len(nya_results)}**.",
         "",
         "This is one smoke run per pair. It is evidence for these executions, not a "
         "general model prevention rate. See `benchmarks/README.md` for the protocol.",

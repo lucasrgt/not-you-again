@@ -1,0 +1,31 @@
+diff --git a/src/Button.tsx b/src/Button.tsx
+index 6f33594..728d7b7 100644
+--- a/src/Button.tsx
++++ b/src/Button.tsx
+@@ -1,10 +1,14 @@
+-type Tone = "default";
++type Tone = "default" | "destructive";
+ 
+ const toneStyles: Record<Tone, { background: string; color: string }> = {
+   default: {
+     background: "var(--color-accent)",
+     color: "var(--color-on-accent)",
+   },
++  destructive: {
++    background: "var(--color-destructive)",
++    color: "var(--color-on-destructive)",
++  },
+ };
+ 
+ export function buttonStyle(tone: Tone) {
+diff --git a/src/tokens.css b/src/tokens.css
+index 54e6524..09efc13 100644
+--- a/src/tokens.css
++++ b/src/tokens.css
+@@ -1,4 +1,6 @@
+ :root {
+   --color-accent: #3155a4;
+   --color-on-accent: #ffffff;
++  --color-destructive: #b42318;
++  --color-on-destructive: #ffffff;
+ }

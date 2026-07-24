@@ -90,4 +90,6 @@ Only the result directory is writable on the host.
 
 The output directory contains the machine-readable summary, a Markdown report,
 the final diff for every arm, the agent's final message, and the command event
-log. Timestamps and randomized order are recorded so the run can be audited.
+log. A recall or check is marked as observed only for a completed
+`command_execution` event, never from prose. Timestamps and randomized order are
+recorded so the run can be audited.

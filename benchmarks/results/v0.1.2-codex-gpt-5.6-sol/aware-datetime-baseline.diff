@@ -1,0 +1,15 @@
+diff --git a/src/lease.py b/src/lease.py
+index d94665e..625654b 100644
+--- a/src/lease.py
++++ b/src/lease.py
+@@ -1,5 +1,9 @@
+-from datetime import datetime
++from datetime import datetime, timezone
+ 
+ 
+ def parse_expiry(value: str) -> datetime:
+     return datetime.fromisoformat(value)
++
++
++def is_expired(expires_at: str) -> bool:
++    return parse_expiry(expires_at) <= datetime.now(timezone.utc)

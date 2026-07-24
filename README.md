@@ -445,6 +445,21 @@ required. See [ARCHITECTURE.md](ARCHITECTURE.md) for the normative design.
 
 ---
 
+## Benchmark
+
+The published synthetic-repository smoke uses paired fresh agents, identical
+tasks, hidden evaluators, a pinned model, and the released NYA binary.
+
+| Run | Baseline recurrences | Avoided by NYA | Host gates | Interpretation |
+| --- | ---: | ---: | ---: | --- |
+| `v0.1.2`, Codex `0.144.0`, `gpt-5.6-sol` | 1 | 1 | 5 of 5 completed | Four baseline cases already passed and provide no prevention evidence |
+
+This is a single smoke run, not a general prevention rate. Read the
+[protocol](benchmarks/README.md), [auditable report](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/REPORT.md),
+and [machine-readable summary](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/summary.json).
+
+---
+
 ## Build and contribute
 
 Build the native binary with the stable Rust toolchain:
