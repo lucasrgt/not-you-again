@@ -1,6 +1,6 @@
 mod common;
 
-use common::{Repo, conditional, empty_verdict, failing_judge, finding, judge, slow_judge};
+use common::{Repo, conditional, empty_verdict, failing_judge, finding, judge, recording_judge, slow_judge};
 use nya::{CheckRequest, RememberRequest};
 use std::fs;
 
@@ -72,6 +72,18 @@ fn check_honors_explicit_base_for_committed_work() {
     let result = nya::check(&repo.root, CheckRequest { base: Some("HEAD^".into()), ..Default::default() }).unwrap();
     assert!(result.passed);
     assert_eq!(result.scars_checked, 1);
+}
+
+#[test]
+fn check_bounds_initial_and_confirmation_requests() {
+    let (repo, scar) = changed_repo();
+    repo.write("src/large.rs", &format!("literal\n{}", "x".repeat(130_000)));
+    let log = repo.root.join("judge-sizes.txt");
+    repo.configure(recording_judge(&log, &finding(&scar.id, "src/new.rs")), 5);
+    assert!(!nya::check(&repo.root, CheckRequest::default()).unwrap().passed);
+    let sizes = fs::read_to_string(log).unwrap().lines().map(|line| line.parse::<usize>().unwrap()).collect::<Vec<_>>();
+    assert_eq!(sizes.len(), 2);
+    assert!(sizes.iter().all(|size| *size < 110_000), "{sizes:?}");
 }
 
 #[test]

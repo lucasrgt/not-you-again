@@ -131,3 +131,17 @@ pub fn slow_judge() -> Vec<String> {
         vec!["sh".into(), "-c".into(), "sleep 2; printf '%s' '{\"findings\":[]}'".into()]
     }
 }
+
+pub fn recording_judge(path: &Path, verdict: &str) -> Vec<String> {
+    let path = path.to_string_lossy();
+    if cfg!(windows) {
+        vec![
+            "powershell".into(),
+            "-NoProfile".into(),
+            "-Command".into(),
+            format!("$text=[Console]::In.ReadToEnd(); Add-Content -LiteralPath '{}' -Value ([Text.Encoding]::UTF8.GetByteCount($text)); Write-Output '{}'", path.replace('\'', "''"), verdict),
+        ]
+    } else {
+        vec!["sh".into(), "-c".into(), format!("text=$(cat); printf '%s\\n' \"$(printf '%s' \"$text\" | wc -c)\" >> '{}'; printf '%s' '{}'", path.replace('\'', "'\\''"), verdict)]
+    }
+}
