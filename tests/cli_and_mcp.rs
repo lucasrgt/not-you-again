@@ -15,6 +15,10 @@ fn command(repo: &Repo, args: &[&str]) -> std::process::Output {
     bin().arg("--repository").arg(&repo.root).args(args).output().unwrap()
 }
 
+fn interactive(repo: &Repo, args: &[&str]) -> std::process::Output {
+    bin().arg("--repository").arg(&repo.root).env("NYA_FORCE_TTY", "1").env("NYA_ASCII", "1").env("NO_COLOR", "1").args(args).output().unwrap()
+}
+
 #[test]
 fn cli_covers_human_json_and_exit_code_contracts() {
     let repo = Repo::new(&["AGENTS.md"]);
@@ -49,6 +53,69 @@ fn cli_covers_human_json_and_exit_code_contracts() {
     let error = command(&repo, &["check"]);
     assert_eq!(error.status.code(), Some(2));
     assert!(String::from_utf8(error.stderr).unwrap().contains("has no command"));
+}
+
+#[test]
+fn interactive_cli_is_branded_while_json_and_pipes_stay_clean() {
+    let repo = Repo::new(&["AGENTS.md"]);
+    let initialized = interactive(&repo, &["init"]);
+    let initialized = String::from_utf8(initialized.stdout).unwrap();
+    assert!(initialized.contains("NOT YOU AGAIN"));
+    assert!(initialized.contains("[ok] .nya created"));
+    assert!(!initialized.contains('\u{1b}'));
+
+    let configured = interactive(&repo, &["setup", "--judge", "codex"]);
+    assert!(String::from_utf8(configured.stdout).unwrap().contains("[ok] Personal judge selected"));
+
+    let remembered = interactive(&repo, &["remember", "--title", "Literal copy", "--lesson", "Use the message catalog.", "--scope", "src/**"]);
+    let remembered = String::from_utf8(remembered.stdout).unwrap();
+    assert!(remembered.contains("Scar remembered") && remembered.contains("[ok] Literal copy"));
+
+    let recalled = bin()
+        .arg("--repository")
+        .arg(&repo.root)
+        .env("NYA_FORCE_TTY", "1")
+        .env_remove("NYA_ASCII")
+        .env("TERM", "xterm-256color")
+        .args(["recall", "--task", "literal copy", "--path", "src/app.rs"])
+        .output()
+        .unwrap();
+    assert!(String::from_utf8(recalled.stdout).unwrap().contains("✓ Literal copy"));
+
+    repo.commit_all("scar");
+    let clean = interactive(&repo, &["check"]);
+    let clean = String::from_utf8(clean.stdout).unwrap();
+    assert!(clean.contains("Recurrence check"));
+    assert!(clean.contains("[ok] Repository inspected"));
+    assert!(clean.contains("[ok] No known scars repeated"));
+
+    let json = bin().arg("--repository").arg(&repo.root).env("NYA_FORCE_TTY", "1").args(["--format", "json", "check"]).output().unwrap();
+    assert!(json.status.success());
+    let value: Value = serde_json::from_slice(&json.stdout).unwrap();
+    assert_eq!(value["passed"], true);
+    assert!(!String::from_utf8(json.stdout).unwrap().contains("NOT YOU AGAIN"));
+
+    repo.configure(judge(&empty_verdict()), 5);
+    let collected = interactive(&repo, &["collect", "--offline", "--dry-run"]);
+    let collected = String::from_utf8(collected.stdout).unwrap();
+    assert!(collected.contains("Historical scar collection"));
+    assert!(collected.contains("[ok] Sources scanned"));
+
+    repo.write("src/app.rs", "const COPY: &str = \"literal\";\n");
+    let scar = nya::recall(&repo.root, nya::RecallRequest::default()).unwrap().remove(0);
+    repo.configure(judge(&finding(&scar.id, "src/app.rs")), 5);
+    let failed = interactive(&repo, &["check"]);
+    assert_eq!(failed.status.code(), Some(1));
+    let failed = String::from_utf8(failed.stdout).unwrap();
+    assert!(failed.contains("[x] Known scar repeated"));
+    assert!(failed.contains("[x] SCAR 1/1"));
+    assert!(failed.contains("Fix every recurrence"));
+
+    repo.configure(vec![], 5);
+    let error = interactive(&repo, &["check"]);
+    assert_eq!(error.status.code(), Some(2));
+    let error = String::from_utf8(error.stderr).unwrap();
+    assert!(error.contains("[x]") && !error.contains('\u{1b}'));
 }
 
 #[test]
@@ -271,24 +338,27 @@ fn cli_reports_empty_recall_and_invalid_repository() {
 
 #[test]
 fn in_process_cli_dispatch_covers_each_agent_action() {
+    let _lock = common::ENV_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let _tty = EnvGuard::set("NYA_FORCE_TTY", "1");
+    let _ascii = EnvGuard::set("NYA_ASCII", "1");
+    let _color = EnvGuard::set("NO_COLOR", "1");
     let repo = Repo::new(&["AGENTS.md"]);
     let root = repo.root.to_string_lossy().to_string();
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "init"]).unwrap(), 0);
-    let config_home = tempfile::tempdir().unwrap();
-    let user_config = config_home.path().join("config.toml");
-    let _config = EnvGuard::set("NYA_CONFIG", &user_config);
-    assert_eq!(nya::run_cli(["nya", "--repository", &root, "setup", "--judge", "codex"]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "setup", "--local", "--judge", "codex"]).unwrap(), 0);
-    assert_eq!(nya::run_cli(["nya", "--repository", &root, "--format", "json", "remember", "--title", "Direct scar", "--lesson", "Use the direct path.", "--scope", "src/**",]).unwrap(), 0);
+    assert_eq!(nya::run_cli(["nya", "--repository", &root, "remember", "--title", "Direct scar", "--lesson", "Use the direct path.", "--scope", "src/**",]).unwrap(), 0);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "recall", "--task", "direct path"]).unwrap(), 0);
     repo.commit_all("direct scar");
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "check"]).unwrap(), 0);
-    assert_eq!(nya::run_cli(["nya", "--repository", &root, "--format", "json", "collect", "--offline"]).unwrap(), 0);
+    assert_eq!(nya::run_cli(["nya", "--repository", &root, "collect", "--offline"]).unwrap(), 0);
 
     repo.write("src/direct.rs", "literal\n");
     let scars = nya::recall(&repo.root, nya::RecallRequest { task: String::new(), paths: vec!["src/direct.rs".into()], limit: None }).unwrap();
     repo.configure(judge(&finding(&scars[0].id, "src/direct.rs")), 5);
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "check"]).unwrap(), 1);
+    repo.configure_as("test", vec![], 5);
+    let error = nya::run_cli(["nya", "--repository", &root, "check"]).unwrap_err();
+    nya::print_error(&error);
     assert!(nya::run_cli(["nya", "--repository", &root, "unknown"]).is_err());
 }
 

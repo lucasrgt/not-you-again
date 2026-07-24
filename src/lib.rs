@@ -17,6 +17,9 @@ use std::{
 use tempfile::{NamedTempFile, TempDir};
 use ulid::Ulid;
 
+#[rustfmt::skip]
+mod ui;
+
 const SKILL: &str = include_str!("../assets/not-you-again/SKILL.md");
 const CONFIG: &str = include_str!("../assets/config.toml");
 const IGNORE: &str = include_str!("../assets/gitignore");
@@ -466,7 +469,7 @@ pub fn serve_mcp_io(reader: impl BufRead, mut writer: impl Write) -> Result<()> 
 pub fn serve_mcp() -> Result<()> { serve_mcp_io(std::io::stdin().lock(), std::io::stdout().lock()) }
 
 #[derive(Parser)]
-#[command(name = "nya", version, about = "Repository-local immune system for coding agents")]
+#[command(name = "nya", version, about = "Repository-local immune system for coding agents", before_help = " /\\_/\\\n( -.- )  NOT YOU AGAIN\n > ^ <")]
 #[rustfmt::skip]
 struct Cli {
     #[arg(long, global = true, default_value = ".")] repository: PathBuf,
@@ -478,64 +481,44 @@ struct Cli {
 #[rustfmt::skip]
 enum CliCommand { Init, Setup(#[command(flatten)] SetupRequest), Remember(#[command(flatten)] RememberRequest), Recall(#[command(flatten)] RecallRequest), Check(#[command(flatten)] CheckRequest), Collect(#[command(flatten)] CollectRequest), Mcp }
 
-fn output<T: Serialize>(json: bool, value: &T, human: String) -> Result<()> {
-    if json {
-        println!("{}", serde_json::to_string_pretty(value)?);
-    } else {
-        print!("{human}");
-    }
-    Ok(())
-}
+#[rustfmt::skip]
+fn output<T: Serialize>(json: bool, value: &T, human: impl FnOnce()) -> Result<()> { if json { println!("{}", serde_json::to_string_pretty(value)?); } else { human(); } Ok(()) }
 
 fn dispatch(cli: Cli) -> Result<i32> {
     let json = cli.format == "json";
     match cli.command {
         CliCommand::Init => {
             let files = init(&cli.repository)?;
-            println!("Initialized .nya. Managed instructions: {}.", if files.is_empty() { "none".to_owned() } else { files.join(", ") });
+            output(json, &files, || ui::init(&files))?;
             Ok(0)
         }
         CliCommand::Setup(request) => {
-            println!("Configured judge at {}.", setup(&cli.repository, request)?.display());
+            let path = setup(&cli.repository, request)?;
+            output(json, &path, || ui::setup(&path))?;
             Ok(0)
         }
         CliCommand::Remember(request) => {
             let value = remember(&cli.repository, request)?;
-            output(json, &value, format!("Remembered {}: {}\n", value.id, value.title))?;
+            output(json, &value, || ui::remember(&value))?;
             Ok(0)
         }
         CliCommand::Recall(request) => {
             let values = recall(&cli.repository, request)?;
-            let human = if values.is_empty() { "No relevant scars.\n".to_owned() } else { values.iter().map(|s| format!("{}\t{}\n  {}\n", s.id, s.title, s.lesson)).collect() };
-            output(json, &values, human)?;
+            output(json, &values, || ui::recall(&values))?;
             Ok(0)
         }
         CliCommand::Check(request) => {
+            let progress = ui::begin(json, "Recurrence check", "Inspecting the diff and auditing known scars...");
             let value = check(&cli.repository, request)?;
-            let human = if value.passed {
-                format!("No known scars repeated. {} scars checked.\n", value.scars_checked)
-            } else {
-                value.findings.iter().map(|f| format!("{}:{} [{}] {}\n  {}\n", f.path, f.line, f.scar_id, f.reason, f.evidence)).collect()
-            };
-            output(json, &value, human)?;
+            let elapsed = progress.finish();
+            output(json, &value, || ui::check(&value, elapsed))?;
             Ok(if value.passed { 0 } else { 1 })
         }
         CliCommand::Collect(request) => {
+            let progress = ui::begin(json, "Historical scar collection", "Scanning Git history and corrected GitHub reviews...");
             let value = collect(&cli.repository, request)?;
-            let records = value.records.iter().map(|record| format!("{}  {}\t{}\n", if record.classification == "new" { "+" } else { "~" }, record.title, record.source)).collect::<String>();
-            let human = format!(
-                "Collected {} sources and classified {} correction candidates.\nNew scars: {}. Occurrences appended: {}. Insufficient evidence: {}. Ambiguous: {}.\nGitHub: {}.{}\n{}",
-                value.sources_scanned,
-                value.correction_candidates,
-                value.new_scars,
-                value.occurrences_appended,
-                value.insufficient_evidence,
-                value.ambiguous,
-                value.github,
-                if value.dry_run { " Dry run; nothing was written." } else { "" },
-                records
-            );
-            output(json, &value, human)?;
+            let elapsed = progress.finish();
+            output(json, &value, || ui::collect(&value, elapsed))?;
             Ok(0)
         }
         CliCommand::Mcp => serve_mcp().map(|_| 0),
@@ -545,6 +528,9 @@ fn dispatch(cli: Cli) -> Result<i32> {
 pub fn run_cli(args: impl IntoIterator<Item = impl Into<std::ffi::OsString> + Clone>) -> Result<i32> {
     dispatch(Cli::try_parse_from(args)?)
 }
+
+#[rustfmt::skip]
+pub fn print_error(error: &anyhow::Error) { ui::error(error); }
 
 #[rustfmt::skip]
 pub fn run_cli_env() -> Result<i32> { dispatch(Cli::parse()) }

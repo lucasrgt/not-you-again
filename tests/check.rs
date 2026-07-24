@@ -1,6 +1,6 @@
 mod common;
 
-use common::{Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, recording_judge, slow_judge};
+use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, recording_judge, slow_judge};
 use nya::{CheckRequest, RememberRequest};
 use std::fs;
 
@@ -95,6 +95,8 @@ fn check_bounds_initial_and_confirmation_requests() {
 
 #[test]
 fn judge_configuration_and_process_fail_closed() {
+    let config_home = tempfile::tempdir().unwrap();
+    let _config = EnvGuard::set("NYA_CONFIG", config_home.path().join("missing.toml"));
     let (repo, _) = changed_repo();
     assert!(nya::check(&repo.root, CheckRequest::default()).unwrap_err().to_string().contains("judge is not configured"));
 

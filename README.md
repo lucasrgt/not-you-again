@@ -115,6 +115,24 @@ nya remember \
 nya check
 ```
 
+### Terminal output
+
+Interactive terminals receive the NYA cat, a live spinner, clear pass and fail
+marks, numbered `SCAR n/total` separators for confirmed recurrences, and an
+elapsed-time summary. The presentation layer never changes the automation
+contract.
+
+| Context | Output |
+| --- | --- |
+| Interactive terminal | Branded progress and readable findings |
+| Redirected output or pipe | Stable plain text without animation or color |
+| `--format json` | JSON only |
+| `NO_COLOR=1` or `TERM=dumb` | Accessible colorless fallback |
+
+Spinners are written to standard error and cleared before the final result.
+This keeps standard output safe for scripts while still showing progress during
+long judge calls.
+
 ### The three-command loop
 
 | Moment | Command | Result |
