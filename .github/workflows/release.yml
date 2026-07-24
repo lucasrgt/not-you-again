@@ -41,6 +41,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+      - uses: mlugg/setup-zig@v2
+        if: runner.os == 'Linux'
+        with:
+          version: 0.16.0
+      - uses: taiki-e/install-action@v2
+        if: runner.os == 'Linux'
+        with:
+          tool: cargo-zigbuild@0.23.0
       - name: Verify tag and package version
         shell: pwsh
         run: |
@@ -49,7 +57,19 @@ jobs:
             throw "Tag ${{ github.ref_name }} does not match package version $version"
           }
       - run: cargo test --locked --target ${{ matrix.target }}
-      - run: cargo build --release --locked --target ${{ matrix.target }}
+      - name: Build portable Linux binary
+        if: runner.os == 'Linux'
+        run: cargo zigbuild --release --locked --target ${{ matrix.target }}.2.17
+      - name: Smoke portable Linux binary on Debian 12
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          binary="$PWD/target/${{ matrix.target }}/release/nya"
+          docker run --rm --volume "$binary:/usr/local/bin/nya:ro" \
+            debian:bookworm-slim /usr/local/bin/nya --version
+      - name: Build native release binary
+        if: runner.os != 'Linux'
+        run: cargo build --release --locked --target ${{ matrix.target }}
       - name: Package binary
         shell: pwsh
         run: |
