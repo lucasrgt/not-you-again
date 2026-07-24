@@ -233,7 +233,7 @@ fn git_sources(repo: &Path, range: &str) -> Result<(usize, HashSet<String>, Vec<
 }
 
 #[rustfmt::skip]
-fn github_remote(repo: &Path) -> Option<(String, String, String)> { let url = git(repo, &["remote", "get-url", "origin"]).ok()?; let (host, path) = if let Some(rest) = url.strip_prefix("git@") { rest.split_once(':')? } else if let Some(rest) = url.strip_prefix("https://") { rest.split_once('/')? } else if let Some(rest) = url.strip_prefix("ssh://git@") { rest.split_once('/')? } else { return None; }; if !host.contains("github") { return None; } let mut parts = path.trim_end_matches('/').trim_end_matches(".git").split('/'); Some((host.into(), parts.next()?.into(), parts.next()?.into())) }
+fn github_remote(repo: &Path) -> Option<(String, String, String)> { let url = git(repo, &["remote", "get-url", "origin"]).ok()?; let (host, path) = if let Some(rest) = url.strip_prefix("git@") { rest.split_once(':')? } else if let Some(rest) = url.strip_prefix("https://") { rest.split_once('/')? } else { let rest = url.strip_prefix("ssh://git@")?; rest.split_once('/')? }; if !host.contains("github") { return None; } let mut parts = path.trim_end_matches('/').trim_end_matches(".git").split('/'); Some((host.into(), parts.next()?.into(), parts.next()?.into())) }
 
 #[rustfmt::skip]
 fn flatten_json(value: Value, out: &mut Vec<Value>) { if let Value::Array(values) = value { for value in values { flatten_json(value, out); } } else { out.push(value); } }
