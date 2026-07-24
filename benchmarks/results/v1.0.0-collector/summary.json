@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "release": "v1.0.0",
+  "date": "2026-07-24",
+  "runtime": {
+    "nya_profile": "codex",
+    "codex_cli": "0.144.0",
+    "gh_cli": "2.95.0",
+    "git": "2.54.0.windows.1"
+  },
+  "runs": [
+    {
+      "name": "real_github_review_recovery",
+      "repository": "https://github.com/lucasrgt/nya-github-review-benchmark",
+      "head": "e043caa",
+      "source": "https://github.com/lucasrgt/nya-github-review-benchmark/pull/1#discussion_r3647349286",
+      "correction_commit": "9681e4fbdf4e",
+      "sources_scanned": 7,
+      "correction_candidates": 1,
+      "new_scars": 1,
+      "occurrences_appended": 0,
+      "insufficient_evidence": 0,
+      "ambiguous": 0,
+      "record": {
+        "title": "Tenant omitted from profile cache key",
+        "scope": [
+          "profiles.py"
+        ],
+        "reported_by": "github:lucasrgt",
+        "corrected_by": "git:lucas.tinoco@hotmail.com",
+        "recorded_by": "nya:collector"
+      },
+      "incremental_followup_candidates": 0
+    },
+    {
+      "name": "mature_repository_dry_run",
+      "repository": "https://github.com/lucasrgt/aerofortress-harness",
+      "head": "3daa4135df1e2290319a70ccd606fc111dc35f44",
+      "range": "HEAD~8..HEAD",
+      "sources_scanned": 9,
+      "correction_candidates": 4,
+      "new_scars": 2,
+      "occurrences_appended": 2,
+      "insufficient_evidence": 0,
+      "ambiguous": 0,
+      "records": [
+        {
+          "classification": "new",
+          "title": "Source updates must preserve dirty registered checkouts",
+          "source": "git:b74e8febb25726562868a28931f1e2e96246f7af"
+        },
+        {
+          "classification": "new",
+          "title": "Validate collection shape across replay and live-stream boundaries",
+          "source": "git:1a4b0a4b95188636957553ec72fa6e922cfc900c"
+        },
+        {
+          "classification": "recurrence",
+          "scar_id": "NYA-01KYASTEAYYWM0H7122678YTG6",
+          "title": "Call count alone does not prove tool compilation",
+          "source": "git:1b5a940908ae127f5f73fde12f5d377b3bd8c01c"
+        },
+        {
+          "classification": "recurrence",
+          "scar_id": "NYA-01KYASTEM15JFZB8D9V4XG3W0Z",
+          "title": "Streaming must not reparse accumulated Markdown for every token",
+          "source": "git:25c124cb095ae282f7d60dcc64d3770460a396eb"
+        }
+      ]
+    }
+  ],
+  "guardrails_exercised": [
+    "verbatim evidence validation",
+    "scope-to-source-path validation",
+    "two-stage unchanged confirmation",
+    "source and commit idempotency",
+    "new-versus-recurrence classification",
+    "dry-run without writes or checkpoint movement"
+  ]
+}

@@ -6,6 +6,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
     process::Command,
+    sync::Mutex,
 };
 use tempfile::TempDir;
 
@@ -18,6 +19,8 @@ pub struct EnvGuard {
     key: &'static str,
     previous: Option<OsString>,
 }
+
+pub static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 #[derive(Serialize)]
 struct Config {

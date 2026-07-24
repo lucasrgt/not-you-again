@@ -53,6 +53,7 @@ fn cli_covers_human_json_and_exit_code_contracts() {
 
 #[test]
 fn github_review_permalink_becomes_verified_scar_provenance() {
+    let _lock = common::ENV_LOCK.lock().unwrap_or_else(|error| error.into_inner());
     let repo = Repo::new(&[]);
     assert!(command(&repo, &["init"]).status.success());
     let permalink = "https://github.com/acme/store/pull/142#discussion_r123";
@@ -264,6 +265,8 @@ fn cli_reports_empty_recall_and_invalid_repository() {
     let remember_help = bin().args(["remember", "--help"]).output().unwrap();
     let help = String::from_utf8(remember_help.stdout).unwrap();
     assert!(help.contains("Existing scar ID") && help.contains("repeat for multiple scopes") && help.contains("#discussion_r"));
+    let collect_help = String::from_utf8(bin().args(["collect", "--help"]).output().unwrap().stdout).unwrap();
+    assert!(collect_help.contains("--all") && collect_help.contains("--since") && collect_help.contains("--dry-run") && collect_help.contains("--offline"));
 }
 
 #[test]
@@ -280,6 +283,7 @@ fn in_process_cli_dispatch_covers_each_agent_action() {
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "recall", "--task", "direct path"]).unwrap(), 0);
     repo.commit_all("direct scar");
     assert_eq!(nya::run_cli(["nya", "--repository", &root, "check"]).unwrap(), 0);
+    assert_eq!(nya::run_cli(["nya", "--repository", &root, "--format", "json", "collect", "--offline"]).unwrap(), 0);
 
     repo.write("src/direct.rs", "literal\n");
     let scars = nya::recall(&repo.root, nya::RecallRequest { task: String::new(), paths: vec!["src/direct.rs".into()], limit: None }).unwrap();
@@ -289,7 +293,7 @@ fn in_process_cli_dispatch_covers_each_agent_action() {
 }
 
 #[test]
-fn mcp_exposes_only_the_three_domain_tools_and_calls_the_core() {
+fn mcp_exposes_only_the_four_domain_tools_and_calls_the_core() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
     let mut child = bin().arg("mcp").stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();
@@ -302,13 +306,14 @@ fn mcp_exposes_only_the_three_domain_tools_and_calls_the_core() {
         json!({"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"nya_remember","arguments":{"repository":root,"title":"MCP scar","lesson":"Use the safe path.","scope":["src/**"],"reported_by":"github:reviewer"}}}),
         json!({"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"nya_recall","arguments":{"repository":root,"task":"safe path","paths":["src/app.rs"]}}}),
         json!({"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"nya_check","arguments":{"repository":root}}}),
-        json!({"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"other","arguments":{"repository":root}}}),
-        json!({"jsonrpc":"2.0","id":8,"method":"unknown"}),
+        json!({"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"nya_collect","arguments":{"repository":root,"offline":true}}}),
+        json!({"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"other","arguments":{"repository":root}}}),
+        json!({"jsonrpc":"2.0","id":9,"method":"unknown"}),
     ];
     let wire = requests.iter().map(|request| format!("{request}\n")).collect::<String>();
     let mut direct_output = Vec::new();
     nya::serve_mcp_io(Cursor::new(wire), &mut direct_output).unwrap();
-    assert_eq!(String::from_utf8(direct_output).unwrap().lines().count(), 8);
+    assert_eq!(String::from_utf8(direct_output).unwrap().lines().count(), 9);
     {
         let stdin = child.stdin.as_mut().unwrap();
         for request in &requests {
@@ -319,17 +324,18 @@ fn mcp_exposes_only_the_three_domain_tools_and_calls_the_core() {
     let output = child.wait_with_output().unwrap();
     assert!(output.status.success());
     let responses = String::from_utf8(output.stdout).unwrap().lines().map(|line| serde_json::from_str::<Value>(line).unwrap()).collect::<Vec<_>>();
-    assert_eq!(responses.len(), 8);
+    assert_eq!(responses.len(), 9);
     assert_eq!(responses[0]["result"]["protocolVersion"], "2025-11-25");
     assert_eq!(responses[1]["result"], json!({}));
     let tools = responses[2]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 3);
-    assert_eq!(tools.iter().map(|tool| tool["name"].as_str().unwrap()).collect::<Vec<_>>(), ["nya_remember", "nya_recall", "nya_check"]);
+    assert_eq!(tools.len(), 4);
+    assert_eq!(tools.iter().map(|tool| tool["name"].as_str().unwrap()).collect::<Vec<_>>(), ["nya_remember", "nya_recall", "nya_check", "nya_collect"]);
     assert!(responses[3]["result"]["structuredContent"]["id"].as_str().unwrap().starts_with("NYA-"));
     assert_eq!(responses[4]["result"]["structuredContent"].as_array().unwrap().len(), 1);
     assert_eq!(responses[5]["result"]["structuredContent"]["passed"], true);
-    assert!(responses[6]["error"]["message"].as_str().unwrap().contains("unknown tool"));
-    assert!(responses[7]["error"]["message"].as_str().unwrap().contains("method not found"));
+    assert_eq!(responses[6]["result"]["structuredContent"]["correction_candidates"], 0);
+    assert!(responses[7]["error"]["message"].as_str().unwrap().contains("unknown tool"));
+    assert!(responses[8]["error"]["message"].as_str().unwrap().contains("method not found"));
 }
 
 #[test]

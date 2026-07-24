@@ -30,10 +30,12 @@ fn init_is_idempotent_and_manages_existing_agent_files() {
     assert!(!config.contains("judge"));
     assert_eq!(fs::read_to_string(repo.root.join(".nya/.gitignore")).unwrap(), "config.local.toml\nindex-v1.sqlite3\n");
     fs::write(repo.root.join(".nya/config.local.toml"), "judge = \"codex\"\n").unwrap();
+    fs::write(repo.root.join(".nya/SKILL.md"), "outdated\n").unwrap();
     assert_eq!(output(&repo.root, &["check-ignore", ".nya/config.local.toml"]), ".nya/config.local.toml");
 
     let installed_again = nya::init(&repo.root).unwrap();
     assert_eq!(installed_again, installed);
+    assert!(fs::read_to_string(repo.root.join(".nya/SKILL.md")).unwrap().contains("nya collect --all"));
     let agents = fs::read_to_string(repo.root.join("AGENTS.md")).unwrap();
     assert!(agents.contains("Original instructions."));
     assert_eq!(agents.matches("nya:instructions:start").count(), 1);

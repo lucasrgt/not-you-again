@@ -4,16 +4,22 @@ All repository artifacts must be written in English.
 
 ## Product contract
 
-Not You Again exposes one public concept, the scar, and three agent actions:
+Not You Again exposes one public concept, the scar, and four focused
+operations:
 
-1. `nya remember`
-2. `nya recall`
-3. `nya check`
+1. `nya collect`
+2. `nya remember`
+3. `nya recall`
+4. `nya check`
+
+The daily task protocol remains `recall`, `remember`, and `check`. `collect` is
+the historical adoption and explicit maintenance operation.
 
 Do not introduce antibodies, candidates, graduation states, generic memory
 types, or deterministic checker definitions.
 
-`nya check` is a scar-scoped recurrence audit. It is not a generic AI review.
+`nya check` is a scar-scoped recurrence audit. `nya collect` is a retrospective
+evidence miner. Neither operation is a generic AI review.
 
 ## Engineering constitution
 
@@ -26,7 +32,7 @@ types, or deterministic checker definitions.
 5. Git is the durable source of truth for scars.
 6. SQLite is a disposable projection with no unique knowledge.
 7. CLI and MCP must call the same core operations.
-8. Judge failure must fail closed.
+8. Evaluator failure must fail closed.
 
 ## Change discipline
 

@@ -23,15 +23,16 @@
 Not You Again gives a Git repository a durable record of mistakes that actually
 happened and the corrections that resolved them. Coding agents retrieve the
 relevant lessons before changing code and check the finished diff before
-declaring a task complete.
+declaring a task complete. Existing repositories can recover proven lessons
+from Git history and corrected GitHub review comments with one collection run.
 
 The command is `nya`. The versioned repository directory is `.nya/`.
 
 <table>
 <tr><td><b>One durable concept</b></td><td>A scar records a real failure and the correction that resolved it. No generic memory types or policy classes.</td></tr>
-<tr><td><b>Three agent actions</b></td><td><code>recall</code> before editing, <code>remember</code> after a real correction, and <code>check</code> before completion.</td></tr>
+<tr><td><b>Four focused operations</b></td><td><code>collect</code> existing lessons, <code>recall</code> before editing, <code>remember</code> after a real correction, and <code>check</code> before completion.</td></tr>
 <tr><td><b>Repository-owned memory</b></td><td>Readable TOML scars travel through Git with the team. SQLite is only a disposable local search index.</td></tr>
-<tr><td><b>Narrow LLM judgment</b></td><td>The judge may detect only recurrence of supplied scars. It cannot invent new review concerns.</td></tr>
+<tr><td><b>Evidence-bounded judgment</b></td><td><code>check</code> may detect only recurrence of supplied scars. <code>collect</code> may record only corrected failures with verbatim source evidence and a second confirmation.</td></tr>
 <tr><td><b>Agent and language independent</b></td><td>Any shell or MCP-capable agent can use it in any Git codebase, regardless of programming language.</td></tr>
 </table>
 
@@ -61,6 +62,10 @@ Configure one personal judge matching the available harness with
 `nya setup --judge hermes`. Ask before choosing if the correct judge is
 ambiguous.
 
+If this repository existed before Not You Again, run `nya collect --all`.
+Allow its automatic GitHub review scan when `gh` is authenticated. Use
+`--offline` only when the user explicitly wants Git-only collection.
+
 Run this setup check:
 nya recall --task "Verify Not You Again setup" --path .nya/SKILL.md
 
@@ -88,6 +93,9 @@ nya init
 
 # Select one personal judge
 nya setup --judge codex
+
+# Bootstrap a mature repository from Git history and GitHub reviews
+nya collect --all
 
 # Retrieve relevant scars before editing
 nya recall \
@@ -119,6 +127,10 @@ A scar is backed by a real failure and a known correction. It is not a
 hypothetical risk, generic best practice, preference, design decision, or broad
 review suggestion.
 
+`nya collect` is the adoption and maintenance operation around this daily loop.
+Run it once with `--all` when enabling NYA in a mature repository. Later runs
+scan only commits after the ignored local checkpoint.
+
 The built-in Codex judge needs provider network access. When a task agent runs
 inside a network-disabled shell, `nya check` fails fast with exit code 2 instead
 of retrying. Delegate that final command to the host, the NYA MCP server, a Git
@@ -132,7 +144,7 @@ hook outside the agent sandbox, or CI.
 .nya/
   .gitignore
   config.toml
-  index-v1.sqlite3  # generated and ignored after the first recall
+  index-v1.sqlite3  # generated FTS and collector checkpoint, always ignored
   SKILL.md
   scars/
 ```
@@ -290,13 +302,68 @@ concise title and reusable lesson. `--github-review` cannot be combined with
 `--source` or `--reported-by`, so verified and manually asserted provenance
 cannot be confused.
 
+### Collect
+
+`nya collect` bootstraps scars from corrections that already exist in a
+repository. It mines correction-shaped commits and line-level GitHub review
+comments, then requires the isolated model to prove all three parts:
+
+```text
+failure signal + actual correction + reusable lesson
+```
+
+It does not review the current code for hypothetical defects. Refactors, vague
+cleanup, preferences, and unsupported inferences are skipped.
+
+```bash
+# First run in a mature repository
+nya collect --all
+
+# Incremental run from the ignored local checkpoint
+nya collect
+
+# Restrict a migration to commits after one revision
+nya collect --since v2.0.0
+
+# Inspect classifications without writing or advancing the checkpoint
+nya collect --all --dry-run
+
+# Deliberately collect Git history without querying GitHub
+nya collect --all --offline
+```
+
+| Classification | Result |
+| --- | --- |
+| `new` | Create one versioned scar |
+| `recurrence` | Append provenance to the matching scar |
+| `skip` | Record nothing because the source does not prove a reusable corrected failure |
+| `ambiguous` | Record nothing and report the unresolved candidate |
+
+Collection is idempotent by source and correcting commit. Exact-title matches
+also append occurrences, so repeated lessons do not create parallel files.
+Every proposed write receives a second isolated confirmation. Evidence must be
+an exact substring of the supplied commit or review bundle. Human and JSON
+output list every confirmed title, source, classification, and target scar when
+available, including during `--dry-run`.
+
+GitHub collection auto-detects the `origin` remote and uses authenticated `gh`.
+Root review comments are eligible only when their reviewed commit is in local
+history and a later commit changed the same path. If a GitHub remote is detected
+but `gh` is unavailable, collection fails before writing. `--offline` is the
+explicit Git-only escape hatch.
+
+Collector provenance preserves the review author as `reported_by`, the
+correcting commit author as `corrected_by`, `nya:collector` as `recorded_by`,
+the permalink or commit as `source`, and the correcting commit identifier.
+
 ---
 
 ## Configuration
 
 ### Judge selection
 
-Each developer chooses one judge without modifying shared repository policy:
+Each developer chooses one isolated evaluator without modifying shared
+repository policy. The same selection powers recurrence checks and collection:
 
 ```bash
 nya setup --judge codex
@@ -332,7 +399,7 @@ timeout_seconds = 120
 
 ### Custom judges
 
-Any provider CLI, local model, or internal gateway can implement the judge
+Any provider CLI, local model, or internal gateway can implement the evaluator
 protocol:
 
 ```bash
@@ -342,7 +409,7 @@ nya setup --judge company -- /opt/company/bin/recurrence-judge
 `nya` executes the argument array without a shell and uses this protocol:
 
 ```text
-stdin   one UTF-8 audit prompt
+stdin   one UTF-8 NYA task prompt
 stdout  one verdict JSON object
 stderr  optional diagnostics
 exit 0  a parseable verdict was produced
@@ -358,10 +425,10 @@ Add `--local` when the custom command applies only to the current repository.
 | Surface | Role | Required |
 | --- | --- | --- |
 | CLI | Universal interface for agents, humans, hooks, CI, and scripts | Yes |
-| `.nya/SKILL.md` | Teaches the three-command loop | Created by `nya init` |
+| `.nya/SKILL.md` | Teaches historical collection and the daily three-command loop | Created by `nya init` |
 | Agent instruction bridge | Activates the skill from existing harness files | Created by `nya init` |
-| MCP | Exposes the same core as three typed tools | Optional |
-| GitHub review permalink | Verifies reporter, source, and time through `gh` | Optional |
+| MCP | Exposes the same core as four typed tools | Optional |
+| GitHub | Verifies individual permalinks and collects corrected review comments through `gh` | Optional |
 | Git hook | Provides fast local feedback | Optional |
 | CI | Enforces the final recurrence gate | Recommended |
 
@@ -373,12 +440,13 @@ Start the local stdio server:
 nya mcp
 ```
 
-It exposes exactly three tools:
+It exposes exactly four tools:
 
 ```text
 nya_remember
 nya_recall
 nya_check
+nya_collect
 ```
 
 Each tool requires an explicit repository root and calls the same domain
@@ -422,7 +490,7 @@ Not You Again is local-first:
 2. The ignored SQLite index stays inside `.nya/` and contains no unique data.
 3. No hosted account or central scar service is required.
 4. Judge processes start in a new empty temporary directory.
-5. Diff, code, and scar content are marked as untrusted data.
+5. Diff, code, scar, commit, and review content are marked as untrusted data.
 6. Malformed output, timeouts, provider errors, and nonzero exits fail closed.
 
 The configured judge may send the bounded audit request to a cloud model. Teams
@@ -455,6 +523,7 @@ flowchart LR
     AGENT -->|"typed tools"| MCP["nya mcp"]
     HUMAN["Developer"] --> CLI
     CI["Git hook or CI"] -->|"nya check"| CLI
+    HISTORY["Git history and GitHub reviews"] -->|"nya collect"| CLI
 
     CLI --> CORE["nya core"]
     MCP --> CORE
@@ -502,6 +571,27 @@ preliminary read-only sandbox attempt is disclosed and excluded. Read the
 [complete report](benchmarks/results/v0.1.3-github-review-gpt-5.6-sol/REPORT.md)
 and [machine-readable summary](benchmarks/results/v0.1.3-github-review-gpt-5.6-sol/summary.json).
 
+### Historical collector proof
+
+The v1.0 smoke removed the previously recorded scar from a temporary clone of
+the public GitHub review fixture, then asked `nya collect --all` to recover it
+from history. The collector found one correction candidate, created one scar
+with the exact review permalink and actors, and returned zero candidates on the
+next incremental run.
+
+A second `--dry-run` over eight recent AeroFortress Harness revisions found
+four corrected failures. Two became proposed new scars and two matched existing
+scars as recurrences.
+
+| Run | Sources | Candidates | New | Recurrences | Rejected or ambiguous |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Real GitHub review recovery | 7 | 1 | 1 | 0 | 0 |
+| Mature harness history | 9 | 4 | 2 | 2 | 0 |
+
+Read the [collector report](benchmarks/results/v1.0.0-collector/REPORT.md) and
+[machine-readable summary](benchmarks/results/v1.0.0-collector/summary.json).
+This is an auditable smoke, not a universal extraction-rate claim.
+
 ---
 
 ## Build and contribute
@@ -527,12 +617,12 @@ cargo llvm-cov --all-features --fail-under-lines 95
 | --- | --- |
 | Maintained runtime code | At most 500 lines |
 | Line coverage | At least 95 percent without rounding |
-| Product model | One scar and three commands |
+| Product model | One scar and four focused operations |
 | Failure behavior | Judge and protocol failures fail closed |
 | Transport behavior | CLI and MCP call the same core |
 
-Contributions should preserve the one-scar model, three-command protocol,
-shared core, and fail-closed check.
+Contributions should preserve the one-scar model, evidence-bounded collection,
+the daily three-command protocol, shared core, and fail-closed check.
 
 ---
 

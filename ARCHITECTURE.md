@@ -12,7 +12,8 @@ Not You Again is a repository-local scar runtime for coding agents.
 It gives every agent working in a repository the same durable record of real
 mistakes, their corrections, and their provenance. Before a task, the agent
 recalls relevant scars. Before completion, a fresh isolated judge audits the
-task diff against those scars.
+task diff against those scars. Mature repositories can first recover
+evidence-backed scars from Git history and corrected GitHub reviews.
 
 ## Public contract
 
@@ -20,13 +21,17 @@ The public model contains one concept:
 
 > A scar is a durable lesson created from a real failure and correction.
 
-The agent protocol contains three actions:
+The public surface contains four operations:
 
 ```text
+A repository is adopting NYA -> nya collect
 A task is starting           -> nya recall
 A real correction happened  -> nya remember
 Work is about to finish      -> nya check
 ```
+
+The daily task protocol remains `recall`, `remember`, and `check`. Collection is
+the historical adoption and explicit maintenance operation.
 
 ## System shape
 
@@ -36,6 +41,7 @@ flowchart LR
     AGENT -->|"typed tools"| MCP["nya mcp"]
     HUMAN["Developer"] --> CLI
     CI["Git hook or CI"] -->|"nya check"| CLI
+    HISTORY["Git history and GitHub reviews"] -->|"nya collect"| CLI
 
     CLI --> CORE["nya core"]
     MCP --> CORE
@@ -49,7 +55,7 @@ flowchart LR
     JUDGE --> RESULT["Human output, JSON, exit code"]
 ```
 
-The first release is one native Rust binary with one core and two transports.
+Version 1.0 is one native Rust binary with one core and two transports.
 The CLI serves humans, shell-capable agents, hooks, and CI. `nya mcp` serves
 MCP-capable hosts over local stdio.
 
@@ -77,16 +83,17 @@ The derived database lives at:
 .nya/index-v1.sqlite3
 ```
 
-It contains an FTS5 projection of searchable scar fields. Complete scars and
-occurrences remain only in the versioned TOML files. Missing, corrupt, or
-incompatible indexes rebuild automatically.
+It contains an FTS5 projection of searchable scar fields and the local
+collector checkpoint. Complete scars and occurrences remain only in the
+versioned TOML files. Missing, corrupt, or incompatible indexes rebuild
+automatically. Losing the checkpoint causes an idempotent rescan, not data loss.
 
 ## Configuration boundary
 
 The committed `.nya/config.toml` defines shared check policy. It never selects
 a provider, model, credential, or executable.
 
-Each developer selects a judge once with:
+Each developer selects one isolated evaluator once with:
 
 ```bash
 nya setup --judge codex
@@ -102,7 +109,7 @@ nya setup --local --judge claude
 
 Resolution is strict and deterministic. Repository-local configuration wins
 over user configuration. Missing or invalid configuration fails closed. The
-agent always runs `nya check` and never chooses a provider itself.
+agent never chooses a provider itself.
 
 ## Recall
 
@@ -132,6 +139,41 @@ explicitly.
 
 Fuzzy similarity never merges scars automatically.
 
+## Collect
+
+`nya collect` is a retrospective evidence miner, not a code reviewer.
+
+The deterministic discovery stage scans correction-shaped commits and
+line-level GitHub review comments. A GitHub comment is eligible only when its
+reviewed commit is an ancestor of `HEAD` and a later in-range commit changed the
+same path.
+
+Evidence is classified in bounded batches:
+
+```text
+source discovery
+    -> failure and correction pairing
+    -> relevant scar retrieval
+    -> new, recurrence, skip, or ambiguous
+    -> independent confirmation
+    -> versioned write
+```
+
+Every accepted candidate needs verbatim source evidence, a concrete correction,
+and a reusable lesson. A recurrence must reference one supplied scar. A new
+candidate must provide a complete title, lesson, scopes, and tags. Confirmation
+may only return an unchanged proposal.
+
+`nya collect --all` scans reachable history. Incremental `nya collect` starts
+after the ignored SQLite checkpoint. `--since` supplies an explicit boundary,
+`--dry-run` suppresses writes and checkpoint movement, and `--offline`
+explicitly suppresses GitHub access.
+
+Source URLs and correcting commits make collection idempotent. When a review
+and a fix commit represent the same correction, the review wins because it
+preserves the reporter. Existing exact-title matches and confirmed semantic
+matches append occurrences rather than creating another scar.
+
 ## Check
 
 `nya check` resolves tracked and untracked changes outside `.nya/`, retrieves
@@ -155,22 +197,23 @@ Exit codes are:
 | `1` | At least one recurrence was confirmed |
 | `2` | Repository, configuration, runner, timeout, or verdict failure |
 
-## Judge execution
+## Evaluator execution
 
-The judge is a resolved subprocess, not an in-process provider integration.
+The evaluator is a resolved subprocess, not an in-process provider integration.
 Built-in profiles cover Codex, Claude Code, and Hermes. A custom argv command
 can implement the same protocol.
 
 ```text
-stdin   one UTF-8 audit prompt
+stdin   one UTF-8 NYA task prompt
 stdout  one verdict JSON object
 stderr  optional diagnostics
 exit 0  a parseable verdict was produced
 exit !0 runner failure
 ```
 
-`nya` owns retrieval, context assembly, prompt construction, schema validation,
-focused confirmation, and final exit codes. The runner owns model access only.
+`nya` owns discovery, retrieval, context assembly, prompt construction, schema
+validation, focused confirmation, persistence, and final exit codes. The runner
+owns model access only.
 
 The command runs in a new empty temporary directory and never resumes the
 implementer's conversation. MCP calls use the same external judge and never ask
@@ -178,9 +221,10 @@ the connected host model to judge itself.
 
 ## Skill
 
-`.nya/SKILL.md` teaches the three-action protocol. It contains no scars and no
-product logic. `nya init` also installs an idempotent managed bridge into
-existing root-level `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files.
+`.nya/SKILL.md` teaches historical collection and the daily three-action
+protocol. It contains no scars and no product logic. `nya init` refreshes this
+canonical managed skill and installs an idempotent managed bridge into existing
+root-level `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files.
 
 The skill is guidance rather than enforcement because agents can forget
 instructions or lose them during context compaction. CLI, MCP, hooks, and CI
@@ -194,6 +238,7 @@ remain outside the model context.
 nya_remember
 nya_recall
 nya_check
+nya_collect
 ```
 
 Each tool takes an explicit repository root and calls the same domain operation
@@ -213,7 +258,7 @@ execution, and all maintained runtime behavior.
 
 ## Deferred scope
 
-Version 0.1 excludes hosted storage, a public scar corpus, remote MCP,
-host-model judging, provider SDKs, embeddings, LLM deduplication, deterministic
-per-scar checkers, automatic bulk review harvesting, organization-wide
-synchronization, a plugin runtime, and a GUI.
+Version 1.0 excludes hosted storage, a public scar corpus, remote MCP,
+host-model judging, provider SDKs, embeddings, deterministic per-scar checkers,
+issue-tracker and postmortem adapters beyond Git and GitHub review evidence,
+organization-wide synchronization, a plugin runtime, and a GUI.
