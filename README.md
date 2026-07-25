@@ -209,6 +209,26 @@ real failure
 6. Confirm every proposed finding with a second independent judge call.
 7. Return human output, JSON output, and a stable exit code.
 
+### Deterministic coverage, probabilistic judgment
+
+NYA makes the recurrence-checking pipeline deterministic wherever possible,
+but semantic judgment still depends on the configured model:
+
+| Deterministic NYA guarantee | Model-dependent judgment |
+| --- | --- |
+| Select every scar whose scope matches a changed path | Decide whether changed code contradicts the scar's lesson |
+| Audit every applicable scar against every diff window | Distinguish a recurrence from code implementing the named remedy |
+| Bound individual prompts without silently truncating coverage | Interpret repository-specific intent and incomplete code |
+| Validate scar IDs, paths, and verbatim changed-code evidence | Avoid semantic false positives and false negatives |
+| Require independent confirmation and fail closed on evaluator failure | Produce consistent verdicts across repeated executions |
+
+Stronger models generally reduce semantic false positives and false negatives.
+NYA does not replace model intelligence. It ensures that the configured judge
+receives the right scars, the complete relevant diff, and a constrained,
+auditable question without accidental omissions. Exhaustive orchestration means
+every applicable scar is evaluated, not that every possible model will always
+interpret every scar correctly.
+
 Use another comparison base or structured output when needed:
 
 ```bash
