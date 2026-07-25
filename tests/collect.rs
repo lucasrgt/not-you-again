@@ -103,7 +103,7 @@ fn resolved_github_review_carries_reporter_and_corrector_provenance() {
 }
 
 #[test]
-fn collector_rejects_invented_evidence_and_changed_confirmations() {
+fn collector_discards_or_marks_invalid_candidates_without_losing_the_batch() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
     repo.write("src/card.css", ".card { color: var(--text); }\n");
@@ -112,21 +112,34 @@ fn collector_rejects_invented_evidence_and_changed_confirmations() {
 
     let invented = proposal(&source, "new", "", "Literal colors bypass tokens", "text absent from the source");
     repo.configure(judge(&invented), 5);
-    assert!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap_err().to_string().contains("not verbatim"));
+    let result = nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap();
+    assert_eq!(result.ambiguous, 1);
+
+    let multiline = proposal(&source, "new", "", "Literal colors bypass tokens", "    fix: replace literal color with token\n\n");
+    repo.configure(judge(&multiline), 5);
+    assert_eq!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap().ambiguous, 1);
 
     let mut bad_scope: serde_json::Value = serde_json::from_str(&proposal(&source, "new", "", "Literal colors bypass tokens", "fix: replace literal color with token")).unwrap();
     bad_scope["candidates"][0]["scope"] = json!(["descriptive scope"]);
     repo.configure(judge(&bad_scope.to_string()), 5);
-    assert!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap_err().to_string().contains("scope does not match"));
+    assert_eq!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap().ambiguous, 1);
 
     bad_scope["candidates"][0]["scope"] = json!([]);
     repo.configure(judge(&bad_scope.to_string()), 5);
-    assert!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap_err().to_string().contains("incomplete lesson or scope"));
+    assert_eq!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap().ambiguous, 1);
 
     let proposed = proposal(&source, "new", "", "Literal colors bypass tokens", "fix: replace literal color with token");
     let changed = proposal(&source, "new", "", "A changed title", "fix: replace literal color with token");
     repo.configure(conditional(&proposed, &changed), 5);
-    assert!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap_err().to_string().contains("changed a proposal"));
+    assert_eq!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap().insufficient_evidence, 1);
+
+    let duplicated = json!({"candidates": [
+        serde_json::from_str::<serde_json::Value>(&proposed).unwrap()["candidates"][0],
+        serde_json::from_str::<serde_json::Value>(&proposed).unwrap()["candidates"][0]
+    ]})
+    .to_string();
+    repo.configure(judge(&duplicated), 5);
+    assert_eq!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, dry_run: true, ..Default::default() }).unwrap().new_scars, 1);
     assert!(fs::read_dir(repo.root.join(".nya/scars")).unwrap().next().is_none());
 }
 
