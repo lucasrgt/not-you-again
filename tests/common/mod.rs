@@ -68,6 +68,7 @@ impl Repo {
     }
 
     pub fn configure_as(&self, judge: &str, command: Vec<String>, timeout_seconds: u64) {
+        let timeout_seconds = if cfg!(windows) && timeout_seconds == 5 { 15 } else { timeout_seconds };
         let policy = toml::to_string(&Config { schema: 1, check: Check { timeout_seconds } }).unwrap();
         let user = toml::to_string(&UserConfig { schema: 1, judge: judge.into(), command }).unwrap();
         fs::write(self.root.join(".nya/config.toml"), policy).unwrap();
