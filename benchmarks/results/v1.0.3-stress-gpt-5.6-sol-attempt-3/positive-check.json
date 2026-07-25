@@ -1,0 +1,132 @@
+{
+  "passed": false,
+  "scars_checked": 128,
+  "findings": [
+    {
+      "scar_id": "NYA-STRESS-10-15",
+      "path": "apps/accessibility/design-accessibility/Signup.tsx",
+      "line": 2,
+      "evidence": "placeholder=\"Email address\"",
+      "reason": "The user-facing placeholder is hard-coded in accessibility UI code instead of referenced through a localization catalog key."
+    },
+    {
+      "scar_id": "NYA-STRESS-11-15",
+      "path": "apps/accessibility/design-accessibility/Signup.tsx",
+      "line": 2,
+      "evidence": "<input name=\"email\" placeholder=\"Email address\" />",
+      "reason": "The input has no associated label or equivalent programmatic accessible name; its placeholder does not provide one."
+    },
+    {
+      "scar_id": "NYA-STRESS-10-02",
+      "path": "apps/account/design-accessibility/SessionBanner.tsx",
+      "line": 2,
+      "evidence": "  return <p>Your session expired. Sign in again.</p>;",
+      "reason": "The component embeds user-facing copy directly in UI code instead of referencing a localization catalog key."
+    },
+    {
+      "scar_id": "NYA-STRESS-08-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The component directly uses a literal color instead of a semantic design token."
+    },
+    {
+      "scar_id": "NYA-STRESS-08-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "  color: \"#ffffff\",",
+      "reason": "The admin component directly uses a literal color instead of a semantic design token."
+    },
+    {
+      "scar_id": "NYA-STRESS-42-09",
+      "path": "apps/analytics/data-ml-science/train.py",
+      "line": 6,
+      "evidence": "    scaled = StandardScaler().fit_transform(features)",
+      "reason": "The scaler is fitted on all features before the evaluation split, so preprocessing learns from evaluation data."
+    },
+    {
+      "scar_id": "NYA-STRESS-16-04",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "        f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The SQL statement directly interpolates the untrusted invoice_id value into its syntax instead of passing it as a query parameter."
+    },
+    {
+      "scar_id": "NYA-STRESS-00-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "The React component recomputes the filtered and sorted derived invoice collection during every render without useMemo."
+    },
+    {
+      "scar_id": "NYA-STRESS-53-12",
+      "path": "apps/desktop/concurrency-clients/settings.py",
+      "line": 16,
+      "evidence": "    path.write_text(json.dumps(settings), encoding=\"utf-8\")",
+      "reason": "This directly overwrites the durable settings file in place instead of writing and syncing a temporary file before atomic replacement."
+    },
+    {
+      "scar_id": "NYA-STRESS-59-13",
+      "path": "apps/docs/quality-operations/restore.md",
+      "line": 6,
+      "evidence": "rm -rf /srv/app/data",
+      "reason": "The runbook executes destructive deletion of production data without requiring target verification, a recoverable backup or snapshot, or a preview gate."
+    },
+    {
+      "scar_id": "NYA-STRESS-63-14",
+      "path": "apps/experiments/quality-operations/analyze.py",
+      "line": 2,
+      "evidence": "return \"treatment\" if treatment.conversion > control.conversion else \"control\"",
+      "reason": "The experiment winner is chosen solely from the primary conversion metric, directly repeating the scar's missing safety guardrails, decision thresholds, and stopping rule."
+    },
+    {
+      "scar_id": "NYA-STRESS-26-06",
+      "path": "apps/gateway/security-privacy/proxy.py",
+      "line": 5,
+      "evidence": "    return requests.get(target_url, timeout=10).text",
+      "reason": "The server directly fetches the caller-supplied target_url without validating its scheme, host, or resolved network destination against an outbound policy."
+    },
+    {
+      "scar_id": "NYA-STRESS-48-11",
+      "path": "apps/mobile/concurrency-clients/ProfileView.kt",
+      "line": 2,
+      "evidence": "    val connection = URL(\"https://api.example.com/profile\").openConnection()",
+      "reason": "The connection is opened synchronously inside the rendering function, directly repeating blocking network I/O on the interactive mobile UI path."
+    },
+    {
+      "scar_id": "NYA-STRESS-37-08",
+      "path": "apps/platform/infrastructure-reliability/deployment.yaml",
+      "line": 10,
+      "evidence": "      containers:",
+      "reason": "The production Deployment defines a container but provides no CPU or memory requests or limits, directly repeating the missing resource bounds scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-32-07",
+      "path": "apps/scheduler/infrastructure-reliability/retry.py",
+      "line": 6,
+      "evidence": "            continue",
+      "reason": "The transient failure is retried immediately, with no exponential backoff or jitter between attempts."
+    },
+    {
+      "scar_id": "NYA-STRESS-45-10",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "Divides a distance measured in meters by a duration measured in milliseconds without converting the duration to the documented output unit of seconds."
+    },
+    {
+      "scar_id": "NYA-STRESS-17-03",
+      "path": "apps/search/backend-api/SearchService.ts",
+      "line": 4,
+      "evidence": "  return exec(`rg \"${pattern}\" \"${directory}\"`);",
+      "reason": "The changed code invokes a shell command with both dynamic process arguments interpolated directly into the command string, exactly recurring the supplied scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-24-05",
+      "path": "apps/tenancy/security-privacy/UserCache.ts",
+      "line": 2,
+      "evidence": "return repository.findOne({ id: userId });",
+      "reason": "The user lookup is keyed only by userId and does not include an authenticated tenant or organization boundary."
+    }
+  ]
+}

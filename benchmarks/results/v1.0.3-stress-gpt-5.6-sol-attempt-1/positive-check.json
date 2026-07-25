@@ -1,0 +1,146 @@
+{
+  "passed": false,
+  "scars_checked": 1024,
+  "findings": [
+    {
+      "scar_id": "NYA-STRESS-11-15",
+      "path": "apps/accessibility/Signup.tsx",
+      "line": 2,
+      "evidence": "  return <input name=\"email\" placeholder=\"Email address\" />;",
+      "reason": "The input relies on placeholder text and has no associated label or equivalent programmatic accessible name."
+    },
+    {
+      "scar_id": "NYA-STRESS-10-02",
+      "path": "apps/account/SessionBanner.tsx",
+      "line": 2,
+      "evidence": "  return <p>Your session expired. Sign in again.</p>;",
+      "reason": "The user-facing session-expiration and sign-in copy is hard-coded directly in the component instead of referenced through a localization catalog key."
+    },
+    {
+      "scar_id": "NYA-STRESS-08-01",
+      "path": "apps/admin/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The admin component directly uses a literal hex color instead of a semantic design token."
+    },
+    {
+      "scar_id": "NYA-STRESS-08-01",
+      "path": "apps/admin/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "  color: \"#ffffff\",",
+      "reason": "The admin component directly uses a literal hex color instead of a role-based semantic design token."
+    },
+    {
+      "scar_id": "NYA-STRESS-42-09",
+      "path": "apps/analytics/train.py",
+      "line": 6,
+      "evidence": "    scaled = StandardScaler().fit_transform(features)",
+      "reason": "The scaler is fitted on the complete feature set before the evaluation split, so preprocessing learns from evaluation data."
+    },
+    {
+      "scar_id": "NYA-STRESS-16-04",
+      "path": "apps/billing/invoice_query.py",
+      "line": 3,
+      "evidence": "        f\"SELECT id, total FROM invoices WHERE id = '{invoice_id}'\"",
+      "reason": "The SQL statement directly interpolates invoice_id into SQL syntax instead of using a parameterized query, directly repeating the supplied scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-24-04",
+      "path": "apps/billing/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE id = '{invoice_id}'\"",
+      "reason": "The invoice lookup is keyed only by invoice_id and does not include an authenticated tenant or organization boundary."
+    },
+    {
+      "scar_id": "NYA-STRESS-00-00",
+      "path": "apps/checkout/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "This derived invoice collection is recomputed on every React render without useMemo."
+    },
+    {
+      "scar_id": "NYA-STRESS-27-12",
+      "path": "apps/desktop/settings.py",
+      "line": 5,
+      "evidence": "    path.write_text(json.dumps(settings), encoding=\"utf-8\")",
+      "reason": "The caller-supplied path is written directly without resolving it and verifying that it remains inside an allowed storage root."
+    },
+    {
+      "scar_id": "NYA-STRESS-53-12",
+      "path": "apps/desktop/settings.py",
+      "line": 5,
+      "evidence": "    path.write_text(json.dumps(settings), encoding=\"utf-8\")",
+      "reason": "This directly overwrites the durable settings file in place instead of writing, syncing, and atomically replacing it."
+    },
+    {
+      "scar_id": "NYA-STRESS-59-13",
+      "path": "apps/docs/restore.md",
+      "line": 6,
+      "evidence": "rm -rf /srv/app/data",
+      "reason": "The docs runbook directs a destructive production-data deletion without target verification, a recoverable backup or snapshot, or a preview gate."
+    },
+    {
+      "scar_id": "NYA-STRESS-63-14",
+      "path": "apps/experiments/analyze.py",
+      "line": 2,
+      "evidence": "return \"treatment\" if treatment.conversion > control.conversion else \"control\"",
+      "reason": "The decision uses only the primary conversion metric and includes no data-quality or harm guardrails, decision threshold, or stopping rule."
+    },
+    {
+      "scar_id": "NYA-STRESS-26-06",
+      "path": "apps/gateway/proxy.py",
+      "line": 5,
+      "evidence": "    return requests.get(target_url, timeout=10).text",
+      "reason": "The gateway directly fetches the caller-supplied URL without an allowed scheme/host policy or private and metadata network blocking."
+    },
+    {
+      "scar_id": "NYA-STRESS-33-11",
+      "path": "apps/mobile/ProfileView.kt",
+      "line": 2,
+      "evidence": "    return URL(\"https://api.example.com/profile\").readText()",
+      "reason": "The mobile remote dependency call performs a blocking URL read with no explicit deadline or timeout, directly repeating the scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-48-11",
+      "path": "apps/mobile/ProfileView.kt",
+      "line": 2,
+      "evidence": "    return URL(\"https://api.example.com/profile\").readText()",
+      "reason": "The synchronous readText network call performs blocking I/O directly during interactive profile rendering."
+    },
+    {
+      "scar_id": "NYA-STRESS-32-07",
+      "path": "apps/scheduler/retry.py",
+      "line": 6,
+      "evidence": "            continue",
+      "reason": "The temporary failure is retried immediately in a loop, with no exponential backoff or jitter."
+    },
+    {
+      "scar_id": "NYA-STRESS-45-10",
+      "path": "apps/science/velocity.py",
+      "line": 2,
+      "evidence": "    return distance_m / duration_ms",
+      "reason": "The calculation divides a distance in meters by a duration in milliseconds without converting the duration to seconds, directly repeating the incompatible-units scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-17-03",
+      "path": "apps/search/SearchService.ts",
+      "line": 4,
+      "evidence": "  return exec(`rg \"${pattern}\" \"${directory}\"`);",
+      "reason": "Dynamic pattern and directory values are interpolated into a shell command executed by exec."
+    },
+    {
+      "scar_id": "NYA-STRESS-24-05",
+      "path": "apps/tenancy/UserCache.ts",
+      "line": 4,
+      "evidence": "users.set(user.id, user);",
+      "reason": "The cache is keyed only by user ID and omits the authenticated tenant or organization boundary."
+    },
+    {
+      "scar_id": "NYA-STRESS-51-05",
+      "path": "apps/tenancy/UserCache.ts",
+      "line": 4,
+      "evidence": "  users.set(user.id, user);",
+      "reason": "The module-level Map is shared mutable state, and this write has no ownership or synchronization rule."
+    }
+  ]
+}

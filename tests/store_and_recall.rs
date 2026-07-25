@@ -91,7 +91,7 @@ fn recall_combines_exact_scope_fts_and_occurrence_rank() {
     nya::remember(&repo.root, RememberRequest { scar: Some(memo.id.clone()), ..Default::default() }).unwrap();
     nya::remember(&repo.root, remember("Database transaction", "Commit inventory atomically.", &["db/**"])).unwrap();
 
-    let exact = nya::recall(&repo.root, RecallRequest { task: "Unrelated copy change".into(), paths: vec!["src/ui/cart/Total.tsx".into()], limit: Some(0) }).unwrap();
+    let exact = nya::recall(&repo.root, RecallRequest { task: "Unrelated copy change".into(), paths: vec!["src/ui/cart/Total.tsx".into()], limit: Some(1) }).unwrap();
     assert_eq!(exact.len(), 1);
     assert_eq!(exact[0].id, scoped.id);
 

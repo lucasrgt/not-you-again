@@ -1,0 +1,146 @@
+{
+  "passed": false,
+  "scars_checked": 1024,
+  "findings": [
+    {
+      "scar_id": "NYA-STRESS-11-15",
+      "path": "apps/accessibility/Signup.tsx",
+      "line": 2,
+      "evidence": "  return <input name=\"email\" placeholder=\"Email address\" />;",
+      "reason": "The input has no associated visible label or equivalent programmatic accessible name; its placeholder does not provide one."
+    },
+    {
+      "scar_id": "NYA-STRESS-10-02",
+      "path": "apps/account/SessionBanner.tsx",
+      "line": 2,
+      "evidence": "  return <p>Your session expired. Sign in again.</p>;",
+      "reason": "The account UI component hard-codes translatable user-facing copy instead of referencing a stable localization catalog key."
+    },
+    {
+      "scar_id": "NYA-STRESS-08-01",
+      "path": "apps/admin/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The admin component directly uses a literal color instead of a role-based semantic design token."
+    },
+    {
+      "scar_id": "NYA-STRESS-08-01",
+      "path": "apps/admin/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "  color: \"#ffffff\",",
+      "reason": "The component style uses a literal color instead of a semantic design token."
+    },
+    {
+      "scar_id": "NYA-STRESS-42-09",
+      "path": "apps/analytics/train.py",
+      "line": 6,
+      "evidence": "    scaled = StandardScaler().fit_transform(features)",
+      "reason": "The scaler is fit on all features before the evaluation split, so preprocessing learns from evaluation data."
+    },
+    {
+      "scar_id": "NYA-STRESS-16-04",
+      "path": "apps/billing/invoice_query.py",
+      "line": 3,
+      "evidence": "        f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The SQL statement directly interpolates the untrusted invoice_id value into query syntax instead of passing it as a parameter."
+    },
+    {
+      "scar_id": "NYA-STRESS-00-00",
+      "path": "apps/checkout/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "The derived invoice collection is recalculated on every React component render without useMemo, directly repeating the expensive-derived-collection scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-53-12",
+      "path": "apps/desktop/settings.py",
+      "line": 16,
+      "evidence": "    path.write_text(json.dumps(settings), encoding=\"utf-8\")",
+      "reason": "This overwrites the durable settings file directly in place, without writing and syncing a temporary file and atomically replacing the target."
+    },
+    {
+      "scar_id": "NYA-STRESS-59-13",
+      "path": "apps/docs/restore.md",
+      "line": 6,
+      "evidence": "rm -rf /srv/app/data",
+      "reason": "The runbook executes destructive recovery directly, without a preceding backup, snapshot, target-verification, or preview gate."
+    },
+    {
+      "scar_id": "NYA-STRESS-63-14",
+      "path": "apps/experiments/analyze.py",
+      "line": 2,
+      "evidence": "    return \"treatment\" if treatment.conversion > control.conversion else \"control\"",
+      "reason": "The experiment winner is selected solely by the primary conversion metric, with no data-quality or harm guardrails, decision threshold, or stopping rule."
+    },
+    {
+      "scar_id": "NYA-STRESS-26-06",
+      "path": "apps/gateway/proxy.py",
+      "line": 5,
+      "evidence": "    return requests.get(target_url, timeout=10).text",
+      "reason": "The server fetches the caller-supplied target_url directly without validating its scheme, host, or resolved network destination against an outbound policy."
+    },
+    {
+      "scar_id": "NYA-STRESS-48-06",
+      "path": "apps/gateway/proxy.py",
+      "line": 5,
+      "evidence": "    return requests.get(target_url, timeout=10).text",
+      "reason": "The synchronous requests.get call performs blocking network I/O on the calling thread, directly repeating the scar within its gateway scope."
+    },
+    {
+      "scar_id": "NYA-STRESS-48-11",
+      "path": "apps/mobile/ProfileView.kt",
+      "line": 2,
+      "evidence": "    val connection = URL(\"https://api.example.com/profile\").openConnection()",
+      "reason": "The profile rendering function opens a network connection synchronously, directly repeating blocking network I/O on the mobile interactive thread."
+    },
+    {
+      "scar_id": "NYA-STRESS-37-08",
+      "path": "apps/platform/deployment.yaml",
+      "line": 10,
+      "evidence": "      containers:",
+      "reason": "The production Deployment container has no CPU or memory requests and limits, directly repeating the missing resource bounds scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-20-07",
+      "path": "apps/scheduler/retry.py",
+      "line": 4,
+      "evidence": "return send()",
+      "reason": "The delivery operation is retried after a temporary error without an idempotency identity, so a send that succeeded before reporting an error can be applied again."
+    },
+    {
+      "scar_id": "NYA-STRESS-32-07",
+      "path": "apps/scheduler/retry.py",
+      "line": 6,
+      "evidence": "            continue",
+      "reason": "The transient failure handler immediately continues the retry loop without exponential backoff or jitter."
+    },
+    {
+      "scar_id": "NYA-STRESS-45-10",
+      "path": "apps/science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "The calculation divides meters by milliseconds without conversion even though the function declares meters per second, directly repeating the incompatible-units scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-17-03",
+      "path": "apps/search/SearchService.ts",
+      "line": 4,
+      "evidence": "  return exec(`rg \"${pattern}\" \"${directory}\"`);",
+      "reason": "The changed code interpolates dynamic pattern and directory values into a shell command passed to exec, directly repeating the scar."
+    },
+    {
+      "scar_id": "NYA-STRESS-27-03",
+      "path": "apps/search/SearchService.ts",
+      "line": 4,
+      "evidence": "return exec(`rg \"${pattern}\" \"${directory}\"`);",
+      "reason": "The untrusted directory is used for filesystem access without resolving it and verifying that it remains inside an allowed storage root."
+    },
+    {
+      "scar_id": "NYA-STRESS-24-05",
+      "path": "apps/tenancy/UserCache.ts",
+      "line": 2,
+      "evidence": "return repository.findOne({ id: userId });",
+      "reason": "The lookup is keyed only by userId, omitting the tenant or organization authorization boundary required by the scar."
+    }
+  ]
+}

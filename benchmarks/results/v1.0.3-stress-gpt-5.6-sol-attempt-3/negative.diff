@@ -1,0 +1,224 @@
+diff --git a/apps/accessibility/design-accessibility/Signup.tsx b/apps/accessibility/design-accessibility/Signup.tsx
+index e69de29..90170a5 100644
+--- a/apps/accessibility/design-accessibility/Signup.tsx
++++ b/apps/accessibility/design-accessibility/Signup.tsx
+@@ -0,0 +1,8 @@
++export function Signup() {
++  return (
++    <label>
++      Email address
++      <input name="email" type="email" />
++    </label>
++  );
++}
+diff --git a/apps/account/design-accessibility/SessionBanner.tsx b/apps/account/design-accessibility/SessionBanner.tsx
+index e69de29..45954a3 100644
+--- a/apps/account/design-accessibility/SessionBanner.tsx
++++ b/apps/account/design-accessibility/SessionBanner.tsx
+@@ -0,0 +1,5 @@
++import { message } from "./messages";
++
++export function SessionBanner() {
++  return <p>{message("session.expired")}</p>;
++}
+diff --git a/apps/admin/design-accessibility/DeleteButton.tsx b/apps/admin/design-accessibility/DeleteButton.tsx
+index e69de29..a20c1f2 100644
+--- a/apps/admin/design-accessibility/DeleteButton.tsx
++++ b/apps/admin/design-accessibility/DeleteButton.tsx
+@@ -0,0 +1,4 @@
++export const deleteButtonStyle = {
++  background: "var(--color-danger)",
++  color: "var(--color-on-danger)",
++};
+diff --git a/apps/analytics/data-ml-science/train.py b/apps/analytics/data-ml-science/train.py
+index e69de29..2d3d9fb 100644
+--- a/apps/analytics/data-ml-science/train.py
++++ b/apps/analytics/data-ml-science/train.py
+@@ -0,0 +1,10 @@
++from sklearn.model_selection import train_test_split
++from sklearn.preprocessing import StandardScaler
++
++
++def prepare(features, labels):
++    x_train, x_test, y_train, y_test = train_test_split(
++        features, labels, test_size=0.2, random_state=42
++    )
++    scaler = StandardScaler().fit(x_train)
++    return scaler.transform(x_train), scaler.transform(x_test), y_train, y_test
+diff --git a/apps/billing/backend-api/invoice_query.py b/apps/billing/backend-api/invoice_query.py
+index e69de29..6da0c82 100644
+--- a/apps/billing/backend-api/invoice_query.py
++++ b/apps/billing/backend-api/invoice_query.py
+@@ -0,0 +1,5 @@
++def load_invoice(connection, organization_id: str, invoice_id: str):
++    return connection.execute(
++        "SELECT id, total FROM invoices WHERE organization_id = ? AND id = ?",
++        (organization_id, invoice_id),
++    ).fetchone()
+diff --git a/apps/checkout/frontend-performance/InvoiceTotals.tsx b/apps/checkout/frontend-performance/InvoiceTotals.tsx
+index e69de29..7f58489 100644
+--- a/apps/checkout/frontend-performance/InvoiceTotals.tsx
++++ b/apps/checkout/frontend-performance/InvoiceTotals.tsx
+@@ -0,0 +1,12 @@
++import { useMemo } from "react";
++
++export function InvoiceTotals({ invoices }) {
++  const visibleInvoices = useMemo(
++    () =>
++      invoices
++        .filter((invoice) => invoice.status !== "void")
++        .sort((left, right) => right.total - left.total),
++    [invoices],
++  );
++  return visibleInvoices.map((invoice) => invoice.total).join(", ");
++}
+diff --git a/apps/desktop/concurrency-clients/settings.py b/apps/desktop/concurrency-clients/settings.py
+index e69de29..09e07c3 100644
+--- a/apps/desktop/concurrency-clients/settings.py
++++ b/apps/desktop/concurrency-clients/settings.py
+@@ -0,0 +1,25 @@
++import json
++import os
++import tempfile
++from pathlib import Path
++
++SETTINGS_ROOT = (Path.home() / ".stress-settings").resolve()
++
++
++def settings_path(name: str) -> Path:
++    path = (SETTINGS_ROOT / name).resolve()
++    if SETTINGS_ROOT not in path.parents:
++        raise ValueError("invalid settings path")
++    return path
++
++
++def save_settings(name, settings):
++    path = settings_path(name)
++    with tempfile.NamedTemporaryFile(
++        mode="w", encoding="utf-8", dir=path.parent, delete=False
++    ) as handle:
++        json.dump(settings, handle)
++        handle.flush()
++        os.fsync(handle.fileno())
++        temporary = handle.name
++    os.replace(temporary, path)
+diff --git a/apps/docs/quality-operations/restore.md b/apps/docs/quality-operations/restore.md
+index e69de29..6d2bdec 100644
+--- a/apps/docs/quality-operations/restore.md
++++ b/apps/docs/quality-operations/restore.md
+@@ -0,0 +1,6 @@
++# Restore the service
++
++Verify the target host, create and validate a filesystem snapshot, and preview
++the archive contents. After explicit incident-commander approval, move the
++current data directory to the documented recovery location and extract the
++validated archive. Keep the snapshot until post-restore verification passes.
+diff --git a/apps/experiments/quality-operations/analyze.py b/apps/experiments/quality-operations/analyze.py
+index e69de29..1389172 100644
+--- a/apps/experiments/quality-operations/analyze.py
++++ b/apps/experiments/quality-operations/analyze.py
+@@ -0,0 +1,6 @@
++def choose_winner(control, treatment):
++    if not treatment.data_quality_ok or treatment.harm_rate > 0.01:
++        return "stop"
++    if treatment.sample_size < 10_000:
++        return "continue"
++    return "treatment" if treatment.lift_lower_bound > 0.0 else "control"
+diff --git a/apps/gateway/security-privacy/proxy.py b/apps/gateway/security-privacy/proxy.py
+index e69de29..c80729d 100644
+--- a/apps/gateway/security-privacy/proxy.py
++++ b/apps/gateway/security-privacy/proxy.py
+@@ -0,0 +1,10 @@
++import requests
++
++PREVIEW_DESTINATIONS = {
++    "documentation": "https://docs.example.com/preview",
++}
++
++
++def preview(destination: str):
++    target_url = PREVIEW_DESTINATIONS[destination]
++    return requests.get(target_url, timeout=10).text
+diff --git a/apps/mobile/concurrency-clients/ProfileView.kt b/apps/mobile/concurrency-clients/ProfileView.kt
+index e69de29..7db4a6b 100644
+--- a/apps/mobile/concurrency-clients/ProfileView.kt
++++ b/apps/mobile/concurrency-clients/ProfileView.kt
+@@ -0,0 +1,7 @@
++suspend fun loadProfile(io: CoroutineDispatcher): String =
++    withContext(io) {
++        val connection = URL("https://api.example.com/profile").openConnection()
++        connection.connectTimeout = 5000
++        connection.readTimeout = 5000
++        connection.getInputStream().bufferedReader().use { it.readText() }
++    }
+diff --git a/apps/platform/infrastructure-reliability/deployment.yaml b/apps/platform/infrastructure-reliability/deployment.yaml
+index e69de29..0a0e680 100644
+--- a/apps/platform/infrastructure-reliability/deployment.yaml
++++ b/apps/platform/infrastructure-reliability/deployment.yaml
+@@ -0,0 +1,19 @@
++apiVersion: apps/v1
++kind: Deployment
++metadata:
++  name: api
++  namespace: production
++spec:
++  replicas: 3
++  template:
++    spec:
++      containers:
++        - name: api
++          image: example/api@sha256:abc123
++          resources:
++            requests:
++              cpu: 250m
++              memory: 256Mi
++            limits:
++              cpu: "1"
++              memory: 512Mi
+diff --git a/apps/scheduler/infrastructure-reliability/retry.py b/apps/scheduler/infrastructure-reliability/retry.py
+index e69de29..9c31063 100644
+--- a/apps/scheduler/infrastructure-reliability/retry.py
++++ b/apps/scheduler/infrastructure-reliability/retry.py
+@@ -0,0 +1,12 @@
++import random
++import time
++
++
++def deliver(send):
++    for attempt in range(4):
++        try:
++            return send()
++        except TemporaryError:
++            if attempt == 3:
++                raise
++            time.sleep((2**attempt) * 0.1 + random.uniform(0, 0.05))
+diff --git a/apps/science/data-ml-science/velocity.py b/apps/science/data-ml-science/velocity.py
+index e69de29..84a1409 100644
+--- a/apps/science/data-ml-science/velocity.py
++++ b/apps/science/data-ml-science/velocity.py
+@@ -0,0 +1,3 @@
++def velocity_meters_per_second(distance_m: float, duration_ms: float) -> float:
++    duration_seconds = duration_ms / 1000.0
++    return distance_m / duration_seconds
+diff --git a/apps/search/backend-api/SearchService.ts b/apps/search/backend-api/SearchService.ts
+index e69de29..3fe0b3f 100644
+--- a/apps/search/backend-api/SearchService.ts
++++ b/apps/search/backend-api/SearchService.ts
+@@ -0,0 +1,5 @@
++import { execFile } from "node:child_process";
++
++export function countMatches(pattern: string, directory: string) {
++  return execFile("rg", [pattern, directory]);
++}
+diff --git a/apps/tenancy/security-privacy/UserCache.ts b/apps/tenancy/security-privacy/UserCache.ts
+index e69de29..965db37 100644
+--- a/apps/tenancy/security-privacy/UserCache.ts
++++ b/apps/tenancy/security-privacy/UserCache.ts
+@@ -0,0 +1,7 @@
++export function getUser(
++  repository: UserRepository,
++  organizationId: string,
++  userId: string,
++) {
++  return repository.findOne({ organizationId, id: userId });
++}

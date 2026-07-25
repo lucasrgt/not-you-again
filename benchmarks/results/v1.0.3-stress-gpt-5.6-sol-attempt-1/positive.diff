@@ -1,0 +1,163 @@
+diff --git a/apps/accessibility/Signup.tsx b/apps/accessibility/Signup.tsx
+index e69de29..cabfdc2 100644
+--- a/apps/accessibility/Signup.tsx
++++ b/apps/accessibility/Signup.tsx
+@@ -0,0 +1,3 @@
++export function Signup() {
++  return <input name="email" placeholder="Email address" />;
++}
+diff --git a/apps/account/SessionBanner.tsx b/apps/account/SessionBanner.tsx
+index e69de29..9997523 100644
+--- a/apps/account/SessionBanner.tsx
++++ b/apps/account/SessionBanner.tsx
+@@ -0,0 +1,3 @@
++export function SessionBanner() {
++  return <p>Your session expired. Sign in again.</p>;
++}
+diff --git a/apps/admin/DeleteButton.tsx b/apps/admin/DeleteButton.tsx
+index e69de29..11feda3 100644
+--- a/apps/admin/DeleteButton.tsx
++++ b/apps/admin/DeleteButton.tsx
+@@ -0,0 +1,4 @@
++export const deleteButtonStyle = {
++  background: "#b91c1c",
++  color: "#ffffff",
++};
+diff --git a/apps/analytics/train.py b/apps/analytics/train.py
+index e69de29..c06c0ff 100644
+--- a/apps/analytics/train.py
++++ b/apps/analytics/train.py
+@@ -0,0 +1,7 @@
++from sklearn.model_selection import train_test_split
++from sklearn.preprocessing import StandardScaler
++
++
++def prepare(features, labels):
++    scaled = StandardScaler().fit_transform(features)
++    return train_test_split(scaled, labels, test_size=0.2, random_state=42)
+diff --git a/apps/billing/invoice_query.py b/apps/billing/invoice_query.py
+index e69de29..ad8353f 100644
+--- a/apps/billing/invoice_query.py
++++ b/apps/billing/invoice_query.py
+@@ -0,0 +1,4 @@
++def load_invoice(connection, invoice_id: str):
++    return connection.execute(
++        f"SELECT id, total FROM invoices WHERE id = '{invoice_id}'"
++    ).fetchone()
+diff --git a/apps/checkout/InvoiceTotals.tsx b/apps/checkout/InvoiceTotals.tsx
+index e69de29..b8a8a08 100644
+--- a/apps/checkout/InvoiceTotals.tsx
++++ b/apps/checkout/InvoiceTotals.tsx
+@@ -0,0 +1,6 @@
++export function InvoiceTotals({ invoices }) {
++  const visibleInvoices = invoices
++    .filter((invoice) => invoice.status !== "void")
++    .sort((left, right) => right.total - left.total);
++  return visibleInvoices.map((invoice) => invoice.total).join(", ");
++}
+diff --git a/apps/desktop/settings.py b/apps/desktop/settings.py
+index e69de29..577f773 100644
+--- a/apps/desktop/settings.py
++++ b/apps/desktop/settings.py
+@@ -0,0 +1,5 @@
++import json
++
++
++def save_settings(path, settings):
++    path.write_text(json.dumps(settings), encoding="utf-8")
+diff --git a/apps/docs/restore.md b/apps/docs/restore.md
+index e69de29..3347411 100644
+--- a/apps/docs/restore.md
++++ b/apps/docs/restore.md
+@@ -0,0 +1,8 @@
++# Restore the service
++
++Run the following command on the production host:
++
++```bash
++rm -rf /srv/app/data
++tar -xf backup.tar -C /srv/app/data
++```
+diff --git a/apps/experiments/analyze.py b/apps/experiments/analyze.py
+index e69de29..d61c37f 100644
+--- a/apps/experiments/analyze.py
++++ b/apps/experiments/analyze.py
+@@ -0,0 +1,2 @@
++def choose_winner(control, treatment):
++    return "treatment" if treatment.conversion > control.conversion else "control"
+diff --git a/apps/gateway/proxy.py b/apps/gateway/proxy.py
+index e69de29..d5a0b82 100644
+--- a/apps/gateway/proxy.py
++++ b/apps/gateway/proxy.py
+@@ -0,0 +1,5 @@
++import requests
++
++
++def preview(target_url: str):
++    return requests.get(target_url, timeout=10).text
+diff --git a/apps/mobile/ProfileView.kt b/apps/mobile/ProfileView.kt
+index e69de29..deb17a3 100644
+--- a/apps/mobile/ProfileView.kt
++++ b/apps/mobile/ProfileView.kt
+@@ -0,0 +1,3 @@
++fun renderProfile(): String {
++    return URL("https://api.example.com/profile").readText()
++}
+diff --git a/apps/platform/deployment.yaml b/apps/platform/deployment.yaml
+index e69de29..ddc20d5 100644
+--- a/apps/platform/deployment.yaml
++++ b/apps/platform/deployment.yaml
+@@ -0,0 +1,10 @@
++apiVersion: apps/v1
++kind: Deployment
++metadata:
++  name: api
++spec:
++  template:
++    spec:
++      containers:
++        - name: api
++          image: example/api@sha256:abc123
+diff --git a/apps/scheduler/retry.py b/apps/scheduler/retry.py
+index e69de29..0b2dfff 100644
+--- a/apps/scheduler/retry.py
++++ b/apps/scheduler/retry.py
+@@ -0,0 +1,7 @@
++def deliver(send):
++    for _ in range(8):
++        try:
++            return send()
++        except TemporaryError:
++            continue
++    raise TemporaryError("delivery failed")
+diff --git a/apps/science/velocity.py b/apps/science/velocity.py
+index e69de29..9f2d7dc 100644
+--- a/apps/science/velocity.py
++++ b/apps/science/velocity.py
+@@ -0,0 +1,2 @@
++def velocity_meters_per_second(distance_m: float, duration_ms: float) -> float:
++    return distance_m / duration_ms
+diff --git a/apps/search/SearchService.ts b/apps/search/SearchService.ts
+index e69de29..4d05b9f 100644
+--- a/apps/search/SearchService.ts
++++ b/apps/search/SearchService.ts
+@@ -0,0 +1,5 @@
++import { exec } from "node:child_process";
++
++export function countMatches(pattern: string, directory: string) {
++  return exec(`rg "${pattern}" "${directory}"`);
++}
+diff --git a/apps/tenancy/UserCache.ts b/apps/tenancy/UserCache.ts
+index e69de29..da06142 100644
+--- a/apps/tenancy/UserCache.ts
++++ b/apps/tenancy/UserCache.ts
+@@ -0,0 +1,9 @@
++const users = new Map<string, User>();
++
++export function cacheUser(user: User) {
++  users.set(user.id, user);
++}
++
++export function getUser(userId: string) {
++  return users.get(userId);
++}

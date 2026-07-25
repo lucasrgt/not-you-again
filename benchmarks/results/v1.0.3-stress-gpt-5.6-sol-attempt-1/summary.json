@@ -1,0 +1,1377 @@
+{
+  "schema": 1,
+  "benchmark": "scar-corpus-stress",
+  "started_at": "2026-07-25T00:14:28.526294+00:00",
+  "completed_at": "2026-07-25T00:31:00.050097+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "seed": 20260724,
+  "corpus_size": 1024,
+  "families": 64,
+  "contexts": 16,
+  "domains": {
+    "backend-api": 8,
+    "concurrency-clients": 8,
+    "data-ml-science": 8,
+    "design-accessibility": 8,
+    "frontend-performance": 8,
+    "infrastructure-reliability": 8,
+    "quality-operations": 8,
+    "security-privacy": 8
+  },
+  "candidate": {
+    "version": "nya 1.0.3",
+    "sha256": "916e1727879d952227a301c30caaf0cef6e70480e3f39d35d9b5e62f8fb27d32"
+  },
+  "baseline": {
+    "version": "nya 1.0.2",
+    "sha256": "142a49d5e7152cfd442dcaea024ce2cd9242f5195e8ef5fcd8afdf6e31ecf683",
+    "multi_path_candidates": 1024,
+    "seconds": 2.141
+  },
+  "candidate_multi_path_candidates": 12,
+  "candidate_multi_path_seconds": 0.109,
+  "judge": "codex-cli 0.144.0 (gpt-5.6-sol)",
+  "retrieval": {
+    "probes": 128,
+    "targets_recalled": 128,
+    "targets_ranked_first": 128,
+    "bounded": 128,
+    "max_candidates": 12,
+    "negative_probes": 8,
+    "negative_empty": 8,
+    "latency_seconds": {
+      "p50": 0.109,
+      "p95": 0.11,
+      "p99": 0.125,
+      "max": 0.125
+    },
+    "results": [
+      {
+        "probe": 1,
+        "scar_id": "NYA-STRESS-24-05",
+        "key": "security-tenant-authorization",
+        "context": "tenancy",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 2,
+        "scar_id": "NYA-STRESS-48-11",
+        "key": "mobile-main-thread-io",
+        "context": "mobile",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 3,
+        "scar_id": "NYA-STRESS-08-01",
+        "key": "design-literal-color",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 4,
+        "scar_id": "NYA-STRESS-00-00",
+        "key": "react-expensive-derived-usememo",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 5,
+        "scar_id": "NYA-STRESS-42-09",
+        "key": "ml-training-test-leakage",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 6,
+        "scar_id": "NYA-STRESS-45-10",
+        "key": "science-unit-mismatch",
+        "context": "science",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 7,
+        "scar_id": "NYA-STRESS-59-13",
+        "key": "runbook-destructive-no-backup",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 8,
+        "scar_id": "NYA-STRESS-17-03",
+        "key": "backend-shell-interpolation",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 9,
+        "scar_id": "NYA-STRESS-32-07",
+        "key": "reliability-retry-no-backoff",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 10,
+        "scar_id": "NYA-STRESS-26-06",
+        "key": "security-ssrf",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 11,
+        "scar_id": "NYA-STRESS-11-15",
+        "key": "a11y-input-label",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 12,
+        "scar_id": "NYA-STRESS-63-14",
+        "key": "experiment-missing-guardrail",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.125
+      },
+      {
+        "probe": 13,
+        "scar_id": "NYA-STRESS-37-08",
+        "key": "infra-missing-resource-bounds",
+        "context": "platform",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 14,
+        "scar_id": "NYA-STRESS-53-12",
+        "key": "filesystem-nonatomic-write",
+        "context": "desktop",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 15,
+        "scar_id": "NYA-STRESS-16-04",
+        "key": "backend-sql-interpolation",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 16,
+        "scar_id": "NYA-STRESS-10-02",
+        "key": "ui-localized-string",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 17,
+        "scar_id": "NYA-STRESS-34-01",
+        "key": "reliability-unbounded-retry-layering",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 18,
+        "scar_id": "NYA-STRESS-19-04",
+        "key": "backend-missing-transaction",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 19,
+        "scar_id": "NYA-STRESS-25-13",
+        "key": "security-secret-logging",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 20,
+        "scar_id": "NYA-STRESS-63-06",
+        "key": "experiment-missing-guardrail",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 21,
+        "scar_id": "NYA-STRESS-07-07",
+        "key": "frontend-unbounded-render-list",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 22,
+        "scar_id": "NYA-STRESS-38-07",
+        "key": "infra-wildcard-iam",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 23,
+        "scar_id": "NYA-STRESS-61-07",
+        "key": "docs-stale-generated-output",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 24,
+        "scar_id": "NYA-STRESS-13-12",
+        "key": "a11y-focus-hidden",
+        "context": "desktop",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 25,
+        "scar_id": "NYA-STRESS-01-05",
+        "key": "react-unstable-memo-prop",
+        "context": "tenancy",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 26,
+        "scar_id": "NYA-STRESS-02-14",
+        "key": "react-effect-cleanup",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 27,
+        "scar_id": "NYA-STRESS-06-05",
+        "key": "frontend-eager-heavy-bundle",
+        "context": "tenancy",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 28,
+        "scar_id": "NYA-STRESS-08-07",
+        "key": "design-literal-color",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 29,
+        "scar_id": "NYA-STRESS-49-14",
+        "key": "client-lifecycle-cancellation",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 30,
+        "scar_id": "NYA-STRESS-21-15",
+        "key": "backend-unbounded-pagination",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 31,
+        "scar_id": "NYA-STRESS-39-06",
+        "key": "infra-nonexpand-contract-migration",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 32,
+        "scar_id": "NYA-STRESS-06-09",
+        "key": "frontend-eager-heavy-bundle",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 33,
+        "scar_id": "NYA-STRESS-08-00",
+        "key": "design-literal-color",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 34,
+        "scar_id": "NYA-STRESS-52-00",
+        "key": "resource-handle-leak",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 35,
+        "scar_id": "NYA-STRESS-08-13",
+        "key": "design-literal-color",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 36,
+        "scar_id": "NYA-STRESS-24-15",
+        "key": "security-tenant-authorization",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 37,
+        "scar_id": "NYA-STRESS-51-13",
+        "key": "concurrency-shared-mutation",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 38,
+        "scar_id": "NYA-STRESS-18-02",
+        "key": "backend-n-plus-one",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 39,
+        "scar_id": "NYA-STRESS-21-09",
+        "key": "backend-unbounded-pagination",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 40,
+        "scar_id": "NYA-STRESS-07-04",
+        "key": "frontend-unbounded-render-list",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 41,
+        "scar_id": "NYA-STRESS-31-12",
+        "key": "privacy-unbounded-retention",
+        "context": "desktop",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 42,
+        "scar_id": "NYA-STRESS-45-00",
+        "key": "science-unit-mismatch",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 43,
+        "scar_id": "NYA-STRESS-53-03",
+        "key": "filesystem-nonatomic-write",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 44,
+        "scar_id": "NYA-STRESS-15-04",
+        "key": "a11y-motion-preference",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 45,
+        "scar_id": "NYA-STRESS-52-03",
+        "key": "resource-handle-leak",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 46,
+        "scar_id": "NYA-STRESS-09-04",
+        "key": "design-literal-spacing",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 47,
+        "scar_id": "NYA-STRESS-24-02",
+        "key": "security-tenant-authorization",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 48,
+        "scar_id": "NYA-STRESS-36-07",
+        "key": "infra-floating-image-tag",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 49,
+        "scar_id": "NYA-STRESS-12-05",
+        "key": "a11y-nonsemantic-control",
+        "context": "tenancy",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 50,
+        "scar_id": "NYA-STRESS-19-05",
+        "key": "backend-missing-transaction",
+        "context": "tenancy",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 51,
+        "scar_id": "NYA-STRESS-48-07",
+        "key": "mobile-main-thread-io",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 52,
+        "scar_id": "NYA-STRESS-63-08",
+        "key": "experiment-missing-guardrail",
+        "context": "platform",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 53,
+        "scar_id": "NYA-STRESS-46-01",
+        "key": "science-float-equality",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 54,
+        "scar_id": "NYA-STRESS-23-13",
+        "key": "backend-naive-datetime",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 55,
+        "scar_id": "NYA-STRESS-29-12",
+        "key": "security-missing-rate-limit",
+        "context": "desktop",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 56,
+        "scar_id": "NYA-STRESS-60-02",
+        "key": "release-missing-rollback",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 57,
+        "scar_id": "NYA-STRESS-39-11",
+        "key": "infra-nonexpand-contract-migration",
+        "context": "mobile",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 58,
+        "scar_id": "NYA-STRESS-20-02",
+        "key": "backend-missing-idempotency",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 59,
+        "scar_id": "NYA-STRESS-20-13",
+        "key": "backend-missing-idempotency",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 60,
+        "scar_id": "NYA-STRESS-16-10",
+        "key": "backend-sql-interpolation",
+        "context": "science",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 61,
+        "scar_id": "NYA-STRESS-54-12",
+        "key": "concurrency-lock-order",
+        "context": "desktop",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 62,
+        "scar_id": "NYA-STRESS-34-00",
+        "key": "reliability-unbounded-retry-layering",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 63,
+        "scar_id": "NYA-STRESS-61-14",
+        "key": "docs-stale-generated-output",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 64,
+        "scar_id": "NYA-STRESS-14-00",
+        "key": "a11y-color-only-status",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 65,
+        "scar_id": "NYA-STRESS-46-15",
+        "key": "science-float-equality",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 66,
+        "scar_id": "NYA-STRESS-62-08",
+        "key": "analytics-sensitive-event",
+        "context": "platform",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 67,
+        "scar_id": "NYA-STRESS-43-09",
+        "key": "ml-uncontrolled-randomness",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 68,
+        "scar_id": "NYA-STRESS-12-07",
+        "key": "a11y-nonsemantic-control",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 69,
+        "scar_id": "NYA-STRESS-00-15",
+        "key": "react-expensive-derived-usememo",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 70,
+        "scar_id": "NYA-STRESS-18-15",
+        "key": "backend-n-plus-one",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.125
+      },
+      {
+        "probe": 71,
+        "scar_id": "NYA-STRESS-39-14",
+        "key": "infra-nonexpand-contract-migration",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 72,
+        "scar_id": "NYA-STRESS-28-06",
+        "key": "security-insecure-random",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 73,
+        "scar_id": "NYA-STRESS-47-13",
+        "key": "metrics-average-of-averages",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 74,
+        "scar_id": "NYA-STRESS-61-09",
+        "key": "docs-stale-generated-output",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 75,
+        "scar_id": "NYA-STRESS-34-03",
+        "key": "reliability-unbounded-retry-layering",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 76,
+        "scar_id": "NYA-STRESS-37-10",
+        "key": "infra-missing-resource-bounds",
+        "context": "science",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 77,
+        "scar_id": "NYA-STRESS-13-00",
+        "key": "a11y-focus-hidden",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 78,
+        "scar_id": "NYA-STRESS-14-01",
+        "key": "a11y-color-only-status",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 79,
+        "scar_id": "NYA-STRESS-16-15",
+        "key": "backend-sql-interpolation",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 80,
+        "scar_id": "NYA-STRESS-31-04",
+        "key": "privacy-unbounded-retention",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 81,
+        "scar_id": "NYA-STRESS-26-01",
+        "key": "security-ssrf",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 82,
+        "scar_id": "NYA-STRESS-48-02",
+        "key": "mobile-main-thread-io",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 83,
+        "scar_id": "NYA-STRESS-00-01",
+        "key": "react-expensive-derived-usememo",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 84,
+        "scar_id": "NYA-STRESS-61-11",
+        "key": "docs-stale-generated-output",
+        "context": "mobile",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 85,
+        "scar_id": "NYA-STRESS-30-01",
+        "key": "security-wildcard-cors",
+        "context": "admin",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 86,
+        "scar_id": "NYA-STRESS-07-14",
+        "key": "frontend-unbounded-render-list",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 87,
+        "scar_id": "NYA-STRESS-05-10",
+        "key": "frontend-layout-thrashing",
+        "context": "science",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 88,
+        "scar_id": "NYA-STRESS-59-10",
+        "key": "runbook-destructive-no-backup",
+        "context": "science",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 89,
+        "scar_id": "NYA-STRESS-40-00",
+        "key": "data-nonidempotent-ingestion",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 90,
+        "scar_id": "NYA-STRESS-12-00",
+        "key": "a11y-nonsemantic-control",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 91,
+        "scar_id": "NYA-STRESS-19-02",
+        "key": "backend-missing-transaction",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.125
+      },
+      {
+        "probe": 92,
+        "scar_id": "NYA-STRESS-28-05",
+        "key": "security-insecure-random",
+        "context": "tenancy",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 93,
+        "scar_id": "NYA-STRESS-09-11",
+        "key": "design-literal-spacing",
+        "context": "mobile",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 94,
+        "scar_id": "NYA-STRESS-02-09",
+        "key": "react-effect-cleanup",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 95,
+        "scar_id": "NYA-STRESS-43-02",
+        "key": "ml-uncontrolled-randomness",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 96,
+        "scar_id": "NYA-STRESS-12-14",
+        "key": "a11y-nonsemantic-control",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.125
+      },
+      {
+        "probe": 97,
+        "scar_id": "NYA-STRESS-11-06",
+        "key": "a11y-input-label",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 98,
+        "scar_id": "NYA-STRESS-27-04",
+        "key": "security-path-traversal",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 99,
+        "scar_id": "NYA-STRESS-35-09",
+        "key": "reliability-probe-semantics",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 100,
+        "scar_id": "NYA-STRESS-09-13",
+        "key": "design-literal-spacing",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 101,
+        "scar_id": "NYA-STRESS-63-11",
+        "key": "experiment-missing-guardrail",
+        "context": "mobile",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 102,
+        "scar_id": "NYA-STRESS-14-06",
+        "key": "a11y-color-only-status",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 103,
+        "scar_id": "NYA-STRESS-57-07",
+        "key": "test-shared-state",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 104,
+        "scar_id": "NYA-STRESS-45-07",
+        "key": "science-unit-mismatch",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 105,
+        "scar_id": "NYA-STRESS-08-03",
+        "key": "design-literal-color",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 106,
+        "scar_id": "NYA-STRESS-56-09",
+        "key": "test-fixed-sleep",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 107,
+        "scar_id": "NYA-STRESS-36-14",
+        "key": "infra-floating-image-tag",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 108,
+        "scar_id": "NYA-STRESS-01-06",
+        "key": "react-unstable-memo-prop",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 109,
+        "scar_id": "NYA-STRESS-33-03",
+        "key": "reliability-missing-timeout",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 110,
+        "scar_id": "NYA-STRESS-44-06",
+        "key": "data-null-collapse",
+        "context": "gateway",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 111,
+        "scar_id": "NYA-STRESS-29-14",
+        "key": "security-missing-rate-limit",
+        "context": "experiments",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 112,
+        "scar_id": "NYA-STRESS-11-09",
+        "key": "a11y-input-label",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 113,
+        "scar_id": "NYA-STRESS-01-04",
+        "key": "react-unstable-memo-prop",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 114,
+        "scar_id": "NYA-STRESS-07-00",
+        "key": "frontend-unbounded-render-list",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 115,
+        "scar_id": "NYA-STRESS-63-03",
+        "key": "experiment-missing-guardrail",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 116,
+        "scar_id": "NYA-STRESS-05-15",
+        "key": "frontend-layout-thrashing",
+        "context": "accessibility",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 117,
+        "scar_id": "NYA-STRESS-19-10",
+        "key": "backend-missing-transaction",
+        "context": "science",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 118,
+        "scar_id": "NYA-STRESS-03-00",
+        "key": "react-unstable-list-key",
+        "context": "checkout",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 119,
+        "scar_id": "NYA-STRESS-60-03",
+        "key": "release-missing-rollback",
+        "context": "search",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 120,
+        "scar_id": "NYA-STRESS-31-09",
+        "key": "privacy-unbounded-retention",
+        "context": "analytics",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 121,
+        "scar_id": "NYA-STRESS-61-12",
+        "key": "docs-stale-generated-output",
+        "context": "desktop",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 122,
+        "scar_id": "NYA-STRESS-16-13",
+        "key": "backend-sql-interpolation",
+        "context": "docs",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.093
+      },
+      {
+        "probe": 123,
+        "scar_id": "NYA-STRESS-21-02",
+        "key": "backend-unbounded-pagination",
+        "context": "account",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.11
+      },
+      {
+        "probe": 124,
+        "scar_id": "NYA-STRESS-24-04",
+        "key": "security-tenant-authorization",
+        "context": "billing",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 125,
+        "scar_id": "NYA-STRESS-47-07",
+        "key": "metrics-average-of-averages",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 126,
+        "scar_id": "NYA-STRESS-26-07",
+        "key": "security-ssrf",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.094
+      },
+      {
+        "probe": 127,
+        "scar_id": "NYA-STRESS-30-07",
+        "key": "security-wildcard-cors",
+        "context": "scheduler",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      },
+      {
+        "probe": 128,
+        "scar_id": "NYA-STRESS-40-08",
+        "key": "data-nonidempotent-ingestion",
+        "context": "platform",
+        "candidate_count": 12,
+        "rank": 1,
+        "seconds": 0.109
+      }
+    ],
+    "negative_results": [
+      {
+        "domain": "backend-api",
+        "candidate_count": 0,
+        "seconds": 0.11
+      },
+      {
+        "domain": "concurrency-clients",
+        "candidate_count": 0,
+        "seconds": 0.109
+      },
+      {
+        "domain": "data-ml-science",
+        "candidate_count": 0,
+        "seconds": 0.11
+      },
+      {
+        "domain": "design-accessibility",
+        "candidate_count": 0,
+        "seconds": 0.109
+      },
+      {
+        "domain": "frontend-performance",
+        "candidate_count": 0,
+        "seconds": 0.094
+      },
+      {
+        "domain": "infrastructure-reliability",
+        "candidate_count": 0,
+        "seconds": 0.093
+      },
+      {
+        "domain": "quality-operations",
+        "candidate_count": 0,
+        "seconds": 0.11
+      },
+      {
+        "domain": "security-privacy",
+        "candidate_count": 0,
+        "seconds": 0.125
+      }
+    ]
+  },
+  "positive_check": {
+    "targets": 16,
+    "detected": 15,
+    "unexpected_findings": 4,
+    "scars_checked": 1024,
+    "findings": 20,
+    "exit": 1,
+    "seconds": 538.188,
+    "results": [
+      {
+        "key": "react-expensive-derived-usememo",
+        "domain": "frontend-performance",
+        "scar_id": "NYA-STRESS-00-00",
+        "path": "apps/checkout/InvoiceTotals.tsx",
+        "detected": true
+      },
+      {
+        "key": "design-literal-color",
+        "domain": "design-accessibility",
+        "scar_id": "NYA-STRESS-08-01",
+        "path": "apps/admin/DeleteButton.tsx",
+        "detected": true
+      },
+      {
+        "key": "ui-localized-string",
+        "domain": "design-accessibility",
+        "scar_id": "NYA-STRESS-10-02",
+        "path": "apps/account/SessionBanner.tsx",
+        "detected": true
+      },
+      {
+        "key": "backend-shell-interpolation",
+        "domain": "backend-api",
+        "scar_id": "NYA-STRESS-17-03",
+        "path": "apps/search/SearchService.ts",
+        "detected": true
+      },
+      {
+        "key": "backend-sql-interpolation",
+        "domain": "backend-api",
+        "scar_id": "NYA-STRESS-16-04",
+        "path": "apps/billing/invoice_query.py",
+        "detected": true
+      },
+      {
+        "key": "security-tenant-authorization",
+        "domain": "security-privacy",
+        "scar_id": "NYA-STRESS-24-05",
+        "path": "apps/tenancy/UserCache.ts",
+        "detected": true
+      },
+      {
+        "key": "security-ssrf",
+        "domain": "security-privacy",
+        "scar_id": "NYA-STRESS-26-06",
+        "path": "apps/gateway/proxy.py",
+        "detected": true
+      },
+      {
+        "key": "reliability-retry-no-backoff",
+        "domain": "infrastructure-reliability",
+        "scar_id": "NYA-STRESS-32-07",
+        "path": "apps/scheduler/retry.py",
+        "detected": true
+      },
+      {
+        "key": "infra-missing-resource-bounds",
+        "domain": "infrastructure-reliability",
+        "scar_id": "NYA-STRESS-37-08",
+        "path": "apps/platform/deployment.yaml",
+        "detected": false
+      },
+      {
+        "key": "ml-training-test-leakage",
+        "domain": "data-ml-science",
+        "scar_id": "NYA-STRESS-42-09",
+        "path": "apps/analytics/train.py",
+        "detected": true
+      },
+      {
+        "key": "science-unit-mismatch",
+        "domain": "data-ml-science",
+        "scar_id": "NYA-STRESS-45-10",
+        "path": "apps/science/velocity.py",
+        "detected": true
+      },
+      {
+        "key": "mobile-main-thread-io",
+        "domain": "concurrency-clients",
+        "scar_id": "NYA-STRESS-48-11",
+        "path": "apps/mobile/ProfileView.kt",
+        "detected": true
+      },
+      {
+        "key": "filesystem-nonatomic-write",
+        "domain": "concurrency-clients",
+        "scar_id": "NYA-STRESS-53-12",
+        "path": "apps/desktop/settings.py",
+        "detected": true
+      },
+      {
+        "key": "runbook-destructive-no-backup",
+        "domain": "quality-operations",
+        "scar_id": "NYA-STRESS-59-13",
+        "path": "apps/docs/restore.md",
+        "detected": true
+      },
+      {
+        "key": "experiment-missing-guardrail",
+        "domain": "quality-operations",
+        "scar_id": "NYA-STRESS-63-14",
+        "path": "apps/experiments/analyze.py",
+        "detected": true
+      },
+      {
+        "key": "a11y-input-label",
+        "domain": "design-accessibility",
+        "scar_id": "NYA-STRESS-11-15",
+        "path": "apps/accessibility/Signup.tsx",
+        "detected": true
+      }
+    ]
+  },
+  "negative_check": {
+    "controls": 16,
+    "findings": 3,
+    "scars_checked": 1024,
+    "exit": 1,
+    "seconds": 431.203
+  },
+  "passed": false,
+  "worktree": "C:\\Users\\lucas\\AppData\\Local\\Temp\\nya-stress-benchmark-qt_x3pgg"
+}

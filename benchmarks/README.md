@@ -150,3 +150,36 @@ The output contains every seeded scar, injected diff, recall result, check
 verdict, stderr log, a machine-readable summary, and a Markdown report. This
 benchmark measures detection of already-known recurrences. It does not measure
 whether an agent avoids producing them without a final gate.
+
+## 1,024 scar stress benchmark
+
+`stress.py` crosses 64 documented error families with 16 synthetic monorepo
+surfaces to create 1,024 versioned scars. The families cover frontend
+performance, design and accessibility, backend and API design, security and
+privacy, infrastructure and reliability, data and machine learning, scientific
+computing, concurrency, clients, testing, documentation, and operations.
+
+The runner measures three separate properties:
+
+1. Bounded deterministic recall with stratified positive and unrelated negative
+   probes.
+2. One multi-file check containing 16 known recurrences across eight domains.
+3. One matching negative check containing the 16 corrected implementations.
+
+The generated records are scale fixtures derived from the versioned
+`stress_catalog.json`. They are not presented as 1,024 independent real
+incidents. Every family retains a primary reference, while the injected diffs
+and exact expected scar IDs remain auditable.
+
+```bash
+python benchmarks/stress.py \
+  --nya /path/to/candidate/nya \
+  --baseline-nya /path/to/nya-v1.0.2 \
+  --output benchmark-output \
+  --probes 128 \
+  --model gpt-5.6-sol
+```
+
+A pass requires every positive probe, bounded result counts, empty unrelated
+queries, all 16 exact recurrences with verbatim evidence, no unexpected
+finding, and zero findings for the corrected controls.

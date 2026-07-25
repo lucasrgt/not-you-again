@@ -121,7 +121,9 @@ Ranking uses:
 2. FTS5 relevance across task text, title, lesson, tags, and scope.
 3. Independent occurrence count.
 
-Every exact scope match is included.
+The requested limit bounds the complete ranked result, including exact scope
+matches. This keeps interactive recall concise even in repositories with broad
+or overlapping scopes.
 
 ## Remember
 
@@ -176,8 +178,10 @@ matches append occurrences rather than creating another scar.
 
 ## Check
 
-`nya check` resolves tracked and untracked changes outside `.nya/`, retrieves
-relevant scars, assembles a bounded diff, and invokes a fresh judge.
+`nya check` resolves tracked and untracked changes outside `.nya/`. For each
+changed path it deterministically selects every matching-scope scar plus
+relevant unscoped scars. Applicable scars are audited against that file's diff
+in bounded batches of 24, each with a fresh judge process.
 
 The judge may answer one question only:
 
@@ -186,8 +190,9 @@ The judge may answer one question only:
 Every finding requires a supplied scar ID, file, line, changed-code evidence,
 and reason. Generic suggestions are invalid.
 
-The normal green path uses one batch judge call. Proposed findings receive a
-second focused confirmation call before they block.
+Proposed findings receive a second focused confirmation call before they
+block. This keeps `recall` bounded for agent context while making the final
+gate exhaustive over repository policy that applies to the changed paths.
 
 Exit codes are:
 

@@ -202,9 +202,9 @@ real failure
 `nya check` performs a narrow, fail-closed audit:
 
 1. Resolve staged, unstaged, and untracked changes relative to `HEAD`.
-2. Retrieve exact scope matches and relevant unscoped scars.
-3. Build a bounded request containing only the diff and selected scars.
-4. Start a fresh isolated judge process.
+2. Retrieve every scar whose scope matches each changed path plus relevant unscoped scars.
+3. Audit applicable scars in bounded batches of 24 against the matching file diff.
+4. Start a fresh isolated judge process for every batch.
 5. Accept findings only for supplied scars and concrete changed code.
 6. Confirm every proposed finding with a second focused judge call.
 7. Return human output, JSON output, and a stable exit code.
@@ -586,6 +586,35 @@ tasks, hidden evaluators, a pinned model, and the released NYA binary.
 This is a single smoke run, not a general prevention rate. Read the
 [protocol](benchmarks/README.md), [auditable report](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/REPORT.md),
 and [machine-readable summary](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/summary.json).
+
+### 1,024 scar stress proof
+
+The v1.0.3 stress benchmark crosses 64 documented failure families with 16
+repository surfaces, then tests bounded recall and exhaustive recurrence
+checking across eight domains.
+
+| Corpus | Positive recall | Unrelated recall | Known recurrences | Corrected controls |
+| ---: | ---: | ---: | ---: | ---: |
+| 1,024 scars | 128 of 128 ranked first | 8 of 8 empty | 16 of 16 detected | 0 of 16 flagged |
+
+The candidate never returned more than the requested 12 recall results. The
+v1.0.2 binary returned 128 candidates for the same multi-path request despite a
+limit of 12. The v1.0.3 final check audited all 128 scars whose scopes matched
+the 16 changed paths, detected every injected recurrence by exact scar ID,
+path, and verbatim evidence, and produced no extra findings.
+
+The benchmark includes use of `useMemo`, semantic design tokens, localization,
+backend queries, tenant isolation, SSRF, retries, Kubernetes resources,
+machine-learning leakage, scientific units, client concurrency, atomic writes,
+runbooks, experiments, and accessibility. Read the
+[catalog](benchmarks/stress_catalog.json),
+[protocol](benchmarks/README.md),
+[auditable report](benchmarks/results/v1.0.3-stress-gpt-5.6-sol/REPORT.md),
+[machine-readable summary](benchmarks/results/v1.0.3-stress-gpt-5.6-sol/summary.json),
+and [disclosed prior attempts](benchmarks/results/v1.0.3-stress-gpt-5.6-sol/ATTEMPTS.md).
+
+This proves known-recurrence retrieval and detection at one corpus size. It
+does not estimate a universal prevention rate.
 
 ### Persisted scar detection proof
 

@@ -161,6 +161,20 @@ pub fn conditional(first: &str, confirmation: &str) -> Vec<String> {
     }
 }
 
+pub fn matching_judge(needle: &str, verdict: &str) -> Vec<String> {
+    let needle = needle.replace('\'', "''");
+    if cfg!(windows) {
+        vec![
+            "powershell".into(),
+            "-NoProfile".into(),
+            "-Command".into(),
+            format!("$text=[Console]::In.ReadToEnd(); if ($text.Contains('{needle}')) {{ Write-Output '{verdict}' }} else {{ Write-Output '{{\"findings\":[]}}' }}"),
+        ]
+    } else {
+        vec!["sh".into(), "-c".into(), format!("text=$(cat); if printf '%s' \"$text\" | grep -Fq '{needle}'; then printf '%s' '{verdict}'; else printf '%s' '{{\"findings\":[]}}'; fi")]
+    }
+}
+
 pub fn failing_judge() -> Vec<String> {
     if cfg!(windows) {
         vec!["powershell".into(), "-NoProfile".into(), "-Command".into(), "[Console]::In.ReadToEnd() | Out-Null; [Console]::Error.Write('runner failed'); exit 7".into()]

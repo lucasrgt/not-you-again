@@ -1,0 +1,27 @@
+{
+  "passed": false,
+  "scars_checked": 1024,
+  "findings": [
+    {
+      "scar_id": "NYA-STRESS-24-04",
+      "path": "apps/billing/invoice_query.py",
+      "line": 3,
+      "evidence": "\"SELECT id, total FROM invoices WHERE id = ?\", (invoice_id,)",
+      "reason": "The invoice lookup is keyed only by invoice_id and does not include an authenticated tenant or organization boundary."
+    },
+    {
+      "scar_id": "NYA-STRESS-27-12",
+      "path": "apps/desktop/settings.py",
+      "line": 6,
+      "evidence": "def save_settings(path, settings):",
+      "reason": "The caller-supplied path is used as the filesystem destination without resolving it and verifying that it remains inside an allowed storage root."
+    },
+    {
+      "scar_id": "NYA-STRESS-33-11",
+      "path": "apps/mobile/ProfileView.kt",
+      "line": 3,
+      "evidence": "        URL(\"https://api.example.com/profile\").readText()",
+      "reason": "The remote dependency call has no end-to-end deadline or propagated cancellation timeout, directly repeating the supplied scar."
+    }
+  ]
+}

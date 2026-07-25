@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 128,
+  "findings": [
+    {
+      "scar_id": "NYA-STRESS-10-15",
+      "path": "apps/accessibility/design-accessibility/Signup.tsx",
+      "line": 4,
+      "evidence": "      Email address",
+      "reason": "The user-facing label is written directly in UI code instead of referenced through a localization catalog key."
+    }
+  ]
+}

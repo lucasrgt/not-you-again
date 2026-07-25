@@ -1,7 +1,7 @@
 mod common;
 
-use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, recording_judge, slow_judge};
-use nya::{CheckRequest, RememberRequest};
+use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, matching_judge, recording_judge, slow_judge};
+use nya::{CheckRequest, Occurrence, RememberRequest, Scar};
 use std::fs;
 
 fn scar(repo: &Repo) -> nya::Scar {
@@ -79,6 +79,44 @@ fn check_honors_explicit_base_for_committed_work() {
 }
 
 #[test]
+fn check_bounds_and_finds_target_in_thousand_scar_corpus() {
+    let repo = Repo::new(&[]);
+    nya::init(&repo.root).unwrap();
+    let target_id = "NYA-STRESS-1023";
+    for index in 0..1024 {
+        let target = index == 1023;
+        let scar = Scar {
+            schema: 1,
+            id: format!("NYA-STRESS-{index:04}"),
+            title: if target { "Measured expensive invoice totals are recomputed during React renders".into() } else { format!("Unrelated repository lesson {index:04}") },
+            lesson: if target { "Cache the measured expensive invoice total calculation with useMemo.".into() } else { format!("Preserve unrelated invariant {index:04}.") },
+            scope: vec!["src/**".into()],
+            tags: vec!["stress".into()],
+            created_at: "2026-01-01T00:00:00Z".into(),
+            occurrences: vec![Occurrence {
+                occurred_at: "2026-01-01T00:00:00Z".into(),
+                source: Some(format!("benchmark:stress/{index:04}")),
+                reported_by: Some("benchmark:reviewer".into()),
+                corrected_by: Some("benchmark:developer".into()),
+                recorded_by: Some("benchmark:runner".into()),
+                recorded_for: None,
+                commit: None,
+            }],
+        };
+        fs::write(repo.root.join(format!(".nya/scars/{}.toml", scar.id)), toml::to_string_pretty(&scar).unwrap()).unwrap();
+    }
+    repo.commit_all("seed stress corpus");
+    repo.write("src/Dashboard.tsx", "const literal = calculateExpensiveInvoiceTotals(invoices);\n");
+    repo.configure(matching_judge(target_id, &finding(target_id, "src/Dashboard.tsx")), 5);
+
+    let result = nya::check(&repo.root, CheckRequest { task: Some("Memoize measured expensive invoice totals with useMemo".into()), ..Default::default() }).unwrap();
+
+    assert!(!result.passed);
+    assert_eq!(result.scars_checked, 1024);
+    assert_eq!(result.findings[0].scar_id, target_id);
+}
+
+#[test]
 fn codex_judge_receives_an_isolated_writable_home() {
     let (repo, _) = changed_repo();
     repo.configure_as("codex", isolated_home_judge(), 5);
@@ -88,7 +126,7 @@ fn codex_judge_receives_an_isolated_writable_home() {
 #[test]
 fn check_bounds_initial_and_confirmation_requests() {
     let (repo, scar) = changed_repo();
-    repo.write("src/large.rs", &format!("literal\n{}", "x".repeat(130_000)));
+    repo.write("src/new.rs", &format!("literal\n{}", "x".repeat(130_000)));
     let log = repo.root.join("judge-sizes.txt");
     repo.configure(recording_judge(&log, &finding(&scar.id, "src/new.rs")), 5);
     assert!(!nya::check(&repo.root, CheckRequest::default()).unwrap().passed);

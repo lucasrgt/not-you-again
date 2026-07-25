@@ -1,0 +1,514 @@
+[
+  {
+    "key": "react-expensive-derived-usememo",
+    "domain": "frontend-performance",
+    "title": "Measured expensive derived collections are recomputed during React renders",
+    "lesson": "Use useMemo for a measured expensive pure derivation whose dependencies change less often than the component renders. Do not apply memoization without a performance reason.",
+    "tags": ["react", "performance", "usememo"],
+    "reference": "https://react.dev/reference/react/useMemo"
+  },
+  {
+    "key": "react-unstable-memo-prop",
+    "domain": "frontend-performance",
+    "title": "Fresh object props defeat memoized React children",
+    "lesson": "Keep props passed to a measured memoized child referentially stable when their inputs are unchanged.",
+    "tags": ["react", "performance", "memo"],
+    "reference": "https://react.dev/reference/react/memo"
+  },
+  {
+    "key": "react-effect-cleanup",
+    "domain": "frontend-performance",
+    "title": "React effects leave subscriptions active after lifecycle changes",
+    "lesson": "Return cleanup for subscriptions, timers, listeners, and in-flight work established by an effect.",
+    "tags": ["react", "effects", "lifecycle"],
+    "reference": "https://react.dev/reference/react/useEffect"
+  },
+  {
+    "key": "react-unstable-list-key",
+    "domain": "frontend-performance",
+    "title": "React list items use unstable positional keys",
+    "lesson": "Use a stable identity from the data for list keys so insertions and reordering preserve component state correctly.",
+    "tags": ["react", "identity", "rendering"],
+    "reference": "https://react.dev/learn/rendering-lists"
+  },
+  {
+    "key": "react-derived-state-effect",
+    "domain": "frontend-performance",
+    "title": "React effects duplicate state that can be derived during render",
+    "lesson": "Calculate synchronous derived values during render instead of storing and synchronizing redundant state in an effect.",
+    "tags": ["react", "effects", "state"],
+    "reference": "https://react.dev/learn/you-might-not-need-an-effect"
+  },
+  {
+    "key": "frontend-layout-thrashing",
+    "domain": "frontend-performance",
+    "title": "Rendering repeatedly interleaves layout reads and writes",
+    "lesson": "Batch DOM reads and writes so a loop does not force synchronous layout for every item.",
+    "tags": ["browser", "performance", "layout"],
+    "reference": "https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing"
+  },
+  {
+    "key": "frontend-eager-heavy-bundle",
+    "domain": "frontend-performance",
+    "title": "Rarely used heavy UI code is loaded on the initial route",
+    "lesson": "Split genuinely deferred features at a stable route or interaction boundary instead of adding them to the initial bundle.",
+    "tags": ["frontend", "performance", "bundling"],
+    "reference": "https://web.dev/articles/reduce-javascript-payloads-with-code-splitting"
+  },
+  {
+    "key": "frontend-unbounded-render-list",
+    "domain": "frontend-performance",
+    "title": "Large collections render every row without a bound",
+    "lesson": "Paginate or virtualize collections that can grow beyond the measured rendering budget.",
+    "tags": ["frontend", "performance", "virtualization"],
+    "reference": "https://web.dev/articles/virtualize-long-lists-react-window"
+  },
+  {
+    "key": "design-literal-color",
+    "domain": "design-accessibility",
+    "title": "Component colors bypass semantic design tokens",
+    "lesson": "Reference role-based design tokens from components and add a semantic token when the role is missing.",
+    "tags": ["design-system", "tokens", "color"],
+    "reference": "https://designsystem.digital.gov/design-tokens/"
+  },
+  {
+    "key": "design-literal-spacing",
+    "domain": "design-accessibility",
+    "title": "Component spacing bypasses the design-system scale",
+    "lesson": "Use the repository spacing scale rather than introducing an isolated literal dimension in a component.",
+    "tags": ["design-system", "tokens", "spacing"],
+    "reference": "https://designsystem.digital.gov/design-tokens/"
+  },
+  {
+    "key": "ui-localized-string",
+    "domain": "design-accessibility",
+    "title": "User-facing copy bypasses the localization catalog",
+    "lesson": "Store translatable user-facing text in the message catalog and reference its stable key from UI code.",
+    "tags": ["localization", "copy", "frontend"],
+    "reference": "https://developer.android.com/guide/topics/resources/localization"
+  },
+  {
+    "key": "a11y-input-label",
+    "domain": "design-accessibility",
+    "title": "A user input has no programmatic label",
+    "lesson": "Associate every user input with a visible label or equivalent accessible name that describes the expected value.",
+    "tags": ["accessibility", "forms", "wcag"],
+    "reference": "https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html"
+  },
+  {
+    "key": "a11y-nonsemantic-control",
+    "domain": "design-accessibility",
+    "title": "A clickable generic element replaces a semantic control",
+    "lesson": "Use the native interactive element whose keyboard behavior, role, and state match the action.",
+    "tags": ["accessibility", "semantics", "keyboard"],
+    "reference": "https://www.w3.org/TR/WCAG22/"
+  },
+  {
+    "key": "a11y-focus-hidden",
+    "domain": "design-accessibility",
+    "title": "Custom styles remove the visible keyboard focus indicator",
+    "lesson": "Preserve a visible, sufficiently distinguishable focus indicator for every keyboard-operable control.",
+    "tags": ["accessibility", "focus", "wcag"],
+    "reference": "https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html"
+  },
+  {
+    "key": "a11y-color-only-status",
+    "domain": "design-accessibility",
+    "title": "Status is communicated by color alone",
+    "lesson": "Provide text, iconography with an accessible name, or another non-color cue for status and errors.",
+    "tags": ["accessibility", "color", "status"],
+    "reference": "https://www.w3.org/WAI/WCAG22/Understanding/distinguishable.html"
+  },
+  {
+    "key": "a11y-motion-preference",
+    "domain": "design-accessibility",
+    "title": "Nonessential animation ignores reduced-motion preferences",
+    "lesson": "Disable or reduce nonessential motion when the user requests reduced motion.",
+    "tags": ["accessibility", "motion", "css"],
+    "reference": "https://www.w3.org/TR/WCAG22/"
+  },
+  {
+    "key": "backend-sql-interpolation",
+    "domain": "backend-api",
+    "title": "Untrusted values are interpolated into a SQL statement",
+    "lesson": "Use parameterized queries and keep untrusted values separate from SQL syntax.",
+    "tags": ["backend", "database", "security"],
+    "reference": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+  },
+  {
+    "key": "backend-shell-interpolation",
+    "domain": "backend-api",
+    "title": "Dynamic process arguments are interpolated into a shell command",
+    "lesson": "Invoke the program without a shell and pass each dynamic value as a separate argument.",
+    "tags": ["backend", "process", "security"],
+    "reference": "https://nodejs.org/api/child_process.html"
+  },
+  {
+    "key": "backend-n-plus-one",
+    "domain": "backend-api",
+    "title": "A database query runs once for every item in a collection",
+    "lesson": "Load related data in a bounded query plan instead of issuing one query per row.",
+    "tags": ["backend", "database", "performance"],
+    "reference": "https://www.postgresql.org/docs/current/using-explain.html"
+  },
+  {
+    "key": "backend-missing-transaction",
+    "domain": "backend-api",
+    "title": "A multi-step invariant is updated outside one transaction",
+    "lesson": "Commit dependent state changes atomically so partial failure cannot expose an invalid intermediate state.",
+    "tags": ["backend", "database", "transactions"],
+    "reference": "https://www.postgresql.org/docs/current/tutorial-transactions.html"
+  },
+  {
+    "key": "backend-missing-idempotency",
+    "domain": "backend-api",
+    "title": "A retried write can apply the same business operation twice",
+    "lesson": "Give retryable writes an idempotency identity and return the original outcome for a repeated operation.",
+    "tags": ["backend", "api", "idempotency"],
+    "reference": "https://docs.stripe.com/api/idempotent_requests"
+  },
+  {
+    "key": "backend-unbounded-pagination",
+    "domain": "backend-api",
+    "title": "An API collection endpoint accepts an unbounded result size",
+    "lesson": "Enforce a server-side page-size ceiling and use a stable continuation mechanism.",
+    "tags": ["backend", "api", "pagination"],
+    "reference": "https://cloud.google.com/apis/design/design_patterns#list_pagination"
+  },
+  {
+    "key": "backend-api-compatibility",
+    "domain": "backend-api",
+    "title": "A presentation change silently changes an existing API field",
+    "lesson": "Preserve the established field meaning and add a new field for new semantics.",
+    "tags": ["backend", "api", "compatibility"],
+    "reference": "https://semver.org/"
+  },
+  {
+    "key": "backend-naive-datetime",
+    "domain": "backend-api",
+    "title": "Offset-aware timestamps are compared with a naive current time",
+    "lesson": "Normalize service timestamps and the current time to explicit compatible time zones before comparison.",
+    "tags": ["backend", "datetime", "correctness"],
+    "reference": "https://docs.python.org/3/library/datetime.html"
+  },
+  {
+    "key": "security-tenant-authorization",
+    "domain": "security-privacy",
+    "title": "Data access is keyed without the tenant authorization boundary",
+    "lesson": "Include the authenticated tenant or organization boundary in lookup, cache, and mutation authorization.",
+    "tags": ["security", "authorization", "multitenancy"],
+    "reference": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+  },
+  {
+    "key": "security-secret-logging",
+    "domain": "security-privacy",
+    "title": "Logs include credentials, tokens, or sensitive personal data",
+    "lesson": "Log stable nonsecret identifiers and redact sensitive values before they reach structured logging.",
+    "tags": ["security", "logging", "privacy"],
+    "reference": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html"
+  },
+  {
+    "key": "security-ssrf",
+    "domain": "security-privacy",
+    "title": "A server fetches an untrusted URL without an outbound policy",
+    "lesson": "Validate the destination against the allowed scheme and host policy and block private or metadata networks.",
+    "tags": ["security", "ssrf", "network"],
+    "reference": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"
+  },
+  {
+    "key": "security-path-traversal",
+    "domain": "security-privacy",
+    "title": "An untrusted path escapes the intended storage root",
+    "lesson": "Resolve the final path and verify it remains inside the allowed root before filesystem access.",
+    "tags": ["security", "filesystem", "validation"],
+    "reference": "https://owasp.org/www-community/attacks/Path_Traversal"
+  },
+  {
+    "key": "security-insecure-random",
+    "domain": "security-privacy",
+    "title": "A security token uses a predictable random generator",
+    "lesson": "Use the platform cryptographic random generator for tokens, reset links, nonces, and credentials.",
+    "tags": ["security", "cryptography", "randomness"],
+    "reference": "https://docs.python.org/3/library/secrets.html"
+  },
+  {
+    "key": "security-missing-rate-limit",
+    "domain": "security-privacy",
+    "title": "An expensive or sensitive endpoint has no abuse bound",
+    "lesson": "Apply an identity-aware rate or cost limit with an explicit overload response.",
+    "tags": ["security", "api", "availability"],
+    "reference": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+  },
+  {
+    "key": "security-wildcard-cors",
+    "domain": "security-privacy",
+    "title": "Credentialed cross-origin access trusts an unrestricted origin",
+    "lesson": "Allow only reviewed origins for credentialed requests and vary responses by the validated origin.",
+    "tags": ["security", "cors", "browser"],
+    "reference": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Origin_Resource_Sharing_Cheat_Sheet.html"
+  },
+  {
+    "key": "privacy-unbounded-retention",
+    "domain": "security-privacy",
+    "title": "Personal data is retained without a deletion boundary",
+    "lesson": "Define and enforce a retention period tied to the documented purpose and deletion workflow.",
+    "tags": ["privacy", "retention", "data"],
+    "reference": "https://www.nist.gov/privacy-framework"
+  },
+  {
+    "key": "reliability-retry-no-backoff",
+    "domain": "infrastructure-reliability",
+    "title": "Retries run immediately without bounded exponential backoff and jitter",
+    "lesson": "Retry only transient failures with a maximum attempt or time budget, exponential backoff, and jitter.",
+    "tags": ["reliability", "retry", "backoff"],
+    "reference": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+  },
+  {
+    "key": "reliability-missing-timeout",
+    "domain": "infrastructure-reliability",
+    "title": "A remote dependency call has no deadline",
+    "lesson": "Set an end-to-end deadline based on the caller budget and propagate cancellation to the dependency.",
+    "tags": ["reliability", "timeout", "network"],
+    "reference": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+  },
+  {
+    "key": "reliability-unbounded-retry-layering",
+    "domain": "infrastructure-reliability",
+    "title": "Multiple service layers independently retry the same operation",
+    "lesson": "Choose one retry layer and preserve a shared attempt budget so retries do not multiply downstream load.",
+    "tags": ["reliability", "retry", "distributed-systems"],
+    "reference": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+  },
+  {
+    "key": "reliability-probe-semantics",
+    "domain": "infrastructure-reliability",
+    "title": "Liveness and readiness probes test the same dependency condition",
+    "lesson": "Use readiness to remove traffic during recoverable dependency failure and liveness only for unrecoverable process failure.",
+    "tags": ["kubernetes", "health", "reliability"],
+    "reference": "https://kubernetes.io/docs/concepts/workloads/pods/probes/"
+  },
+  {
+    "key": "infra-floating-image-tag",
+    "domain": "infrastructure-reliability",
+    "title": "A deployment uses a mutable container image tag",
+    "lesson": "Pin production images to an immutable version or digest so rollout and rollback resolve the same artifact.",
+    "tags": ["containers", "deployment", "reproducibility"],
+    "reference": "https://docs.docker.com/build/building/best-practices/"
+  },
+  {
+    "key": "infra-missing-resource-bounds",
+    "domain": "infrastructure-reliability",
+    "title": "A production workload has no CPU or memory requests and limits",
+    "lesson": "Declare measured resource requests and protective limits so scheduling and overload behavior are explicit.",
+    "tags": ["kubernetes", "resources", "reliability"],
+    "reference": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+  },
+  {
+    "key": "infra-wildcard-iam",
+    "domain": "infrastructure-reliability",
+    "title": "An infrastructure policy grants wildcard actions or resources",
+    "lesson": "Grant only the reviewed actions on the narrowest practical resources and conditions.",
+    "tags": ["cloud", "iam", "security"],
+    "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
+  },
+  {
+    "key": "infra-nonexpand-contract-migration",
+    "domain": "infrastructure-reliability",
+    "title": "A deployment removes a schema contract before all readers migrate",
+    "lesson": "Use an expand, migrate, and contract sequence that remains compatible throughout rolling deployment.",
+    "tags": ["database", "migration", "deployment"],
+    "reference": "https://martinfowler.com/articles/evodb.html"
+  },
+  {
+    "key": "data-nonidempotent-ingestion",
+    "domain": "data-ml-science",
+    "title": "Reprocessing an input duplicates data-pipeline output",
+    "lesson": "Give each source record a stable identity and make retries or backfills upsert the same logical output.",
+    "tags": ["data", "pipeline", "idempotency"],
+    "reference": "https://beam.apache.org/documentation/basics/"
+  },
+  {
+    "key": "data-schema-unvalidated",
+    "domain": "data-ml-science",
+    "title": "A pipeline accepts records without validating the expected schema",
+    "lesson": "Validate required fields, types, and evolution rules at the ingestion boundary before transformation.",
+    "tags": ["data", "schema", "validation"],
+    "reference": "https://json-schema.org/learn/getting-started-step-by-step"
+  },
+  {
+    "key": "ml-training-test-leakage",
+    "domain": "data-ml-science",
+    "title": "Model preprocessing learns from evaluation data",
+    "lesson": "Split evaluation data before fitting preprocessing, feature selection, or model parameters.",
+    "tags": ["machine-learning", "evaluation", "leakage"],
+    "reference": "https://scikit-learn.org/stable/common_pitfalls.html"
+  },
+  {
+    "key": "ml-uncontrolled-randomness",
+    "domain": "data-ml-science",
+    "title": "A reported experiment cannot reproduce its random state",
+    "lesson": "Record and control every relevant source of randomness together with data and environment versions.",
+    "tags": ["machine-learning", "reproducibility", "randomness"],
+    "reference": "https://scikit-learn.org/stable/common_pitfalls.html"
+  },
+  {
+    "key": "data-null-collapse",
+    "domain": "data-ml-science",
+    "title": "Missing values are silently collapsed into a valid business value",
+    "lesson": "Preserve missingness explicitly until a documented domain rule performs imputation or rejection.",
+    "tags": ["data", "null", "correctness"],
+    "reference": "https://pandas.pydata.org/docs/user_guide/missing_data.html"
+  },
+  {
+    "key": "science-unit-mismatch",
+    "domain": "data-ml-science",
+    "title": "A scientific calculation combines values with incompatible units",
+    "lesson": "Represent or validate units at the calculation boundary and convert to one documented unit before arithmetic.",
+    "tags": ["science", "units", "correctness"],
+    "reference": "https://www.nist.gov/pml/owm/si-units"
+  },
+  {
+    "key": "science-float-equality",
+    "domain": "data-ml-science",
+    "title": "A numerical decision relies on exact floating-point equality",
+    "lesson": "Compare floating-point results with a domain-appropriate relative and absolute tolerance.",
+    "tags": ["science", "floating-point", "correctness"],
+    "reference": "https://docs.python.org/3/library/math.html#math.isclose"
+  },
+  {
+    "key": "metrics-average-of-averages",
+    "domain": "data-ml-science",
+    "title": "Metrics aggregate precomputed averages without their weights",
+    "lesson": "Aggregate the underlying numerator and denominator or carry the population weight with every partial metric.",
+    "tags": ["analytics", "metrics", "statistics"],
+    "reference": "https://prometheus.io/docs/practices/histograms/"
+  },
+  {
+    "key": "mobile-main-thread-io",
+    "domain": "concurrency-clients",
+    "title": "Blocking I/O runs on the interactive client main thread",
+    "lesson": "Move blocking storage and network work off the main thread and publish the result through the lifecycle-aware UI boundary.",
+    "tags": ["mobile", "performance", "threading"],
+    "reference": "https://developer.android.com/topic/performance/threads"
+  },
+  {
+    "key": "client-lifecycle-cancellation",
+    "domain": "concurrency-clients",
+    "title": "Asynchronous client work survives the owning screen lifecycle",
+    "lesson": "Cancel or detach asynchronous work when its owning lifecycle ends and ignore stale completion.",
+    "tags": ["client", "lifecycle", "async"],
+    "reference": "https://developer.android.com/topic/libraries/architecture/coroutines"
+  },
+  {
+    "key": "client-stale-response-race",
+    "domain": "concurrency-clients",
+    "title": "An older asynchronous response overwrites newer state",
+    "lesson": "Associate responses with the active request generation and discard completion from superseded work.",
+    "tags": ["client", "race-condition", "async"],
+    "reference": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController"
+  },
+  {
+    "key": "concurrency-shared-mutation",
+    "domain": "concurrency-clients",
+    "title": "Concurrent workers mutate shared state without one ownership rule",
+    "lesson": "Use message passing, immutability, or a correctly scoped synchronization primitive around shared mutation.",
+    "tags": ["concurrency", "state", "race-condition"],
+    "reference": "https://doc.rust-lang.org/book/ch16-03-shared-state.html"
+  },
+  {
+    "key": "resource-handle-leak",
+    "domain": "concurrency-clients",
+    "title": "A file, stream, or connection is not closed on every exit path",
+    "lesson": "Bind resource lifetime to a deterministic cleanup construct that runs on success, error, and cancellation.",
+    "tags": ["resources", "cleanup", "reliability"],
+    "reference": "https://docs.python.org/3/reference/compound_stmts.html#the-with-statement"
+  },
+  {
+    "key": "filesystem-nonatomic-write",
+    "domain": "concurrency-clients",
+    "title": "A durable file is overwritten in place",
+    "lesson": "Write and sync a temporary file in the destination directory, then atomically replace the target.",
+    "tags": ["filesystem", "durability", "atomicity"],
+    "reference": "https://docs.python.org/3/library/os.html#os.replace"
+  },
+  {
+    "key": "concurrency-lock-order",
+    "domain": "concurrency-clients",
+    "title": "Code acquires shared locks in inconsistent order",
+    "lesson": "Define one lock ordering and acquire multiple locks in that order on every path.",
+    "tags": ["concurrency", "deadlock", "locking"],
+    "reference": "https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html"
+  },
+  {
+    "key": "queue-missing-backpressure",
+    "domain": "concurrency-clients",
+    "title": "A producer can grow an in-memory work queue without bound",
+    "lesson": "Use a bounded queue and an explicit wait, reject, or shed policy when consumers are saturated.",
+    "tags": ["concurrency", "backpressure", "reliability"],
+    "reference": "https://sre.google/sre-book/handling-overload/"
+  },
+  {
+    "key": "test-fixed-sleep",
+    "domain": "quality-operations",
+    "title": "A test waits with a fixed sleep for an asynchronous condition",
+    "lesson": "Wait for the observable condition with a bounded deadline instead of guessing a wall-clock delay.",
+    "tags": ["testing", "flaky", "async"],
+    "reference": "https://docs.pytest.org/en/stable/explanation/flaky.html"
+  },
+  {
+    "key": "test-shared-state",
+    "domain": "quality-operations",
+    "title": "A test depends on mutable state left by another test",
+    "lesson": "Give every test isolated state and make execution order irrelevant.",
+    "tags": ["testing", "isolation", "reliability"],
+    "reference": "https://docs.pytest.org/en/stable/explanation/flaky.html"
+  },
+  {
+    "key": "docs-untested-example",
+    "domain": "quality-operations",
+    "title": "Published documentation contains an executable example that is not verified",
+    "lesson": "Run documentation examples in CI or generate them from tested source so commands and APIs stay valid.",
+    "tags": ["documentation", "testing", "examples"],
+    "reference": "https://docs.python.org/3/library/doctest.html"
+  },
+  {
+    "key": "runbook-destructive-no-backup",
+    "domain": "quality-operations",
+    "title": "A runbook performs destructive recovery without a backup or preview gate",
+    "lesson": "Require target verification, a recoverable backup or snapshot, and a preview before destructive recovery steps.",
+    "tags": ["operations", "runbook", "recovery"],
+    "reference": "https://sre.google/workbook/incident-response/"
+  },
+  {
+    "key": "release-missing-rollback",
+    "domain": "quality-operations",
+    "title": "A release procedure has no measurable rollback trigger",
+    "lesson": "Define monitored success criteria, a bounded observation window, and an executable rollback path before rollout.",
+    "tags": ["release", "operations", "rollback"],
+    "reference": "https://sre.google/workbook/canarying-releases/"
+  },
+  {
+    "key": "docs-stale-generated-output",
+    "domain": "quality-operations",
+    "title": "Generated reference documentation is edited independently of its source",
+    "lesson": "Regenerate reference artifacts from the canonical source and fail CI when committed output drifts.",
+    "tags": ["documentation", "generation", "ci"],
+    "reference": "https://go.dev/doc/comment"
+  },
+  {
+    "key": "analytics-sensitive-event",
+    "domain": "quality-operations",
+    "title": "Analytics events include raw sensitive user values",
+    "lesson": "Emit reviewed event fields with pseudonymous identifiers and exclude free-form or sensitive payloads.",
+    "tags": ["analytics", "privacy", "telemetry"],
+    "reference": "https://www.nist.gov/privacy-framework"
+  },
+  {
+    "key": "experiment-missing-guardrail",
+    "domain": "quality-operations",
+    "title": "An experiment decision uses a primary metric without safety guardrails",
+    "lesson": "Predefine data-quality and harm guardrails, decision thresholds, and a stopping rule before reading experiment results.",
+    "tags": ["experimentation", "statistics", "product"],
+    "reference": "https://www.itl.nist.gov/div898/handbook/"
+  }
+]
