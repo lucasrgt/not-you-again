@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The component directly uses a literal hex color, contradicting the requirement to reference a role-based semantic design token."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "  color: \"#ffffff\",",
+      "reason": "The literal hex color directly violates the requirement that components reference role-based semantic design tokens instead of literal color values."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "        f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The f-string embeds the untrusted invoice_id directly in SQL syntax instead of passing it separately as a query parameter, contradicting the scar's concrete requirement."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "The measured expensive derived collection is computed directly during render without useMemo, contradicting the scar's required remedy."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "    return distance_m / duration_ms",
+      "reason": "The function promises meters per second but directly divides meters by milliseconds, without validating units or converting milliseconds to seconds before arithmetic."
+    }
+  ]
+}

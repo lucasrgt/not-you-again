@@ -75,9 +75,13 @@ fn remember_rejects_unverified_or_invalid_records() {
     nya::init(&repo.root).unwrap();
     assert!(nya::remember(&repo.root, RememberRequest::default()).unwrap_err().to_string().contains("--title"));
     assert!(nya::remember(&repo.root, RememberRequest { title: Some("Title".into()), ..Default::default() }).unwrap_err().to_string().contains("--lesson"));
+    assert!(nya::remember(&repo.root, remember("Missing scope", "Every scar needs an applicability boundary.", &[])).unwrap_err().to_string().contains("has no scope"));
     assert!(nya::remember(&repo.root, RememberRequest { scar: Some("NYA-MISSING".into()), ..Default::default() }).unwrap_err().to_string().contains("was not found"));
     assert!(
-        nya::remember(&repo.root, RememberRequest { reported_by: Some("reviewer".into()), ..remember("Bad actor", "Names must be namespaced.", &[]) }).unwrap_err().to_string().contains("namespaced")
+        nya::remember(&repo.root, RememberRequest { reported_by: Some("reviewer".into()), ..remember("Bad actor", "Names must be namespaced.", &["**"]) })
+            .unwrap_err()
+            .to_string()
+            .contains("namespaced")
     );
     assert!(nya::remember(&repo.root, remember("Bad scope", "Scope must compile.", &["["])).unwrap_err().to_string().contains("invalid scope"));
 }
@@ -87,7 +91,7 @@ fn recall_combines_exact_scope_fts_and_occurrence_rank() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
     let scoped = nya::remember(&repo.root, remember("Design tokens", "Never use literal colors.", &["src/ui/**/*.tsx"])).unwrap();
-    let memo = nya::remember(&repo.root, remember("Memoize totals", "Use memoization for expensive totals.", &[])).unwrap();
+    let memo = nya::remember(&repo.root, remember("Memoize totals", "Use memoization for expensive totals.", &["**/*.tsx"])).unwrap();
     nya::remember(&repo.root, RememberRequest { scar: Some(memo.id.clone()), ..Default::default() }).unwrap();
     nya::remember(&repo.root, remember("Database transaction", "Commit inventory atomically.", &["db/**"])).unwrap();
 
@@ -109,7 +113,7 @@ fn recall_combines_exact_scope_fts_and_occurrence_rank() {
 fn corrupt_index_is_disposable_and_rebuilt() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
-    nya::remember(&repo.root, remember("Magic string", "Use the central constant.", &[])).unwrap();
+    nya::remember(&repo.root, remember("Magic string", "Use the central constant.", &["**"])).unwrap();
     nya::recall(&repo.root, RecallRequest::default()).unwrap();
     let index = repo.root.join(".nya/index-v1.sqlite3");
     fs::write(&index, b"not sqlite").unwrap();

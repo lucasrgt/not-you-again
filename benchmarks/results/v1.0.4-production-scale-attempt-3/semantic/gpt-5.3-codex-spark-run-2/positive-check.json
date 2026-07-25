@@ -1,0 +1,34 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "+  background: \"#b91c1c\",",
+      "reason": "This added background value is a hardcoded hex literal, which directly violates the lesson requirement to use semantic role-based design tokens (e.g., var(--color-danger)) instead of literal colors."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The SQL string is built with an f-string that inserts `invoice_id` directly into the query text, while only `organization_id` is parameterized, which violates the requirement to keep untrusted values separate via parameterization."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "const visibleInvoices = invoices",
+      "reason": "The change computes a filtered/sorted derived `visibleInvoices` collection directly in render, which is the exact expensive pure derivation pattern the lesson requires to be memoized with `useMemo` rather than recalculated each render."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "The expression divides meters by milliseconds without converting duration to a documented common unit first, directly violating the scar requirement to validate/normalize units at the calculation boundary before arithmetic."
+    }
+  ]
+}

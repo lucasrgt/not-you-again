@@ -1,0 +1,14 @@
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2848, "output_bytes": 617, "seconds": 7.797, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2813, "output_bytes": 393, "seconds": 8.093, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 3030, "output_bytes": 389, "seconds": 7.047, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2723, "output_bytes": 338, "seconds": 5.172, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2536, "output_bytes": 353, "seconds": 14.171, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2542, "output_bytes": 315, "seconds": 4.703, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2588, "output_bytes": 404, "seconds": 5.703, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2790, "output_bytes": 399, "seconds": 5.422, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2444, "output_bytes": 366, "seconds": 7.921, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2875, "output_bytes": 16, "seconds": 5.156, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2810, "output_bytes": 16, "seconds": 5.75, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 3125, "output_bytes": 393, "seconds": 6.875, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2773, "output_bytes": 16, "seconds": 5.671, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2889, "output_bytes": 405, "seconds": 5.969, "reported_tokens": 3, "exit": 0}

@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 1000,
+  "findings": [
+    {
+      "scar_id": "NYA-SCALE-00999",
+      "path": "src/scale/LargeViewModel.tsx",
+      "line": 4001,
+      "evidence": "export const lateBackground = \"#b91c1c\";",
+      "reason": "The late changed line repeats the supplied scale scar."
+    }
+  ]
+}

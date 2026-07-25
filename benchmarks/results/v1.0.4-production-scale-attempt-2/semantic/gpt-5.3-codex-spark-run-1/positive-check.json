@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The proposed change introduces a hardcoded hex literal for `background`, which directly conflicts with the SCAR’s rule to use design tokens (e.g., `var(--...)`) instead of literal colors."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "  color: \"#ffffff\",",
+      "reason": "The scar explicitly flags literal hex color values as violations; the change adds `color: \"#ffffff\"` directly, so this is a recurrence of NYA-VARIANCE-01."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The SQL statement is built as an f-string that injects `invoice_id` directly into the query literal instead of binding it as a parameter, directly reproducing untrusted SQL interpolation."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "+  const visibleInvoices = invoices",
+      "reason": "The diff adds inline, render-time derivation of a filtered/sorted invoices collection (`filter`/`sort`) without `useMemo`, which is the exact expensive derived-collection recomputation pattern described by NYA-VARIANCE-00."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "This new code performs arithmetic directly on meters and milliseconds arguments without converting to a common documented unit first, which directly matches SCAR NYA-VARIANCE-03’s unit-conversion lesson."
+    }
+  ]
+}

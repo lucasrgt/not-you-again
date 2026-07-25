@@ -331,7 +331,7 @@ fn cli_reports_empty_recall_and_invalid_repository() {
 
     let remember_help = bin().args(["remember", "--help"]).output().unwrap();
     let help = String::from_utf8(remember_help.stdout).unwrap();
-    assert!(help.contains("Existing scar ID") && help.contains("repeat for multiple scopes") && help.contains("#discussion_r"));
+    assert!(help.contains("Existing scar ID") && help.contains("Required affected glob") && help.contains("#discussion_r"));
     let collect_help = String::from_utf8(bin().args(["collect", "--help"]).output().unwrap().stdout).unwrap();
     assert!(collect_help.contains("--all") && collect_help.contains("--since") && collect_help.contains("--dry-run") && collect_help.contains("--offline"));
     let check_help = String::from_utf8(bin().args(["check", "--help"]).output().unwrap().stdout).unwrap();

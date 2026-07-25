@@ -3,7 +3,7 @@
     "key": "react-expensive-derived-usememo",
     "domain": "frontend-performance",
     "title": "Measured expensive derived collections are recomputed during React renders",
-    "lesson": "Use useMemo for a measured expensive pure derivation whose dependencies change less often than the component renders. Do not apply memoization without a performance reason.",
+    "lesson": "Use useMemo for a measured expensive pure derivation whose dependencies change less often than the component renders. Wrapping that derivation in useMemo with the complete dependency list satisfies this lesson and must not be flagged. Do not apply memoization without a performance reason.",
     "tags": ["react", "performance", "usememo"],
     "reference": "https://react.dev/reference/react/useMemo"
   },
@@ -67,7 +67,7 @@
     "key": "design-literal-color",
     "domain": "design-accessibility",
     "title": "Component colors bypass semantic design tokens",
-    "lesson": "Reference role-based design tokens from components and add a semantic token when the role is missing.",
+    "lesson": "Reference role-based design tokens from components and add a semantic token when the role is missing. CSS custom-property references such as var(--color-danger) satisfy this lesson; literal hex, rgb, or named color values do not.",
     "tags": ["design-system", "tokens", "color"],
     "reference": "https://designsystem.digital.gov/design-tokens/"
   },

@@ -1,0 +1,12 @@
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2896, "output_bytes": 300, "seconds": 6.563, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2861, "output_bytes": 384, "seconds": 9.297, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 3195, "output_bytes": 387, "seconds": 9.422, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2771, "output_bytes": 436, "seconds": 6.672, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2611, "output_bytes": 328, "seconds": 11.484, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2667, "output_bytes": 403, "seconds": 6.671, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2993, "output_bytes": 374, "seconds": 9.687, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "confirmation", "prompt_bytes": 2630, "output_bytes": 414, "seconds": 6.719, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2923, "output_bytes": 16, "seconds": 9.078, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2858, "output_bytes": 16, "seconds": 6.062, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 3290, "output_bytes": 16, "seconds": 6.391, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.3-codex-spark-run-1", "stage": "audit", "prompt_bytes": 2821, "output_bytes": 16, "seconds": 6.672, "reported_tokens": 2, "exit": 0}

@@ -130,6 +130,10 @@ or overlapping scopes.
 `nya remember` creates a scar or appends an occurrence to an explicitly selected
 or exact normalized title match.
 
+Every new scar requires at least one valid path glob. A truly repository-wide
+scar uses the explicit `**` glob. Missing scopes fail closed rather than
+falling back to relevance search.
+
 Every occurrence preserves reporter, corrector, recorder, represented actor,
 source, commit, and time when available. The system never invents a reporter.
 
@@ -163,7 +167,7 @@ source discovery
 
 Every accepted candidate needs verbatim source evidence, a concrete correction,
 and a reusable lesson. A recurrence must reference one supplied scar. A new
-candidate must provide a complete title, lesson, scopes, and tags. Confirmation
+candidate must provide a complete title, lesson, nonempty scopes, and tags. Confirmation
 may only return an unchanged proposal.
 
 `nya collect --all` scans reachable history. Incremental `nya collect` starts
@@ -179,9 +183,11 @@ matches append occurrences rather than creating another scar.
 ## Check
 
 `nya check` resolves tracked and untracked changes outside `.nya/`. For each
-changed path it deterministically selects every matching-scope scar plus
-relevant unscoped scars. Applicable scars are audited against that file's diff
-in bounded batches of 24, each with a fresh judge process.
+changed path it deterministically selects every matching-scope scar. Applicable
+scars are audited in batches of 24. File diffs are independently divided into
+overlapping windows of at most 80,000 characters, so neither scar count nor
+diff size can silently truncate an audit. Every scar batch is crossed with
+every diff window through a fresh judge process.
 
 The judge may answer one question only:
 
@@ -190,9 +196,11 @@ The judge may answer one question only:
 Every finding requires a supplied scar ID, file, line, changed-code evidence,
 and reason. Generic suggestions are invalid.
 
-Proposed findings receive a second focused confirmation call before they
-block. This keeps `recall` bounded for agent context while making the final
-gate exhaustive over repository policy that applies to the changed paths.
+Proposed findings receive a second independent confirmation call before they
+block. The verifier must distinguish code that contradicts a lesson from code
+that implements its named remedy. This keeps `recall` bounded for agent context
+while making the final gate exhaustive over repository policy that applies to
+the changed paths.
 
 Exit codes are:
 

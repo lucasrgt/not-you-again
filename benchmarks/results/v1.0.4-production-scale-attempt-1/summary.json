@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "benchmark": "production-scale",
+  "started_at": "2026-07-25T02:13:41.251102+00:00",
+  "completed_at": "2026-07-25T02:22:20.547756+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "candidate": {
+    "version": "nya 1.0.4",
+    "sha256": "cbf3fbfc00739dd2c274ea1b43c8f839ed73af22384980b7ec1454a5e5afc156"
+  },
+  "scale": {
+    "corpus_size": 10000,
+    "applicable_scars": 1000,
+    "probes": 64,
+    "recalled": 64,
+    "ranked_first": 64,
+    "bounded": 64,
+    "negative_candidates": 0,
+    "negative_recall_seconds": 0.547,
+    "recall_latency_seconds": {
+      "p50": 0.562,
+      "p95": 0.594,
+      "max": 63.453
+    },
+    "positive": {
+      "exit": 1,
+      "seconds": 4.782,
+      "diff_bytes": 135124,
+      "scars_checked": 1000,
+      "findings": 1,
+      "exact_target": true
+    },
+    "negative": {
+      "exit": 0,
+      "seconds": 4.891,
+      "diff_bytes": 135136,
+      "scars_checked": 1000,
+      "findings": 0
+    },
+    "judge_cost": {
+      "calls": 169,
+      "audit_calls": 168,
+      "confirmation_calls": 1,
+      "prompt_bytes": 14329407,
+      "max_prompt_bytes": 96503,
+      "judge_seconds": 0.015,
+      "reported_tokens": null
+    },
+    "passed": true
+  },
+  "semantic_runs": [
+    {
+      "model": "gpt-5.6-sol",
+      "repetition": 1,
+      "targets": 4,
+      "detected": 4,
+      "unexpected": 0,
+      "missed": [],
+      "positive_exit": 1,
+      "positive_seconds": 70.141,
+      "negative_findings": 0,
+      "negative_exit": 0,
+      "negative_seconds": 22.421,
+      "cost": {
+        "calls": 13,
+        "audit_calls": 8,
+        "confirmation_calls": 5,
+        "prompt_bytes": 33966,
+        "max_prompt_bytes": 3020,
+        "judge_seconds": 91.0,
+        "reported_tokens": 102
+      },
+      "passed": true
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "repetition": 2,
+      "targets": 4,
+      "detected": 4,
+      "unexpected": 0,
+      "missed": [],
+      "positive_exit": 1,
+      "positive_seconds": 79.031,
+      "negative_findings": 0,
+      "negative_exit": 0,
+      "negative_seconds": 33.469,
+      "cost": {
+        "calls": 13,
+        "audit_calls": 8,
+        "confirmation_calls": 5,
+        "prompt_bytes": 33997,
+        "max_prompt_bytes": 3020,
+        "judge_seconds": 110.936,
+        "reported_tokens": 89
+      },
+      "passed": true
+    },
+    {
+      "model": "gpt-5.3-codex-spark",
+      "repetition": 1,
+      "targets": 4,
+      "detected": 4,
+      "unexpected": 0,
+      "missed": [],
+      "positive_exit": 1,
+      "positive_seconds": 58.218,
+      "negative_findings": 1,
+      "negative_exit": 1,
+      "negative_seconds": 35.469,
+      "cost": {
+        "calls": 13,
+        "audit_calls": 8,
+        "confirmation_calls": 5,
+        "prompt_bytes": 34470,
+        "max_prompt_bytes": 3020,
+        "judge_seconds": 91.89,
+        "reported_tokens": 89
+      },
+      "passed": false
+    },
+    {
+      "model": "gpt-5.3-codex-spark",
+      "repetition": 2,
+      "targets": 4,
+      "detected": 4,
+      "unexpected": 0,
+      "missed": [],
+      "positive_exit": 1,
+      "positive_seconds": 57.921,
+      "negative_findings": 0,
+      "negative_exit": 4294967295,
+      "negative_seconds": 26.094,
+      "cost": {
+        "calls": 11,
+        "audit_calls": 7,
+        "confirmation_calls": 4,
+        "prompt_bytes": 29293,
+        "max_prompt_bytes": 3020,
+        "judge_seconds": 82.706,
+        "reported_tokens": 40
+      },
+      "passed": false
+    }
+  ],
+  "variance": {
+    "gpt-5.6-sol": {
+      "runs": 2,
+      "passed_runs": 2,
+      "detection_stdev": 0.0,
+      "latency_stdev_seconds": 9.969
+    },
+    "gpt-5.3-codex-spark": {
+      "runs": 2,
+      "passed_runs": 0,
+      "detection_stdev": 0.0,
+      "latency_stdev_seconds": 4.836
+    }
+  },
+  "passed": false,
+  "worktree": "C:\\Users\\lucas\\AppData\\Local\\Temp\\nya-production-scale-3z5s0czv"
+}

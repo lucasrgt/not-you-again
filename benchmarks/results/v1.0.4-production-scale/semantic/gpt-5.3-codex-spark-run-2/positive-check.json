@@ -1,0 +1,34 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The lesson explicitly requires role-based semantic token references (e.g., var(--color-danger)), but this line sets a literal hex color instead of a token."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "This SQL text injects `invoice_id` directly via f-string interpolation instead of using a bound placeholder, so untrusted input is part of SQL syntax and violates the requirement to keep values separate."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "This computes a derived invoice list (`filter`/`sort`) inside render without `useMemo`, which contradicts the lesson’s requirement to memoize expensive pure derivations."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "+    return distance_m / duration_ms",
+      "reason": "This performs subtraction only on incompatible units (`distance_m` and `duration_ms`) with no conversion step, so the requirement to normalize/convert inputs to a common documented unit before arithmetic is not met."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The added style defines component colors as hard-coded hex literals instead of design tokens, which is exactly the non-token usage described by NYA-VARIANCE-01."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "This line interpolates `invoice_id` directly into the SQL string using an f-string, matching NYA-VARIANCE-02's direct SQL interpolation of untrusted input."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "The new code derives `visibleInvoices` with `filter`/`sort` inside render and does not wrap it in `useMemo`, which directly matches the scar’s issue about expensive derived collections being recomputed on each render."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "The added implementation performs `distance_m / duration_ms`, directly doing arithmetic across meters and milliseconds in a function named for meters-per-second without unit conversion, which is exactly the incompatible-units calculation pattern described by NYA-VARIANCE-03."
+    }
+  ]
+}

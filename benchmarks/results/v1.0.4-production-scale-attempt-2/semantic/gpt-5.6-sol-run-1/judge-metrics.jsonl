@@ -1,0 +1,13 @@
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 2848, "output_bytes": 478, "seconds": 9.813, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 2813, "output_bytes": 329, "seconds": 6.328, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 3030, "output_bytes": 336, "seconds": 6.125, "reported_tokens": 15, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 2723, "output_bytes": 292, "seconds": 7.516, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "confirmation", "prompt_bytes": 2472, "output_bytes": 287, "seconds": 6.125, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "confirmation", "prompt_bytes": 2467, "output_bytes": 282, "seconds": 6.375, "reported_tokens": 14, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "confirmation", "prompt_bytes": 2524, "output_bytes": 362, "seconds": 6.843, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "confirmation", "prompt_bytes": 2737, "output_bytes": 311, "seconds": 7.109, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "confirmation", "prompt_bytes": 2398, "output_bytes": 322, "seconds": 7.359, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 2875, "output_bytes": 16, "seconds": 8.672, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 2810, "output_bytes": 16, "seconds": 5.672, "reported_tokens": 2, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 3125, "output_bytes": 16, "seconds": 6.125, "reported_tokens": 3, "exit": 0}
+{"label": "gpt-5.6-sol-run-1", "stage": "audit", "prompt_bytes": 2773, "output_bytes": 16, "seconds": 5.359, "reported_tokens": 2, "exit": 0}

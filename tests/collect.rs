@@ -119,6 +119,10 @@ fn collector_rejects_invented_evidence_and_changed_confirmations() {
     repo.configure(judge(&bad_scope.to_string()), 5);
     assert!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap_err().to_string().contains("scope does not match"));
 
+    bad_scope["candidates"][0]["scope"] = json!([]);
+    repo.configure(judge(&bad_scope.to_string()), 5);
+    assert!(nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap_err().to_string().contains("incomplete lesson or scope"));
+
     let proposed = proposal(&source, "new", "", "Literal colors bypass tokens", "fix: replace literal color with token");
     let changed = proposal(&source, "new", "", "A changed title", "fix: replace literal color with token");
     repo.configure(conditional(&proposed, &changed), 5);
@@ -133,7 +137,11 @@ fn manual_scar_sources_are_not_recollected() {
     repo.write("src/card.css", ".card { color: var(--text); }\n");
     repo.commit_all("fix: replace literal color with token");
     let commit = output(&repo.root, &["rev-parse", "HEAD"]);
-    nya::remember(&repo.root, RememberRequest { title: Some("Already recorded".into()), lesson: Some("Use tokens.".into()), source: Some(format!("git:{commit}")), ..Default::default() }).unwrap();
+    nya::remember(
+        &repo.root,
+        RememberRequest { title: Some("Already recorded".into()), lesson: Some("Use tokens.".into()), scope: vec!["src/**".into()], source: Some(format!("git:{commit}")), ..Default::default() },
+    )
+    .unwrap();
     let result = nya::collect(&repo.root, CollectRequest { all: true, offline: true, ..Default::default() }).unwrap();
     assert_eq!(result.correction_candidates, 0);
 }

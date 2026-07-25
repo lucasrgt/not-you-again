@@ -1,0 +1,34 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The scar requires semantic token-based colors (e.g., var(--color-danger)) and explicitly flags literal hex as noncompliant; this added value is a literal hex color."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "+        f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "This line embeds `invoice_id` directly into the SQL text with an f-string, violating the lesson’s requirement to keep untrusted values out of SQL syntax via parameter binding."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "const visibleInvoices = invoices",
+      "reason": "The code performs a filtered/sorted derived collection during render without wrapping it in `useMemo` with dependencies, which contradicts the lesson requirement to memoize expensive pure derivations."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "This computes distance and duration directly as `distance_m / duration_ms` without any unit validation or conversion at the boundary, so the operation is in mixed units (meters per millisecond) rather than a documented normalized unit before arithmetic."
+    }
+  ]
+}

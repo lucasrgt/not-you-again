@@ -154,10 +154,10 @@ pub fn conditional(first: &str, confirmation: &str) -> Vec<String> {
             "powershell".into(),
             "-NoProfile".into(),
             "-Command".into(),
-            format!("$text=[Console]::In.ReadToEnd(); if ($text -match 'Confirm only') {{ Write-Output '{}' }} else {{ Write-Output '{}' }}", confirmation, first),
+            format!("$text=[Console]::In.ReadToEnd(); if ($text -match '<PROPOS') {{ Write-Output '{}' }} else {{ Write-Output '{}' }}", confirmation, first),
         ]
     } else {
-        vec!["sh".into(), "-c".into(), format!("text=$(cat); if printf '%s' \"$text\" | grep -q 'Confirm only'; then printf '%s' '{}'; else printf '%s' '{}'; fi", confirmation, first)]
+        vec!["sh".into(), "-c".into(), format!("text=$(cat); if printf '%s' \"$text\" | grep -q '<PROPOS'; then printf '%s' '{}'; else printf '%s' '{}'; fi", confirmation, first)]
     }
 }
 
@@ -172,6 +172,29 @@ pub fn matching_judge(needle: &str, verdict: &str) -> Vec<String> {
         ]
     } else {
         vec!["sh".into(), "-c".into(), format!("text=$(cat); if printf '%s' \"$text\" | grep -Fq '{needle}'; then printf '%s' '{verdict}'; else printf '%s' '{{\"findings\":[]}}'; fi")]
+    }
+}
+
+pub fn recording_matching_judge(path: &Path, needle: &str, verdict: &str) -> Vec<String> {
+    let path = path.to_string_lossy().replace('\'', "''");
+    let needle = needle.replace('\'', "''");
+    if cfg!(windows) {
+        vec![
+            "powershell".into(),
+            "-NoProfile".into(),
+            "-Command".into(),
+            format!(
+                "$text=[Console]::In.ReadToEnd(); Add-Content -LiteralPath '{path}' -Value ([Text.Encoding]::UTF8.GetByteCount($text)); if ($text.Contains('{needle}')) {{ Write-Output '{verdict}' }} else {{ Write-Output '{{\"findings\":[]}}' }}"
+            ),
+        ]
+    } else {
+        vec![
+            "sh".into(),
+            "-c".into(),
+            format!(
+                "text=$(cat); printf '%s\\n' \"$(printf '%s' \"$text\" | wc -c)\" >> '{path}'; if printf '%s' \"$text\" | grep -Fq '{needle}'; then printf '%s' '{verdict}'; else printf '%s' '{{\"findings\":[]}}'; fi"
+            ),
+        ]
     }
 }
 

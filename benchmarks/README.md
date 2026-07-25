@@ -183,3 +183,39 @@ python benchmarks/stress.py \
 A pass requires every positive probe, bounded result counts, empty unrelated
 queries, all 16 exact recurrences with verbatim evidence, no unexpected
 finding, and zero findings for the corrected controls.
+
+## Production-scale and variance benchmark
+
+`scale.py` creates 10,000 versioned scars, makes 1,000 of them applicable to
+one changed file, and places the only deterministic recurrence in the final
+applicable scar after the first 100,000 bytes of the diff.
+
+The deterministic phase measures:
+
+1. Positive and unrelated retrieval across the 10,000-scar corpus.
+2. Exhaustive crossing of scar batches and overlapping diff windows.
+3. Exact late-target detection and a matching corrected control.
+4. Recall latency, judge calls, total prompt bytes, and maximum prompt size.
+
+The semantic phase runs paired recurrence and corrected fixtures for
+`useMemo`, design tokens, SQL parameterization, and scientific units. Every
+configured model is executed repeatedly. A single missed recurrence,
+unexpected identity, corrected-control finding, or failed gate fails the
+complete benchmark.
+
+```bash
+python benchmarks/scale.py \
+  --nya /path/to/candidate/nya \
+  --output benchmark-output \
+  --corpus-size 10000 \
+  --applicable 1000 \
+  --probes 64 \
+  --model gpt-5.6-sol \
+  --model gpt-5.3-codex-spark \
+  --repetitions 2
+```
+
+`judge_proxy.py` records context cost without changing verdicts.
+`scale_judge.py` is deterministic and tests orchestration rather than model
+intelligence. Reported token counts are included only when the underlying CLI
+exposes them; the benchmark never invents monetary cost.

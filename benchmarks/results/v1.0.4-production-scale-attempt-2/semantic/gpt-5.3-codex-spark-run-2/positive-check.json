@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "+  background: \"#b91c1c\",",
+      "reason": "The changed line uses a literal hex color in the component style instead of a semantic design token reference, which is exactly the forbidden pattern described by NYA-VARIANCE-01."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "+  color: \"#ffffff\",",
+      "reason": "The diff directly adds a hard-coded hex foreground color for `color`, which violates the scar’s rule requiring role-based semantic token usage."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The SQL is assembled with an f-string that injects untrusted `invoice_id` directly into the query text instead of binding it as a parameter, matching the scar's anti-pattern."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 4,
+      "evidence": ".sort((left, right) => right.total - left.total);",
+      "reason": "This change computes a derived `visibleInvoices` collection with `.filter(...).sort(...)` inline during render without `useMemo`, exactly the expensive pure derivation pattern described in `NYA-VARIANCE-00` and not a code sample that follows its lesson."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "The changed line performs division of meters by milliseconds directly with no conversion/validation, matching the scar pattern of combining incompatible units (meters-per-millisecond instead of validating to a documented unit before arithmetic)."
+    }
+  ]
+}

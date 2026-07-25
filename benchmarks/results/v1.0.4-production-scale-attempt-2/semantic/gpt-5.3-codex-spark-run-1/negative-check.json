@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 4,
+      "evidence": "const visibleInvoices = useMemo(",
+      "reason": "The changed code memoizes a derived `invoices` collection (`filter`/`sort`) with `useMemo` in the same file, directly matching the recurrence pattern of avoiding unnecessary expensive render-time recomputation covered by this scar."
+    }
+  ]
+}

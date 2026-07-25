@@ -202,11 +202,11 @@ real failure
 `nya check` performs a narrow, fail-closed audit:
 
 1. Resolve staged, unstaged, and untracked changes relative to `HEAD`.
-2. Retrieve every scar whose scope matches each changed path plus relevant unscoped scars.
-3. Audit applicable scars in bounded batches of 24 against the matching file diff.
-4. Start a fresh isolated judge process for every batch.
+2. Retrieve every scar whose scope matches each changed path.
+3. Split scars into batches of 24 and large file diffs into overlapping 80,000-character windows.
+4. Cross every applicable scar batch with every matching diff window in a fresh isolated judge process.
 5. Accept findings only for supplied scars and concrete changed code.
-6. Confirm every proposed finding with a second focused judge call.
+6. Confirm every proposed finding with a second independent judge call.
 7. Return human output, JSON output, and a stable exit code.
 
 Use another comparison base or structured output when needed:
@@ -272,6 +272,18 @@ recorded_for = "github:bob"
 commit = "9e1b7a2"
 ```
 
+Every scar requires at least one scope. Use the narrowest reusable glob that
+describes where the lesson applies:
+
+```toml
+scope = ["**/*ViewModel.kt", "**/viewmodels/**"]
+```
+
+Use `scope = ["**"]` only when the scar is intentionally repository-wide.
+Version 1.0.4 rejects legacy records with a missing or empty scope and names the
+invalid scar. Migrate such a record by adding a specific glob, or `**` after
+explicitly deciding that the lesson is global.
+
 | Data | Location | Versioned | Purpose |
 | --- | --- | --- | --- |
 | Scars | `.nya/scars/*.toml` | Yes | Durable team knowledge |
@@ -299,7 +311,8 @@ index is rebuilt automatically, and deleting it never deletes a scar.
 ### Remember
 
 An exact normalized title match or explicit `--scar <id>` appends an occurrence
-to an existing scar. Otherwise, `nya` creates a new scar.
+to an existing scar. Otherwise, `nya` creates a new scar and requires at least
+one `--scope`.
 
 ```bash
 nya remember \
@@ -586,6 +599,40 @@ tasks, hidden evaluators, a pinned model, and the released NYA binary.
 This is a single smoke run, not a general prevention rate. Read the
 [protocol](benchmarks/README.md), [auditable report](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/REPORT.md),
 and [machine-readable summary](benchmarks/results/v0.1.2-codex-gpt-5.6-sol/summary.json).
+
+### 10,000 scar production-scale proof
+
+The v1.0.4 benchmark exercises the two dimensions that can otherwise cause
+silent omissions: a large scar corpus and a large changed file.
+
+| Corpus | Applicable to one file | Recall | Late large-diff target | Corrected control |
+| ---: | ---: | ---: | ---: | ---: |
+| 10,000 scars | 1,000 scars | 64 of 64 ranked first | Detected after byte 100,000 | 0 findings |
+
+Recall p95 was 625 ms after the corpus was warm. The first cold read immediately
+after creating 10,000 scar files took 58.547 seconds. The exhaustive scale gate
+used 169 bounded judge calls, processed 14,355,256 prompt bytes in total, and
+kept the largest individual prompt at 96,656 bytes. The deterministic target
+was the final applicable scar and appeared after the first 100,000 bytes of a
+135,124-byte diff.
+
+Semantic variance was measured separately with paired recurrence and corrected
+fixtures for `useMemo`, design tokens, SQL parameterization, and scientific
+units:
+
+| Model | Repetitions | Recurrences | Corrected-control findings |
+| --- | ---: | ---: | ---: |
+| `gpt-5.6-sol` | 2 | 8 of 8 | 0 |
+| `gpt-5.3-codex-spark` | 2 | 8 of 8 | 0 |
+
+Read the [protocol](benchmarks/README.md),
+[auditable report](benchmarks/results/v1.0.4-production-scale/REPORT.md),
+[machine-readable summary](benchmarks/results/v1.0.4-production-scale/summary.json),
+and [disclosed development attempts](benchmarks/results/v1.0.4-production-scale/ATTEMPTS.md).
+
+This proves bounded retrieval and complete orchestration at the measured scale.
+It does not claim that every possible judge, scar wording, or repository shape
+has zero semantic variance.
 
 ### 1,024 scar stress proof
 

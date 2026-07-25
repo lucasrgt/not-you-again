@@ -1,0 +1,34 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The added style object hardcodes the background color as a literal hex value (`#b91c1c`) rather than referencing a semantic role-based token, matching the token-bypass pattern in the scar."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The changed SQL uses an f-string with `'{invoice_id}'` interpolated directly into the query text while parameterization only includes `(organization_id,)`, so untrusted `invoice_id` is inlined into the SQL statement exactly as described by the scar."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "const visibleInvoices = invoices",
+      "reason": "The added code derives `visibleInvoices` from `invoices` with chained `filter` and `sort` directly in render, matching the SCAR's anti-pattern of expensive pure derived collection recomputation instead of `useMemo`."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "+    return distance_m / duration_ms",
+      "reason": "The added line directly divides `distance_m` by `duration_ms` with no unit conversion, which is exactly the incompatible-units calculation pattern described by the SCAR (`distance` in meters divided by duration in milliseconds)."
+    }
+  ]
+}

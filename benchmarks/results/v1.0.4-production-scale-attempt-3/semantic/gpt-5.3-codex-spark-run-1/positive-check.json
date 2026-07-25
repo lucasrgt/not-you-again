@@ -1,0 +1,27 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The SCAR lesson requires role-based semantic tokens via var(--...), and this literal hex background value is a hard-coded color rather than a design token reference."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "        f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The SQL statement interpolates `invoice_id` directly with an f-string, and `invoice_id` is not bound as a parameter, violating the requirement to separate untrusted values from SQL syntax."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "return distance_m / duration_ms",
+      "reason": "The recurrence performs a direct meters/ milliseconds division with no unit normalization step; this violates the scar lesson requiring units to be represented/validated and converted to a documented common unit before arithmetic."
+    }
+  ]
+}

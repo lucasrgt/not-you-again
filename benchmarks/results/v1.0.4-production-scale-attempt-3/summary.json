@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "benchmark": "production-scale",
+  "started_at": "2026-07-25T02:36:37.500696+00:00",
+  "completed_at": "2026-07-25T02:39:37.266267+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "candidate": {
+    "version": "nya 1.0.4",
+    "sha256": "7d9f0252a33c786cef84d7ebb6a7a90085d070cadad1ca57d2bcecd53bcf30d9"
+  },
+  "scale": {
+    "corpus_size": 48,
+    "applicable_scars": 48,
+    "probes": 2,
+    "recalled": 2,
+    "ranked_first": 2,
+    "bounded": 2,
+    "negative_candidates": 0,
+    "negative_recall_seconds": 0.062,
+    "recall_latency_seconds": {
+      "p50": 0.18,
+      "p95": 0.313,
+      "max": 0.313
+    },
+    "positive": {
+      "exit": 1,
+      "seconds": 0.375,
+      "diff_bytes": 135124,
+      "scars_checked": 48,
+      "findings": 1,
+      "exact_target": true
+    },
+    "negative": {
+      "exit": 0,
+      "seconds": 0.344,
+      "diff_bytes": 135136,
+      "scars_checked": 48,
+      "findings": 0
+    },
+    "judge_cost": {
+      "calls": 9,
+      "audit_calls": 8,
+      "confirmation_calls": 1,
+      "prompt_bytes": 740978,
+      "max_prompt_bytes": 96703,
+      "judge_seconds": 0.0,
+      "reported_tokens": null
+    },
+    "passed": true
+  },
+  "semantic_runs": [
+    {
+      "model": "gpt-5.3-codex-spark",
+      "repetition": 1,
+      "targets": 4,
+      "detected": 3,
+      "unexpected": 0,
+      "missed": [
+        "NYA-VARIANCE-00:apps/checkout/frontend-performance/InvoiceTotals.tsx"
+      ],
+      "positive_exit": 1,
+      "positive_seconds": 57.578,
+      "negative_findings": 0,
+      "negative_exit": 0,
+      "negative_seconds": 32.766,
+      "cost": {
+        "calls": 12,
+        "audit_calls": 8,
+        "confirmation_calls": 4,
+        "prompt_bytes": 34702,
+        "max_prompt_bytes": 3290,
+        "judge_seconds": 88.862,
+        "reported_tokens": 29
+      },
+      "passed": false
+    },
+    {
+      "model": "gpt-5.3-codex-spark",
+      "repetition": 2,
+      "targets": 4,
+      "detected": 4,
+      "unexpected": 0,
+      "missed": [],
+      "positive_exit": 1,
+      "positive_seconds": 57.5,
+      "negative_findings": 0,
+      "negative_exit": 0,
+      "negative_seconds": 28.625,
+      "cost": {
+        "calls": 12,
+        "audit_calls": 8,
+        "confirmation_calls": 4,
+        "prompt_bytes": 34562,
+        "max_prompt_bytes": 3290,
+        "judge_seconds": 84.639,
+        "reported_tokens": 30
+      },
+      "passed": true
+    }
+  ],
+  "variance": {
+    "gpt-5.3-codex-spark": {
+      "runs": 2,
+      "passed_runs": 1,
+      "detection_stdev": 0.5,
+      "latency_stdev_seconds": 2.109
+    }
+  },
+  "passed": false,
+  "worktree": "C:\\Users\\lucas\\AppData\\Local\\Temp\\nya-production-scale-emhjca10"
+}

@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"var(--color-danger)\",",
+      "reason": "The diff introduces a component style using literal design-variable names `--color-danger`/`--color-on-danger`, matching the scar’s anti-pattern of bypassing role-based semantic token usage for component colors."
+    }
+  ]
+}

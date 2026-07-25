@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "scars_checked": 4,
+  "findings": [
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 2,
+      "evidence": "  background: \"#b91c1c\",",
+      "reason": "The component directly uses a literal hex color instead of a role-based semantic design token, repeating the supplied scar."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-01",
+      "path": "apps/admin/design-accessibility/DeleteButton.tsx",
+      "line": 3,
+      "evidence": "  color: \"#ffffff\",",
+      "reason": "The component directly uses a literal hex color instead of a role-based semantic design token, repeating the supplied scar."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-02",
+      "path": "apps/billing/backend-api/invoice_query.py",
+      "line": 3,
+      "evidence": "        f\"SELECT id, total FROM invoices WHERE organization_id = ? AND id = '{invoice_id}'\",",
+      "reason": "The untrusted invoice_id value is interpolated directly into SQL syntax rather than passed separately as a query parameter, directly repeating the scar."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-00",
+      "path": "apps/checkout/frontend-performance/InvoiceTotals.tsx",
+      "line": 2,
+      "evidence": "  const visibleInvoices = invoices",
+      "reason": "The changed component recomputes the filtered and sorted invoice collection during every render without useMemo, directly repeating the scar."
+    },
+    {
+      "scar_id": "NYA-VARIANCE-03",
+      "path": "apps/science/data-ml-science/velocity.py",
+      "line": 2,
+      "evidence": "    return distance_m / duration_ms",
+      "reason": "This directly repeats the scar by dividing a distance in meters by a duration in milliseconds without converting to the documented meters-per-second unit."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 mod common;
 
-use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, matching_judge, recording_judge, slow_judge};
+use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, matching_judge, recording_matching_judge, slow_judge};
 use nya::{CheckRequest, Occurrence, RememberRequest, Scar};
 use std::fs;
 
@@ -126,12 +126,16 @@ fn codex_judge_receives_an_isolated_writable_home() {
 #[test]
 fn check_bounds_initial_and_confirmation_requests() {
     let (repo, scar) = changed_repo();
-    repo.write("src/new.rs", &format!("literal\n{}", "x".repeat(130_000)));
+    let evidence = "const LATE_RECURRENCE: &str = \"present\";";
+    repo.write("src/new.rs", &format!("{}\n{evidence}\n", "x".repeat(130_000)));
     let log = repo.root.join("judge-sizes.txt");
-    repo.configure(recording_judge(&log, &finding(&scar.id, "src/new.rs")), 5);
-    assert!(!nya::check(&repo.root, CheckRequest::default()).unwrap().passed);
+    let verdict = serde_json::json!({"findings":[{"scar_id":scar.id,"path":"src/new.rs","line":2,"evidence":evidence,"reason":"The late changed code repeats the supplied scar."}]}).to_string();
+    repo.configure(recording_matching_judge(&log, evidence, &verdict), 5);
+    let result = nya::check(&repo.root, CheckRequest::default()).unwrap();
+    assert!(!result.passed);
+    assert_eq!(result.findings[0].evidence, evidence);
     let sizes = fs::read_to_string(log).unwrap().lines().map(|line| line.trim().parse::<usize>().unwrap()).collect::<Vec<_>>();
-    assert_eq!(sizes.len(), 2);
+    assert_eq!(sizes.len(), 3);
     assert!(sizes.iter().all(|size| *size < 110_000), "{sizes:?}");
 }
 
