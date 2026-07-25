@@ -1,0 +1,18 @@
+schema = 1
+id = "NYA-01KYD02610B7MDADKRGP56P4BW"
+title = "Bounded replay evidence required an entire source line"
+lesson = "When evidence is length-bounded, accept one exact contiguous substring from a single source line instead of requiring the entire line or allowing paraphrase."
+scope = ["src/**"]
+tags = [
+    "evidence",
+    "replay",
+    "prompting",
+]
+created_at = "2026-07-25T15:59:50Z"
+
+[[occurrences]]
+occurred_at = "2026-07-25T15:59:50Z"
+source = "dogfood:nya-1.1.0/replay-long-line"
+reported_by = "agent:codex"
+corrected_by = "agent:codex"
+recorded_by = "agent:codex"
