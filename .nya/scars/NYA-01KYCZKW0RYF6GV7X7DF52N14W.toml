@@ -1,0 +1,23 @@
+schema = 1
+id = "NYA-01KYCZKW0RYF6GV7X7DF52N14W"
+title = "Native Linux release builds produced non-portable binaries"
+lesson = "Build Linux release artifacts against an explicit older glibc baseline and smoke-test them on the oldest supported distribution so published binaries remain portable."
+scope = [
+    ".github/workflows/ci.yml",
+    ".github/workflows/release.yml",
+]
+tags = [
+    "ci",
+    "linux",
+    "release",
+    "portability",
+    "glibc",
+]
+created_at = "2026-07-25T15:52:01Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T13:47:06-03:00"
+source = "git:6cf7703a8e282b049e1fe979fab11a3ceb0b90ef"
+corrected_by = "git:lucas.tinoco@hotmail.com"
+recorded_by = "nya:collector"
+commit = "6cf7703a8e28"

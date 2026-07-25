@@ -1,0 +1,19 @@
+schema = 1
+id = "NYA-01KYCZKW25K0R79E1E6FAMHBDS"
+title = "Recurrence findings accepted non-verbatim evidence"
+lesson = "Require recurrence findings to cite exact, contiguous text from the supplied diff; discard findings when verbatim evidence is unavailable."
+scope = ["src/lib.rs"]
+tags = [
+    "evidence",
+    "validation",
+    "recurrence",
+    "prompting",
+]
+created_at = "2026-07-25T15:52:01Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T16:52:32-03:00"
+source = "git:e1912d704d48b6dae23dac8694c60515e8778a92"
+corrected_by = "git:lucas.tinoco@hotmail.com"
+recorded_by = "nya:collector"
+commit = "e1912d704d48"

@@ -15,6 +15,18 @@ source:
 | `aware-datetime` | Offset-aware timestamps are compared with a naive current time | [Python datetime documentation](https://docs.python.org/3/library/datetime.html) |
 | `api-compatibility` | A new presentation field changes the meaning of an existing API field | [Semantic Versioning specification](https://semver.org/) |
 
+## Built-in replay versus agent benchmarks
+
+`nya replay` is a local corpus audit. It checks whether the configured judge
+can identify a stored failure on the removed side of its historical correction
+patch and the corresponding fix on the added side. It does not execute an agent
+or claim prevention.
+
+The protocols below execute paired agents and use hidden evaluation. Use them
+when measuring recurrence prevention. Use `nya replay --format json` when
+validating scar and judge behavior or selecting auditable historical cases for
+an external benchmark.
+
 ## Protocol
 
 For every case, the runner creates two fresh Git repositories from the same

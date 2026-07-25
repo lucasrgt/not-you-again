@@ -13,7 +13,9 @@ It gives every agent working in a repository the same durable record of real
 mistakes, their corrections, and their provenance. Before a task, the agent
 recalls relevant scars. Before completion, a fresh isolated judge audits the
 task diff against those scars. Mature repositories can first recover
-evidence-backed scars from Git history and corrected GitHub reviews.
+evidence-backed scars from Git history and corrected GitHub reviews. Proposed
+specifications can be checked for omitted scar requirements, and historical
+correction pairs can be replayed to audit the scar corpus itself.
 
 ## Public contract
 
@@ -21,17 +23,21 @@ The public model contains one concept:
 
 > A scar is a durable lesson created from a real failure and correction.
 
-The public surface contains four operations:
+The public surface contains six operations:
 
 ```text
-A repository is adopting NYA -> nya collect
-A task is starting           -> nya recall
-A real correction happened  -> nya remember
-Work is about to finish      -> nya check
+A repository is adopting NYA       -> nya collect
+A task is starting                 -> nya recall
+A specification is being reviewed -> nya spec
+A real correction happened        -> nya remember
+Work is about to finish            -> nya check
+The scar corpus is being audited   -> nya replay
 ```
 
 The daily task protocol remains `recall`, `remember`, and `check`. Collection is
-the historical adoption and explicit maintenance operation.
+the historical adoption operation. Specification review is used only when a
+versioned specification exists. Replay is an explicit corpus maintenance and
+evaluation operation.
 
 ## System shape
 
@@ -42,6 +48,8 @@ flowchart LR
     HUMAN["Developer"] --> CLI
     CI["Git hook or CI"] -->|"nya check"| CLI
     HISTORY["Git history and GitHub reviews"] -->|"nya collect"| CLI
+    SPEC["Versioned specification"] -->|"nya spec"| CLI
+    STORE -->|"nya replay"| CLI
 
     CLI --> CORE["nya core"]
     MCP --> CORE
@@ -55,7 +63,7 @@ flowchart LR
     JUDGE --> RESULT["Human output, JSON, exit code"]
 ```
 
-Version 1.0 is one native Rust binary with one core and two transports.
+Version 1.1 is one native Rust binary with one core and two transports.
 The CLI serves humans, shell-capable agents, hooks, and CI. `nya mcp` serves
 MCP-capable hosts over local stdio.
 
@@ -210,6 +218,43 @@ Exit codes are:
 | `1` | At least one recurrence was confirmed |
 | `2` | Repository, configuration, runner, timeout, or verdict failure |
 
+## Specification review
+
+`nya spec` reads one or more repository-relative specification files and
+retrieves relevant scars from the task text, specification content, and
+expected implementation paths. It does not perform an open-ended design
+review.
+
+The evaluator may report only a concrete requirement from a supplied scar that
+is applicable to the specification and genuinely absent or contradicted. Every
+proposed gap receives a second independent confirmation. Unknown scar IDs,
+mutated confirmations, empty requirements, unsafe file paths, oversized input,
+and evaluator failures fail closed.
+
+Exit code `1` means confirmed scar requirements are missing. Exit code `2`
+means the audit could not be completed.
+
+## Historical replay
+
+`nya replay` selects versioned scar occurrences that reference correction
+commits. For each selected scar and commit pair, it loads the historical Git
+patch and asks the isolated evaluator to verify both claims:
+
+```text
+removed side directly repeats the scar
+added side or deletion fixes that same failure
+```
+
+Before evidence must be one exact contiguous substring from a single removed
+patch line and include its marker. Added evidence, when present, follows the
+same rule for one added line. Missing commits and oversized or empty correction
+patches remain visible as failed cases.
+
+Replay validates the scar and judge against historical evidence. It does not
+execute a coding agent, regenerate the original task, or claim a prevention
+rate. Machine-readable results can feed an external agent or harness benchmark
+without coupling NYA to that harness.
+
 ## Evaluator execution
 
 The evaluator is a resolved subprocess, not an in-process provider integration.
@@ -234,10 +279,11 @@ the connected host model to judge itself.
 
 ## Skill
 
-`.nya/SKILL.md` teaches historical collection and the daily three-action
-protocol. It contains no scars and no product logic. `nya init` refreshes this
-canonical managed skill and installs an idempotent managed bridge into existing
-root-level `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files.
+`.nya/SKILL.md` teaches historical collection, the daily three-action protocol,
+optional specification review, and explicit replay maintenance. It contains no
+scars and no product logic. `nya init` refreshes this canonical managed skill
+and installs an idempotent managed bridge into existing root-level `AGENTS.md`,
+`CLAUDE.md`, and `GEMINI.md` files.
 
 The skill is guidance rather than enforcement because agents can forget
 instructions or lose them during context compaction. CLI, MCP, hooks, and CI
@@ -252,6 +298,8 @@ nya_remember
 nya_recall
 nya_check
 nya_collect
+nya_spec
+nya_replay
 ```
 
 Each tool takes an explicit repository root and calls the same domain operation
@@ -271,7 +319,7 @@ execution, and all maintained runtime behavior.
 
 ## Deferred scope
 
-Version 1.0 excludes hosted storage, a public scar corpus, remote MCP,
+Version 1.1 excludes hosted storage, a public scar corpus, remote MCP,
 host-model judging, provider SDKs, embeddings, deterministic per-scar checkers,
 issue-tracker and postmortem adapters beyond Git and GitHub review evidence,
 organization-wide synchronization, a plugin runtime, and a GUI.

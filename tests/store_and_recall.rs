@@ -37,6 +37,8 @@ fn init_is_idempotent_and_manages_existing_agent_files() {
     assert_eq!(installed_again, installed);
     let skill = fs::read_to_string(repo.root.join(".nya/SKILL.md")).unwrap();
     assert!(skill.contains("nya collect --all"));
+    assert!(skill.contains("nya spec --file <spec>"));
+    assert!(skill.contains("nya replay"));
     assert!(skill.contains("nya check --base <target-branch-or-revision>"));
     let agents = fs::read_to_string(repo.root.join("AGENTS.md")).unwrap();
     assert!(agents.contains("Original instructions."));

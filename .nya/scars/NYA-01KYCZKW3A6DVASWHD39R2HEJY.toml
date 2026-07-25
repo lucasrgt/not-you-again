@@ -1,0 +1,22 @@
+schema = 1
+id = "NYA-01KYCZKW3A6DVASWHD39R2HEJY"
+title = "One invalid collector candidate discarded the entire valid batch"
+lesson = "Validate collector candidates independently: downgrade malformed candidates to ambiguous and discard invalid or duplicate entries without aborting or losing the rest of a valid batch."
+scope = [
+    "src/lib.rs",
+    "tests/collect.rs",
+]
+tags = [
+    "batch-processing",
+    "validation",
+    "collector",
+    "fault-isolation",
+]
+created_at = "2026-07-25T15:52:01Z"
+
+[[occurrences]]
+occurred_at = "2026-07-25T01:15:23-03:00"
+source = "git:56636847e64184f71df86a49357a6676a52ad464"
+corrected_by = "git:lucas.tinoco@hotmail.com"
+recorded_by = "nya:collector"
+commit = "56636847e641"

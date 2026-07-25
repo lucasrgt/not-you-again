@@ -1,0 +1,24 @@
+schema = 1
+id = "NYA-01KYCZKW1T6RZZ964WQR6ZKFSN"
+title = "Network-dependent recurrence gates failed inside agent sandboxes"
+lesson = "When a required recurrence check needs network access unavailable inside an agent sandbox, fail fast and delegate the check to a network-capable host, MCP server, hook, or CI boundary."
+scope = [
+    "assets/AGENT_INSTRUCTIONS.md",
+    "assets/not-you-again/SKILL.md",
+    "src/lib.rs",
+]
+tags = [
+    "sandbox",
+    "network",
+    "recurrence-gate",
+    "ci",
+    "delegation",
+]
+created_at = "2026-07-25T15:52:01Z"
+
+[[occurrences]]
+occurred_at = "2026-07-24T14:31:44-03:00"
+source = "git:528ce46c2042b10cebb58d2aae104f3ac05f902e"
+corrected_by = "git:lucas.tinoco@hotmail.com"
+recorded_by = "nya:collector"
+commit = "528ce46c2042"

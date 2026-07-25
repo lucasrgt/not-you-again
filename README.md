@@ -30,7 +30,7 @@ The command is `nya`. The versioned repository directory is `.nya/`.
 
 <table>
 <tr><td><b>One durable concept</b></td><td>A scar records a real failure and the correction that resolved it. No generic memory types or policy classes.</td></tr>
-<tr><td><b>Four focused operations</b></td><td><code>collect</code> existing lessons, <code>recall</code> before editing, <code>remember</code> after a real correction, and <code>check</code> before completion.</td></tr>
+<tr><td><b>One focused scar lifecycle</b></td><td><code>collect</code> existing lessons, <code>recall</code> before editing, <code>remember</code> after a real correction, and <code>check</code> before completion. <code>spec</code> and <code>replay</code> extend the same scars into specification review and historical validation.</td></tr>
 <tr><td><b>Repository-owned memory</b></td><td>Readable TOML scars travel through Git with the team. SQLite is only a disposable local search index.</td></tr>
 <tr><td><b>Evidence-bounded judgment</b></td><td><code>check</code> may detect only recurrence of supplied scars. <code>collect</code> may record only corrected failures with verbatim source evidence and a second confirmation.</td></tr>
 <tr><td><b>Agent and language independent</b></td><td>Any shell or MCP-capable agent can use it in any Git codebase, regardless of programming language.</td></tr>
@@ -102,6 +102,12 @@ nya recall \
   --task "Build the checkout modal" \
   --path src/checkout/CheckoutModal.tsx
 
+# Check a proposed specification against relevant scars
+nya spec \
+  --file specs/checkout-modal.md \
+  --task "Design the checkout modal" \
+  --path src/checkout/CheckoutModal.tsx
+
 # Record a real corrected failure
 nya remember \
   --title "Literal colors bypass semantic design tokens" \
@@ -113,6 +119,9 @@ nya remember \
 
 # Audit the uncommitted finished diff
 nya check --task "Build the checkout modal"
+
+# Validate historical correction pairs against their scars
+nya replay --limit 20
 ```
 
 ### Terminal output
@@ -138,6 +147,7 @@ long judge calls.
 | Moment | Command | Result |
 | --- | --- | --- |
 | Task start | `nya recall --task "<task>" --path <expected-path>` | Relevant scars become constraints before editing |
+| Before accepting a versioned specification | `nya spec --file <spec> --task "<goal>" --path <expected-path>` | Applicable scar requirements missing from the specification are reported |
 | Scope change, context reset, or unfamiliar review | Rerun `nya recall` | The active context is reheated with applicable scars |
 | After correcting a real reusable failure | `nya remember` | The lesson and its provenance enter Git |
 | Task review or pre-commit | `nya check --task "<completed task>"` | The uncommitted diff is audited against known scars |
@@ -163,6 +173,9 @@ review suggestion.
 `nya collect` is the adoption and maintenance operation around this daily loop.
 Run it once with `--all` when enabling NYA in a mature repository. Later runs
 scan only commits after the ignored local checkpoint.
+
+`nya replay` is an explicit corpus maintenance and evaluation operation. It is
+not required in the daily task loop.
 
 The built-in Codex judge needs provider network access. When a task agent runs
 inside a network-disabled shell, `nya check` fails fast with exit code 2 instead
@@ -240,8 +253,8 @@ nya check --format json
 
 | Code | Meaning | Required action |
 | --- | --- | --- |
-| `0` | No supplied scar was repeated | Continue |
-| `1` | At least one recurrence was confirmed | Fix every finding and rerun |
+| `0` | The requested scar operation passed | Continue |
+| `1` | A recurrence, specification gap, or failed replay case was confirmed | Correct the result and rerun |
 | `2` | Configuration, repository, runner, timeout, or verdict failure | Treat the audit as failed |
 
 Provider and protocol failures never produce a passing result.
@@ -327,6 +340,32 @@ Recall is deterministic and does not call an LLM. It combines:
 
 Only relevant scars enter the agent context. A missing, corrupt, or incompatible
 index is rebuilt automatically, and deleting it never deletes a scar.
+
+### Specification review
+
+Use `nya spec` after recalling scars and drafting a versioned specification:
+
+```bash
+nya spec \
+  --file specs/payment-retries.md \
+  --task "Design retryable payment processing" \
+  --path src/payments/worker.ts \
+  --path src/payments/idempotency.ts
+```
+
+The command retrieves relevant scars from the task, specification text, tags,
+and expected implementation paths. The judge may report only a concrete
+requirement from a supplied scar that applies to the proposed specification and
+is genuinely absent or contradicted. Generic design suggestions are invalid.
+
+Every proposed gap receives a second independent confirmation. Exit code `1`
+means the specification omitted at least one confirmed scar requirement. Fix
+the specification and run the same command again. Exit code `2` means the
+audit failed and must not be treated as a pass.
+
+`--file` accepts only files inside the repository and can be repeated.
+Specification input is bounded at 120,000 characters. Split larger documents
+into focused reviews instead of silently truncating them.
 
 ### Remember
 
@@ -422,6 +461,42 @@ Collector provenance preserves the review author as `reported_by`, the
 correcting commit author as `corrected_by`, `nya:collector` as `recorded_by`,
 the permalink or commit as `source`, and the correcting commit identifier.
 
+### Historical replay
+
+`nya replay` checks whether stored scars still explain their own historical
+correction pairs:
+
+```bash
+# Replay the highest-priority correction pairs
+nya replay --limit 20
+
+# Replay only one scar
+nya replay --scar NYA-01J2M6Y7R2W8Y0F7K5Q3C9A1B4
+
+# Produce an auditable machine-readable result
+nya replay --limit 100 --format json
+```
+
+Replay prioritizes scars with more independent occurrences, then inspects
+versioned occurrences that reference correction commits. For every selected
+pair it loads the historical Git patch and asks the isolated judge to verify:
+
+```text
+the removed side directly repeats the scar
+the added side or deletion fixes the same failure
+```
+
+Before evidence must be one exact contiguous substring from a single removed
+patch line and include its `-` marker. Added evidence follows the same rule with
+the `+` marker. The 240-character bound never requires truncating or combining
+lines. Unavailable commits and empty or oversized patches remain visible as
+failed cases instead of disappearing.
+
+Replay validates scar quality and judge behavior against real repository
+history. It does not execute a coding agent, reconstruct the original task, or
+claim a prevention rate. Its JSON output is suitable input for an external
+agent, model, or harness benchmark without making NYA depend on that system.
+
 ---
 
 ## Configuration
@@ -429,7 +504,8 @@ the permalink or commit as `source`, and the correcting commit identifier.
 ### Judge selection
 
 Each developer chooses one isolated evaluator without modifying shared
-repository policy. The same selection powers recurrence checks and collection:
+repository policy. The same selection powers recurrence checks, collection,
+specification review, and historical replay:
 
 ```bash
 nya setup --judge codex
@@ -469,7 +545,7 @@ Any provider CLI, local model, or internal gateway can implement the evaluator
 protocol:
 
 ```bash
-nya setup --judge company -- /opt/company/bin/recurrence-judge
+nya setup --judge company -- /opt/company/bin/nya-judge
 ```
 
 `nya` executes the argument array without a shell and uses this protocol:
@@ -491,9 +567,9 @@ Add `--local` when the custom command applies only to the current repository.
 | Surface | Role | Required |
 | --- | --- | --- |
 | CLI | Universal interface for agents, humans, hooks, CI, and scripts | Yes |
-| `.nya/SKILL.md` | Teaches historical collection and the daily three-command loop | Created by `nya init` |
+| `.nya/SKILL.md` | Teaches historical collection, the daily task loop, specification review, and replay maintenance | Created by `nya init` |
 | Agent instruction bridge | Activates the skill from existing harness files | Created by `nya init` |
-| MCP | Exposes the same core as four typed tools | Optional |
+| MCP | Exposes the same core as six typed tools | Optional |
 | GitHub | Verifies individual permalinks and collects corrected review comments through `gh` | Optional |
 | Git hook | Provides fast local feedback | Optional |
 | CI | Enforces the final recurrence gate | Recommended |
@@ -506,13 +582,15 @@ Start the local stdio server:
 nya mcp
 ```
 
-It exposes exactly four tools:
+It exposes exactly six tools:
 
 ```text
 nya_remember
 nya_recall
 nya_check
 nya_collect
+nya_spec
+nya_replay
 ```
 
 Each tool requires an explicit repository root and calls the same domain
@@ -576,6 +654,8 @@ from their provider or CI environment rather than command arguments.
 | Store repository-specific corrected failures | Store general knowledge or preferences |
 | Retrieve scars relevant to a task | Copy the entire scar store into every prompt |
 | Audit recurrence of known scars | Perform open-ended AI review |
+| Check specifications for applicable scar requirements | Replace product or architecture review |
+| Replay scar correction pairs from Git history | Claim an agent prevention rate without executing one |
 | Work with any language through Git diffs | Replace tests, typecheckers, formatters, or linters |
 | Support shell and MCP-capable agents | Require a hosted service or agent harness |
 
@@ -590,6 +670,7 @@ flowchart LR
     HUMAN["Developer"] --> CLI
     CI["Git hook or CI"] -->|"nya check"| CLI
     HISTORY["Git history and GitHub reviews"] -->|"nya collect"| CLI
+    SPEC["Versioned specifications"] -->|"nya spec"| CLI
 
     CLI --> CORE["nya core"]
     MCP --> CORE
@@ -763,12 +844,13 @@ cargo llvm-cov --all-features --fail-under-lines 95
 | --- | --- |
 | Maintained runtime code | At most 500 lines |
 | Line coverage | At least 95 percent without rounding |
-| Product model | One scar and four focused operations |
+| Product model | One scar across six focused operations |
 | Failure behavior | Judge and protocol failures fail closed |
 | Transport behavior | CLI and MCP call the same core |
 
 Contributions should preserve the one-scar model, evidence-bounded collection,
-the daily three-command protocol, shared core, and fail-closed check.
+the daily three-command protocol, honest historical replay, shared core, and
+fail-closed audits.
 
 ---
 
