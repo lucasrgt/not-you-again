@@ -7,6 +7,10 @@ repository = "https://github.com/lucasrgt/not-you-again"
 license = "MIT"
 readme = "README.md"
 
+[workspace]
+members = ["xtask"]
+resolver = "3"
+
 [lib]
 name = "nya"
 

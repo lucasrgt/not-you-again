@@ -44,8 +44,9 @@ generic AI review.
 Prefer the smallest complete implementation. Add a dependency or abstraction
 only when it removes more maintained behavior than it introduces.
 
-Before reporting implementation work complete, run the production line gate,
-the complete test suite, and the coverage gate.
+Before reporting implementation work complete, run `cargo xtask verify`. This
+is the canonical local, CI, and release gate. It owns formatting, Clippy, the
+production line budget, the complete test suite, and line coverage.
 
 <!-- nya:instructions:start -->
 ## Not You Again

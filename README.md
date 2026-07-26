@@ -834,11 +834,13 @@ The executable is `target/release/nya` or `target/release/nya.exe` on Windows.
 Run the project gates:
 
 ```bash
-cargo fmt --check
-cargo clippy --all-targets --all-features -- -D warnings
-tokei src
-cargo llvm-cov --all-features --fail-under-lines 95
+cargo install cargo-llvm-cov tokei --locked
+cargo xtask verify
 ```
+
+`cargo xtask verify` is the canonical gate for local work, coding agents, CI,
+and releases. It runs formatting, Clippy, the production line budget, the
+complete test suite, and line coverage through the same implementation.
 
 | Invariant | Gate |
 | --- | --- |

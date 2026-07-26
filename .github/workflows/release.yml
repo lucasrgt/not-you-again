@@ -9,8 +9,22 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    name: Repository quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, llvm-tools-preview, rustfmt
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,tokei
+      - run: cargo xtask verify
+
   build:
     name: ${{ matrix.name }}
+    needs: quality
     strategy:
       fail-fast: false
       matrix:
@@ -52,7 +66,8 @@ jobs:
       - name: Verify tag and package version
         shell: pwsh
         run: |
-          $version = (cargo metadata --no-deps --format-version 1 | ConvertFrom-Json).packages[0].version
+          $packages = (cargo metadata --no-deps --format-version 1 | ConvertFrom-Json).packages
+          $version = ($packages | Where-Object name -eq "not-you-again").version
           if ("v$version" -ne "${{ github.ref_name }}") {
             throw "Tag ${{ github.ref_name }} does not match package version $version"
           }

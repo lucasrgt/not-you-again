@@ -317,6 +317,10 @@ Test code:      unlimited
 The line budget includes CLI, MCP, indexing, repository operations, judge
 execution, and all maintained runtime behavior.
 
+`cargo xtask verify` is the canonical enforcement path for local development,
+coding agents, CI, and releases. It runs formatting, Clippy, the production
+line budget, the complete workspace test suite, and package line coverage.
+
 ## Deferred scope
 
 Version 1.1 excludes hosted storage, a public scar corpus, remote MCP,

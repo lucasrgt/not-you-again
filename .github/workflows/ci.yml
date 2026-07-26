@@ -18,13 +18,7 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-llvm-cov,tokei
-      - run: cargo fmt --check
-      - run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Enforce production line budget
-        run: |
-          code="$(tokei src --output json | jq '.Rust.code')"
-          test "$code" -le 500
-      - run: cargo llvm-cov --all-features --fail-under-lines 95
+      - run: cargo xtask verify
 
   platform:
     name: ${{ matrix.name }}
