@@ -114,6 +114,32 @@ fn check_accepts_both_changed_sides_of_a_rename() {
 }
 
 #[test]
+fn check_matches_complete_paths_instead_of_shared_basenames() {
+    let repo = Repo::new(&[]);
+    nya::init(&repo.root).unwrap();
+    let scar = nya::remember(
+        &repo.root,
+        RememberRequest {
+            title: Some("Root lockfile policy".into()),
+            lesson: Some("Keep the root lockfile free of literal drift.".into()),
+            scope: vec!["package-lock.json".into()],
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    repo.write("frontend-sdk/package-lock.json", "frontend old\n");
+    repo.write("package-lock.json", "root old\n");
+    repo.commit_all("seed same basenames");
+    repo.write("frontend-sdk/package-lock.json", "FRONTEND_ONLY_MARKER\n");
+    repo.write("package-lock.json", "root changed\n");
+    repo.configure(matching_judge("FRONTEND_ONLY_MARKER", &finding(&scar.id, "frontend-sdk/package-lock.json")), 5);
+
+    let result = nya::check(&repo.root, CheckRequest::default()).unwrap();
+
+    assert!(result.passed);
+}
+
+#[test]
 fn check_bounds_and_finds_target_in_thousand_scar_corpus() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
