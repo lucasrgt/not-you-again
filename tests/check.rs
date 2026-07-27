@@ -1,6 +1,6 @@
 mod common;
 
-use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, fake_program, finding, isolated_home_judge, judge, matching_judge, recording_matching_judge, slow_judge};
+use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, fake_program, finding, isolated_home_judge, judge, matching_judge, recording_judge, recording_matching_judge, slow_judge};
 use nya::{CheckRequest, Occurrence, RememberRequest, Scar};
 use std::fs;
 
@@ -154,6 +154,22 @@ fn check_bounds_initial_and_confirmation_requests() {
     assert_eq!(result.findings[0].evidence, evidence);
     let sizes = fs::read_to_string(log).unwrap().lines().map(|line| line.trim().parse::<usize>().unwrap()).collect::<Vec<_>>();
     assert_eq!(sizes.len(), 3);
+    assert!(sizes.iter().all(|size| *size < 110_000), "{sizes:?}");
+}
+
+#[test]
+fn check_batches_hundreds_of_paths_into_bounded_judge_calls() {
+    let (repo, _) = changed_repo();
+    for index in 0..256 {
+        repo.write(&format!("src/components/View{index:03}.tsx"), "export const View = () => <section>literal</section>;\n");
+    }
+    let log = repo.root.join("judge-sizes.txt");
+    repo.configure(recording_judge(&log, &empty_verdict()), 5);
+
+    assert!(nya::check(&repo.root, CheckRequest::default()).unwrap().passed);
+
+    let sizes = fs::read_to_string(log).unwrap().lines().map(|line| line.trim().parse::<usize>().unwrap()).collect::<Vec<_>>();
+    assert_eq!(sizes.len(), 5);
     assert!(sizes.iter().all(|size| *size < 110_000), "{sizes:?}");
 }
 
