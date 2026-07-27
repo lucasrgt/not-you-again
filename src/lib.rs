@@ -320,7 +320,7 @@ pub fn collect(repo: &Path, request: CollectRequest) -> Result<CollectResult> {
 fn diff(repo: &Path, request: &CheckRequest) -> Result<(String, Vec<String>)> {
     let base = request.base.as_deref().unwrap_or("HEAD");
     let mut body = git(repo, &["-c", "core.quotePath=false", "diff", "--no-ext-diff", "--unified=4", base, "--", ".", ":(exclude).nya/**"])?;
-    let mut paths = git(repo, &["-c", "core.quotePath=false", "diff", "--name-only", base, "--", ".", ":(exclude).nya/**"])?.lines().map(str::to_owned).collect::<Vec<_>>();
+    let mut paths = changed_paths(repo, base)?;
     for path in git(repo, &["-c", "core.quotePath=false", "ls-files", "--others", "--exclude-standard", "--", ".", ":(exclude).nya/**"])?.lines() {
         let content = fs::read_to_string(repo.join(path)).unwrap_or_default();
         body.push_str(&format!(
@@ -333,6 +333,9 @@ fn diff(repo: &Path, request: &CheckRequest) -> Result<(String, Vec<String>)> {
     }
     Ok((body, paths))
 }
+
+#[rustfmt::skip]
+fn changed_paths(repo: &Path, base: &str) -> Result<Vec<String>> { let out = Command::new("git").arg("-C").arg(repo).args(["-c", "core.quotePath=false", "diff", "--name-status", "-z", base, "--", ".", ":(exclude).nya/**"]).output().context("failed to start git")?; ensure!(out.status.success(), "git diff --name-status failed: {}", String::from_utf8_lossy(&out.stderr).trim()); let mut fields = out.stdout.split(|byte| *byte == 0).filter(|field| !field.is_empty()).map(|field| String::from_utf8(field.to_vec())).collect::<std::result::Result<Vec<_>, _>>()?.into_iter(); let mut paths = Vec::new(); while let Some(status) = fields.next() { paths.push(fields.next().context("git returned a status without a path")?); if status.starts_with('R') || status.starts_with('C') { paths.push(fields.next().context("git returned a rename without a destination")?); } } let mut seen = HashSet::new(); paths.retain(|path| seen.insert(path.clone())); Ok(paths) }
 
 fn builtin(name: &str) -> Option<Vec<String>> {
     let command = match name {

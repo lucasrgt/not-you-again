@@ -97,6 +97,23 @@ fn check_preserves_unicode_changed_paths_for_the_judge_contract() {
 }
 
 #[test]
+fn check_accepts_both_changed_sides_of_a_rename() {
+    let repo = Repo::new(&[]);
+    nya::init(&repo.root).unwrap();
+    let scar = scar(&repo);
+    repo.write("src/old.rs", "const MESSAGE: &str = \"literal\";\n");
+    repo.commit_all("add original path");
+    common::run(&repo.root, &["mv", "src/old.rs", "src/new.rs"]);
+    repo.write("src/new.rs", "const MESSAGE: &str = \"literal changed\";\n");
+    repo.configure(judge(&finding(&scar.id, "src/old.rs")), 5);
+
+    let result = nya::check(&repo.root, CheckRequest::default()).unwrap();
+
+    assert!(!result.passed);
+    assert_eq!(result.findings[0].path, "src/old.rs");
+}
+
+#[test]
 fn check_bounds_and_finds_target_in_thousand_scar_corpus() {
     let repo = Repo::new(&[]);
     nya::init(&repo.root).unwrap();
