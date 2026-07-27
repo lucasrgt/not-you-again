@@ -1,6 +1,6 @@
 mod common;
 
-use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, finding, isolated_home_judge, judge, matching_judge, recording_matching_judge, slow_judge};
+use common::{EnvGuard, Repo, conditional, empty_verdict, failing_judge, fake_program, finding, isolated_home_judge, judge, matching_judge, recording_matching_judge, slow_judge};
 use nya::{CheckRequest, Occurrence, RememberRequest, Scar};
 use std::fs;
 
@@ -76,6 +76,24 @@ fn check_honors_explicit_base_for_committed_work() {
     assert!(!result.passed);
     assert_eq!(result.scars_checked, 1);
     assert_eq!(result.findings[0].scar_id, scar.id);
+}
+
+#[test]
+fn check_preserves_unicode_changed_paths_for_the_judge_contract() {
+    let repo = Repo::new(&[]);
+    nya::init(&repo.root).unwrap();
+    let scar = scar(&repo);
+    repo.commit_all("add scar");
+    let path = "src/conclusão.rs";
+    repo.write(path, "const MESSAGE: &str = \"literal\";\n");
+    let verdict = finding(&scar.id, path);
+    let judge = fake_program(&repo.root, "unicode-judge", &format!("print!(\"{{}}\", {verdict:?});"));
+    repo.configure(vec![judge.to_string_lossy().into_owned()], 5);
+
+    let result = nya::check(&repo.root, CheckRequest::default()).unwrap();
+
+    assert!(!result.passed);
+    assert_eq!(result.findings[0].path, path);
 }
 
 #[test]

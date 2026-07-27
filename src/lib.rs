@@ -319,9 +319,9 @@ pub fn collect(repo: &Path, request: CollectRequest) -> Result<CollectResult> {
 
 fn diff(repo: &Path, request: &CheckRequest) -> Result<(String, Vec<String>)> {
     let base = request.base.as_deref().unwrap_or("HEAD");
-    let mut body = git(repo, &["diff", "--no-ext-diff", "--unified=4", base, "--", ".", ":(exclude).nya/**"])?;
-    let mut paths = git(repo, &["diff", "--name-only", base, "--", ".", ":(exclude).nya/**"])?.lines().map(str::to_owned).collect::<Vec<_>>();
-    for path in git(repo, &["ls-files", "--others", "--exclude-standard", "--", ".", ":(exclude).nya/**"])?.lines() {
+    let mut body = git(repo, &["-c", "core.quotePath=false", "diff", "--no-ext-diff", "--unified=4", base, "--", ".", ":(exclude).nya/**"])?;
+    let mut paths = git(repo, &["-c", "core.quotePath=false", "diff", "--name-only", base, "--", ".", ":(exclude).nya/**"])?.lines().map(str::to_owned).collect::<Vec<_>>();
+    for path in git(repo, &["-c", "core.quotePath=false", "ls-files", "--others", "--exclude-standard", "--", ".", ":(exclude).nya/**"])?.lines() {
         let content = fs::read_to_string(repo.join(path)).unwrap_or_default();
         body.push_str(&format!(
             "\ndiff --git a/{0} b/{0}\nnew file mode 100644\n--- /dev/null\n+++ b/{0}\n@@ -0,0 +1,{1} @@\n{2}",
