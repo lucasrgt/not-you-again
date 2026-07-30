@@ -3,6 +3,7 @@ mod common;
 use common::{EnvGuard, Repo, empty_verdict, fake_gh, fake_program, finding, judge};
 use serde_json::{Value, json};
 use std::{
+    fs,
     io::{Cursor, Write},
     process::{Command, Stdio},
 };
@@ -17,6 +18,18 @@ fn command(repo: &Repo, args: &[&str]) -> std::process::Output {
 
 fn interactive(repo: &Repo, args: &[&str]) -> std::process::Output {
     bin().arg("--repository").arg(&repo.root).env("NYA_FORCE_TTY", "1").env("NYA_ASCII", "1").env("NO_COLOR", "1").args(args).output().unwrap()
+}
+
+#[test]
+fn csm_storage_is_opt_in_and_does_not_rewrite_root_instructions() {
+    let repo = Repo::new(&["AGENTS.md"]);
+    let instructions = fs::read_to_string(repo.root.join("AGENTS.md")).unwrap();
+    let initialized = bin().arg("--repository").arg(&repo.root).env("CSM_STORAGE_ROOT", ".csm").arg("init").output().unwrap();
+
+    assert!(initialized.status.success());
+    assert!(repo.root.join(".csm/nya/config.toml").is_file());
+    assert!(!repo.root.join(".nya").exists());
+    assert_eq!(fs::read_to_string(repo.root.join("AGENTS.md")).unwrap(), instructions);
 }
 
 #[test]

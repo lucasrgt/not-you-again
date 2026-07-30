@@ -198,10 +198,16 @@ fn git(repo: &Path, args: &[&str]) -> Result<String> { let out = Command::new("g
 pub fn repository(start: &Path) -> Result<PathBuf> { Ok(PathBuf::from(git(start, &["rev-parse", "--show-toplevel"]).context("not inside a Git repository")?)) }
 
 #[rustfmt::skip]
+fn data_dir(repo: &Path) -> PathBuf { match std::env::var_os("CSM_STORAGE_ROOT") { Some(root) => { let root = PathBuf::from(root); let root = if root.is_absolute() { root } else { repo.join(root) }; root.join("nya") }, None => repo.join(".nya") } }
+
+#[rustfmt::skip]
+fn store_exclude(repo: &Path) -> String { let relative = data_dir(repo).strip_prefix(repo).ok().map(|path| path.to_string_lossy().replace('\\', "/")).unwrap_or_else(|| "__csm_external_store__".into()); format!(":(exclude){relative}/**") }
+
+#[rustfmt::skip]
 fn validate(scar: &Scar) -> Result<()> { ensure!(scar.schema == 1, "{} has unsupported schema {}", scar.id, scar.schema); ensure!(scar.id.starts_with("NYA-") && !scar.title.trim().is_empty() && !scar.lesson.trim().is_empty(), "invalid scar {}", scar.id); ensure!(!scar.scope.is_empty(), "{} has no scope; add a specific glob or \"**\" for an explicitly global scar", scar.id); ensure!(!scar.occurrences.is_empty(), "{} has no occurrences", scar.id); for scope in &scar.scope { Pattern::new(scope).with_context(|| format!("invalid scope in {}", scar.id))?; } for actor in scar.occurrences.iter().flat_map(|o| [&o.reported_by, &o.corrected_by, &o.recorded_by, &o.recorded_for]).flatten() { ensure!(actor.contains(':'), "actor must be namespaced: {actor}"); } Ok(()) }
 
 #[rustfmt::skip]
-fn scars(repo: &Path) -> Result<Vec<Scar>> { let dir = repo.join(".nya/scars"); ensure!(dir.is_dir(), "{} is not initialized; run nya init", repo.display()); let mut paths = fs::read_dir(dir)?.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.extension().is_some_and(|e| e == "toml")).collect::<Vec<_>>(); paths.sort(); paths.into_iter().map(|path| { let scar: Scar = toml::from_str(&fs::read_to_string(&path)?).with_context(|| format!("invalid scar {}", path.display()))?; validate(&scar)?; Ok(scar) }).collect() }
+fn scars(repo: &Path) -> Result<Vec<Scar>> { let dir = data_dir(repo).join("scars"); ensure!(dir.is_dir(), "{} is not initialized; run nya init", repo.display()); let mut paths = fs::read_dir(dir)?.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.extension().is_some_and(|e| e == "toml")).collect::<Vec<_>>(); paths.sort(); paths.into_iter().map(|path| { let scar: Scar = toml::from_str(&fs::read_to_string(&path)?).with_context(|| format!("invalid scar {}", path.display()))?; validate(&scar)?; Ok(scar) }).collect() }
 
 #[rustfmt::skip]
 fn atomic(path: &Path, text: &str) -> Result<()> { let mut tmp = NamedTempFile::new_in(path.parent().context("path has no parent")?)?; tmp.write_all(text.as_bytes())?; tmp.as_file().sync_all()?; tmp.persist(path).map_err(|e| e.error)?; Ok(()) }
@@ -210,7 +216,7 @@ fn atomic(path: &Path, text: &str) -> Result<()> { let mut tmp = NamedTempFile::
 fn inject(path: &Path) -> Result<()> { let old = fs::read_to_string(path)?; let next = if let (Some(a), Some(b)) = (old.find(START), old.find(END)) { format!("{}{}{}", &old[..a], INSTRUCTIONS.trim_end(), &old[b + END.len()..]) } else { format!("{}\n\n{}\n", old.trim_end(), INSTRUCTIONS.trim_end()) }; if next != old { atomic(path, &next)?; } Ok(()) }
 
 #[rustfmt::skip]
-pub fn init(repo: &Path) -> Result<Vec<String>> { let repo = repository(repo)?; fs::create_dir_all(repo.join(".nya/scars"))?; for (path, body) in [(repo.join(".nya/config.toml"), CONFIG), (repo.join(".nya/.gitignore"), IGNORE)] { if !path.exists() { atomic(&path, body)?; } } atomic(&repo.join(".nya/SKILL.md"), SKILL)?; let mut installed = Vec::new(); for name in ["AGENTS.md", "CLAUDE.md", "GEMINI.md"] { let path = repo.join(name); if path.is_file() { inject(&path)?; installed.push(name.to_owned()); } } Ok(installed) }
+pub fn init(repo: &Path) -> Result<Vec<String>> { let repo = repository(repo)?; let store = data_dir(&repo); fs::create_dir_all(store.join("scars"))?; for (path, body) in [(store.join("config.toml"), CONFIG), (store.join(".gitignore"), IGNORE)] { if !path.exists() { atomic(&path, body)?; } } atomic(&store.join("SKILL.md"), SKILL)?; let mut installed = Vec::new(); if std::env::var_os("CSM_STORAGE_ROOT").is_none() { for name in ["AGENTS.md", "CLAUDE.md", "GEMINI.md"] { let path = repo.join(name); if path.is_file() { inject(&path)?; installed.push(name.to_owned()); } } } Ok(installed) }
 
 #[rustfmt::skip]
 fn inferred_actor(repo: &Path) -> Option<String> { git(repo, &["config", "user.email"]).ok().filter(|s| !s.is_empty()).map(|s| format!("git:{s}")) }
@@ -233,12 +239,12 @@ pub fn remember(repo: &Path, request: RememberRequest) -> Result<Scar> {
 #[rustfmt::skip]
 fn store(repo: &Path, request: RememberRequest, occurrence: Occurrence) -> Result<Scar> {
     let mut all = scars(repo)?; let title = request.title.as_ref().map(|t| normalize(t)); let found = request.scar.as_ref().and_then(|id| all.iter().position(|s| &s.id == id)).or_else(|| title.as_ref().and_then(|t| all.iter().position(|s| normalize(&s.title) == *t))); if let (Some(id), None) = (&request.scar, found) { bail!("scar {id} was not found"); }
-    let scar = if let Some(i) = found { all[i].occurrences.push(occurrence); all.swap_remove(i) } else { Scar { schema: 1, id: format!("NYA-{}", Ulid::generate()), title: request.title.filter(|s| !s.trim().is_empty()).context("--title is required for a new scar")?, lesson: request.lesson.filter(|s| !s.trim().is_empty()).context("--lesson is required for a new scar")?, scope: request.scope, tags: request.tags, created_at: Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true), occurrences: vec![occurrence] } }; validate(&scar)?; atomic(&repo.join(format!(".nya/scars/{}.toml", scar.id)), &toml::to_string_pretty(&scar)?)?; Ok(scar)
+    let scar = if let Some(i) = found { all[i].occurrences.push(occurrence); all.swap_remove(i) } else { Scar { schema: 1, id: format!("NYA-{}", Ulid::generate()), title: request.title.filter(|s| !s.trim().is_empty()).context("--title is required for a new scar")?, lesson: request.lesson.filter(|s| !s.trim().is_empty()).context("--lesson is required for a new scar")?, scope: request.scope, tags: request.tags, created_at: Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true), occurrences: vec![occurrence] } }; validate(&scar)?; atomic(&data_dir(repo).join(format!("scars/{}.toml", scar.id)), &toml::to_string_pretty(&scar)?)?; Ok(scar)
 }
 
 #[rustfmt::skip]
 fn open_index(repo: &Path, all: &[Scar]) -> Result<Connection> {
-    let path = repo.join(".nya/index-v1.sqlite3"); let build = |db: &mut Connection| -> Result<()> { db.execute_batch("CREATE VIRTUAL TABLE IF NOT EXISTS scars_fts USING fts5(id UNINDEXED,title,lesson,tags,scope); CREATE TABLE IF NOT EXISTS collector_state(key TEXT PRIMARY KEY,value TEXT NOT NULL); DELETE FROM scars_fts;")?; let tx = db.transaction()?; for scar in all { tx.execute("INSERT INTO scars_fts VALUES(?1,?2,?3,?4,?5)", params![scar.id, scar.title, scar.lesson, scar.tags.join(" "), scar.scope.join(" ")])?; } tx.commit()?; Ok(()) };
+    let path = data_dir(repo).join("index-v1.sqlite3"); let build = |db: &mut Connection| -> Result<()> { db.execute_batch("CREATE VIRTUAL TABLE IF NOT EXISTS scars_fts USING fts5(id UNINDEXED,title,lesson,tags,scope); CREATE TABLE IF NOT EXISTS collector_state(key TEXT PRIMARY KEY,value TEXT NOT NULL); DELETE FROM scars_fts;")?; let tx = db.transaction()?; for scar in all { tx.execute("INSERT INTO scars_fts VALUES(?1,?2,?3,?4,?5)", params![scar.id, scar.title, scar.lesson, scar.tags.join(" "), scar.scope.join(" ")])?; } tx.commit()?; Ok(()) };
     let mut db = Connection::open(&path)?; if build(&mut db).is_err() { drop(db); fs::remove_file(&path).ok(); db = Connection::open(&path)?; build(&mut db)?; } Ok(db)
 }
 
@@ -263,9 +269,9 @@ fn correction_message(value: &str) -> bool {
 
 #[rustfmt::skip]
 fn git_sources(repo: &Path, range: &str) -> Result<(usize, HashSet<String>, Vec<Evidence>)> {
-    let raw = git(repo, &["log", "--reverse", "--format=%H%x1f%aI%x1f%ae%x1f%s%x1e", range])?; let mut scanned = 0; let mut commits = HashSet::new(); let mut sources = Vec::new();
+    let raw = git(repo, &["log", "--reverse", "--format=%H%x1f%aI%x1f%ae%x1f%s%x1e", range])?; let mut scanned = 0; let mut commits = HashSet::new(); let mut sources = Vec::new(); let exclude = store_exclude(repo);
     for record in raw.split('\u{1e}').filter(|value| !value.trim().is_empty()) {
-        let f = record.trim().split('\u{1f}').collect::<Vec<_>>(); if f.len() != 4 { continue; } scanned += 1; commits.insert(f[0].to_owned()); if !correction_message(f[3]) { continue; } let patch = git(repo, &["show", "--format=fuller", "--no-ext-diff", "--unified=3", f[0], "--", ".", ":(exclude).nya/**"])?; let paths = git(repo, &["show", "--pretty=", "--name-only", f[0], "--", ".", ":(exclude).nya/**"])?.lines().filter(|p| !p.is_empty()).map(str::to_owned).collect::<Vec<_>>(); if paths.is_empty() || !patch.contains("diff --git") { continue; } sources.push(Evidence { source_id: format!("git:{}", f[0]), occurred_at: f[1].into(), reported_by: None, corrected_by: Some(format!("git:{}", f[2])), commit: Some(f[0].chars().take(12).collect()), paths, body: patch.chars().take(16_000).collect() });
+        let f = record.trim().split('\u{1f}').collect::<Vec<_>>(); if f.len() != 4 { continue; } scanned += 1; commits.insert(f[0].to_owned()); if !correction_message(f[3]) { continue; } let patch = git(repo, &["show", "--format=fuller", "--no-ext-diff", "--unified=3", f[0], "--", ".", &exclude])?; let paths = git(repo, &["show", "--pretty=", "--name-only", f[0], "--", ".", &exclude])?.lines().filter(|p| !p.is_empty()).map(str::to_owned).collect::<Vec<_>>(); if paths.is_empty() || !patch.contains("diff --git") { continue; } sources.push(Evidence { source_id: format!("git:{}", f[0]), occurred_at: f[1].into(), reported_by: None, corrected_by: Some(format!("git:{}", f[2])), commit: Some(f[0].chars().take(12).collect()), paths, body: patch.chars().take(16_000).collect() });
     }
     Ok((scanned, commits, sources))
 }
@@ -317,25 +323,11 @@ pub fn collect(repo: &Path, request: CollectRequest) -> Result<CollectResult> {
     if !request.dry_run { open_index(&repo, &all)?.execute("INSERT INTO collector_state(key,value) VALUES('head',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [&head])?; } Ok(result)
 }
 
-fn diff(repo: &Path, request: &CheckRequest) -> Result<(String, Vec<String>)> {
-    let base = request.base.as_deref().unwrap_or("HEAD");
-    let mut body = git(repo, &["-c", "core.quotePath=false", "diff", "--no-ext-diff", "--unified=4", base, "--", ".", ":(exclude).nya/**"])?;
-    let mut paths = changed_paths(repo, base)?;
-    for path in git(repo, &["-c", "core.quotePath=false", "ls-files", "--others", "--exclude-standard", "--", ".", ":(exclude).nya/**"])?.lines() {
-        let content = fs::read_to_string(repo.join(path)).unwrap_or_default();
-        body.push_str(&format!(
-            "\ndiff --git a/{0} b/{0}\nnew file mode 100644\n--- /dev/null\n+++ b/{0}\n@@ -0,0 +1,{1} @@\n{2}",
-            path,
-            content.lines().count(),
-            content.lines().map(|line| format!("+{line}\n")).collect::<String>()
-        ));
-        paths.push(path.to_owned());
-    }
-    Ok((body, paths))
-}
+#[rustfmt::skip]
+fn diff(repo: &Path, request: &CheckRequest) -> Result<(String, Vec<String>)> { let base = request.base.as_deref().unwrap_or("HEAD"); let exclude = store_exclude(repo); let mut body = git(repo, &["-c", "core.quotePath=false", "diff", "--no-ext-diff", "--unified=4", base, "--", ".", &exclude])?; let mut paths = changed_paths(repo, base)?; for path in git(repo, &["-c", "core.quotePath=false", "ls-files", "--others", "--exclude-standard", "--", ".", &exclude])?.lines() { let content = fs::read_to_string(repo.join(path)).unwrap_or_default(); body.push_str(&format!("\ndiff --git a/{0} b/{0}\nnew file mode 100644\n--- /dev/null\n+++ b/{0}\n@@ -0,0 +1,{1} @@\n{2}", path, content.lines().count(), content.lines().map(|line| format!("+{line}\n")).collect::<String>())); paths.push(path.to_owned()); } Ok((body, paths)) }
 
 #[rustfmt::skip]
-fn changed_paths(repo: &Path, base: &str) -> Result<Vec<String>> { let out = Command::new("git").arg("-C").arg(repo).args(["-c", "core.quotePath=false", "diff", "--name-status", "-z", base, "--", ".", ":(exclude).nya/**"]).output().context("failed to start git")?; ensure!(out.status.success(), "git diff --name-status failed: {}", String::from_utf8_lossy(&out.stderr).trim()); let mut fields = out.stdout.split(|byte| *byte == 0).filter(|field| !field.is_empty()).map(|field| String::from_utf8(field.to_vec())).collect::<std::result::Result<Vec<_>, _>>()?.into_iter(); let mut paths = Vec::new(); while let Some(status) = fields.next() { paths.push(fields.next().context("git returned a status without a path")?); if status.starts_with('R') || status.starts_with('C') { paths.push(fields.next().context("git returned a rename without a destination")?); } } let mut seen = HashSet::new(); paths.retain(|path| seen.insert(path.clone())); Ok(paths) }
+fn changed_paths(repo: &Path, base: &str) -> Result<Vec<String>> { let exclude = store_exclude(repo); let out = Command::new("git").arg("-C").arg(repo).args(["-c", "core.quotePath=false", "diff", "--name-status", "-z", base, "--", "."]).arg(exclude).output().context("failed to start git")?; ensure!(out.status.success(), "git diff --name-status failed: {}", String::from_utf8_lossy(&out.stderr).trim()); let mut fields = out.stdout.split(|byte| *byte == 0).filter(|field| !field.is_empty()).map(|field| String::from_utf8(field.to_vec())).collect::<std::result::Result<Vec<_>, _>>()?.into_iter(); let mut paths = Vec::new(); while let Some(status) = fields.next() { paths.push(fields.next().context("git returned a status without a path")?); if status.starts_with('R') || status.starts_with('C') { paths.push(fields.next().context("git returned a rename without a destination")?); } } let mut seen = HashSet::new(); paths.retain(|path| seen.insert(path.clone())); Ok(paths) }
 
 fn builtin(name: &str) -> Option<Vec<String>> {
     let command = match name {
@@ -359,18 +351,18 @@ fn read_user(path: &Path) -> Result<Option<UserConfig>> {
 }
 
 #[rustfmt::skip]
-fn resolve_judge(repo: &Path, timeout_seconds: u64) -> Result<JudgeConfig> { let config = if let Some(config) = read_user(&repo.join(".nya/config.local.toml"))? { config } else { read_user(&user_config_path()?)?.context("judge is not configured; run `nya setup --judge codex|claude|hermes`")? }; let isolate_home = config.judge == "codex"; let external_only = isolate_home && config.command.is_empty(); let command = if config.command.is_empty() { builtin(&config.judge) } else { Some(config.command) }.with_context(|| format!("judge `{}` has no command", config.judge))?; Ok(JudgeConfig { command, timeout_seconds, isolate_home, external_only }) }
+fn resolve_judge(repo: &Path, timeout_seconds: u64) -> Result<JudgeConfig> { let config = if let Some(config) = read_user(&data_dir(repo).join("config.local.toml"))? { config } else { read_user(&user_config_path()?)?.context("judge is not configured; run `nya setup --judge codex|claude|hermes`")? }; let isolate_home = config.judge == "codex"; let external_only = isolate_home && config.command.is_empty(); let command = if config.command.is_empty() { builtin(&config.judge) } else { Some(config.command) }.with_context(|| format!("judge `{}` has no command", config.judge))?; Ok(JudgeConfig { command, timeout_seconds, isolate_home, external_only }) }
 
 #[rustfmt::skip]
-fn evaluator(repo: &Path, operation: &str) -> Result<JudgeConfig> { let config: Config = toml::from_str(&fs::read_to_string(repo.join(".nya/config.toml"))?)?; ensure!(config.schema == 1, "unsupported config schema {}", config.schema); let runner = resolve_judge(repo, config.check.timeout_seconds)?; ensure!(!(runner.external_only && std::env::var("CODEX_SANDBOX_NETWORK_DISABLED").as_deref() == Ok("1")), "the built-in Codex {operation} cannot run inside a network-disabled agent sandbox; delegate it to the host, MCP server, or CI"); Ok(runner) }
+fn evaluator(repo: &Path, operation: &str) -> Result<JudgeConfig> { let config: Config = toml::from_str(&fs::read_to_string(data_dir(repo).join("config.toml"))?)?; ensure!(config.schema == 1, "unsupported config schema {}", config.schema); let runner = resolve_judge(repo, config.check.timeout_seconds)?; ensure!(!(runner.external_only && std::env::var("CODEX_SANDBOX_NETWORK_DISABLED").as_deref() == Ok("1")), "the built-in Codex {operation} cannot run inside a network-disabled agent sandbox; delegate it to the host, MCP server, or CI"); Ok(runner) }
 
 #[rustfmt::skip]
 fn setup(repo: &Path, request: SetupRequest) -> Result<PathBuf> {
     ensure!(!request.command.is_empty() || builtin(&request.judge).is_some(), "unknown judge `{}` requires a command after `--`", request.judge);
     let path = if request.local {
         let repo = repository(repo)?;
-        ensure!(repo.join(".nya/config.toml").is_file(), "run `nya init` before creating a repository-local judge override");
-        repo.join(".nya/config.local.toml")
+        ensure!(data_dir(&repo).join("config.toml").is_file(), "run `nya init` before creating a repository-local judge override");
+        data_dir(&repo).join("config.local.toml")
     } else { user_config_path()? };
     fs::create_dir_all(path.parent().context("judge configuration path has no parent")?)?;
     atomic(&path, &toml::to_string_pretty(&UserConfig { schema: 1, judge: request.judge, command: request.command })?)?;
@@ -460,7 +452,7 @@ fn replay_case(runner: &JudgeConfig, scar: &Scar, occurrence: &Occurrence, commi
 fn unavailable(scar: &Scar, occurrence: &Occurrence, commit: &str, reason: String) -> ReplayCase { ReplayCase { scar_id: scar.id.clone(), commit: commit.into(), source: occurrence.source.clone(), before_repeats: false, after_fixes: false, before_evidence: String::new(), after_evidence: String::new(), reason } }
 
 #[rustfmt::skip]
-pub fn replay(repo: &Path, request: ReplayRequest) -> Result<ReplayResult> { let repo = repository(repo)?; let limit = request.limit.unwrap_or(20); ensure!(limit > 0, "--limit must be greater than zero"); let mut all = scars(&repo)?; if let Some(id) = &request.scar { ensure!(all.iter().any(|s| &s.id == id), "scar {id} was not found"); all.retain(|s| &s.id == id); } all.sort_by_key(|s| (Reverse(s.occurrences.len()), s.id.clone())); let mut seen = HashSet::new(); let mut pairs = all.iter().flat_map(|scar| scar.occurrences.iter().rev().filter_map(move |occurrence| occurrence.commit.as_deref().map(|commit| (scar, occurrence, commit)))).filter(|(scar, _, commit)| seen.insert((scar.id.clone(), (*commit).to_owned()))).collect::<Vec<_>>(); let eligible = pairs.len(); ensure!(eligible > 0, "no replayable scar occurrences with correction commits were found"); pairs.truncate(limit); let runner = evaluator(&repo, "replay judge")?; let mut replayed = 0; let mut cases = Vec::new(); for (scar, occurrence, commit) in pairs { let patch = git(&repo, &["show", "--format=", "--no-ext-diff", "--unified=20", commit, "--", ".", ":(exclude).nya/**"]); let case = match patch { Ok(value) if !value.contains("diff --git") => unavailable(scar, occurrence, commit, "correction commit has no repository patch".into()), Ok(value) if value.chars().count() > 80_000 => unavailable(scar, occurrence, commit, "correction patch exceeds 80000 characters; split the correction before replay".into()), Ok(value) => { replayed += 1; replay_case(&runner, scar, occurrence, commit, &value)? }, Err(error) => unavailable(scar, occurrence, commit, format!("correction commit is unavailable: {error:#}")) }; cases.push(case); } let passed = replayed > 0 && cases.iter().all(|case| case.before_repeats && case.after_fixes); Ok(ReplayResult { passed, eligible, replayed, cases }) }
+pub fn replay(repo: &Path, request: ReplayRequest) -> Result<ReplayResult> { let repo = repository(repo)?; let limit = request.limit.unwrap_or(20); ensure!(limit > 0, "--limit must be greater than zero"); let mut all = scars(&repo)?; if let Some(id) = &request.scar { ensure!(all.iter().any(|s| &s.id == id), "scar {id} was not found"); all.retain(|s| &s.id == id); } all.sort_by_key(|s| (Reverse(s.occurrences.len()), s.id.clone())); let mut seen = HashSet::new(); let mut pairs = all.iter().flat_map(|scar| scar.occurrences.iter().rev().filter_map(move |occurrence| occurrence.commit.as_deref().map(|commit| (scar, occurrence, commit)))).filter(|(scar, _, commit)| seen.insert((scar.id.clone(), (*commit).to_owned()))).collect::<Vec<_>>(); let eligible = pairs.len(); ensure!(eligible > 0, "no replayable scar occurrences with correction commits were found"); pairs.truncate(limit); let runner = evaluator(&repo, "replay judge")?; let exclude = store_exclude(&repo); let mut replayed = 0; let mut cases = Vec::new(); for (scar, occurrence, commit) in pairs { let patch = git(&repo, &["show", "--format=", "--no-ext-diff", "--unified=20", commit, "--", ".", &exclude]); let case = match patch { Ok(value) if !value.contains("diff --git") => unavailable(scar, occurrence, commit, "correction commit has no repository patch".into()), Ok(value) if value.chars().count() > 80_000 => unavailable(scar, occurrence, commit, "correction patch exceeds 80000 characters; split the correction before replay".into()), Ok(value) => { replayed += 1; replay_case(&runner, scar, occurrence, commit, &value)? }, Err(error) => unavailable(scar, occurrence, commit, format!("correction commit is unavailable: {error:#}")) }; cases.push(case); } let passed = replayed > 0 && cases.iter().all(|case| case.before_repeats && case.after_fixes); Ok(ReplayResult { passed, eligible, replayed, cases }) }
 
 fn tools() -> Value {
     json!([
