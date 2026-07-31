@@ -192,7 +192,7 @@ struct CollectionVerdict { candidates: Vec<CollectedCandidate> }
 fn normalize(value: &str) -> String { value.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase() }
 
 #[rustfmt::skip]
-fn git(repo: &Path, args: &[&str]) -> Result<String> { let out = Command::new("git").arg("-C").arg(repo).args(args).output().context("failed to start git")?; ensure!(out.status.success(), "git {} failed: {}", args.join(" "), String::from_utf8_lossy(&out.stderr).trim()); Ok(String::from_utf8(out.stdout)?.trim().to_owned()) }
+fn git(repo: &Path, args: &[&str]) -> Result<String> { let mut command = Command::new("git"); command.arg("-C").arg(repo).args(args); #[cfg(windows)] { use std::os::windows::process::CommandExt; command.creation_flags(0x0800_0000); } let out = command.output().context("failed to start git")?; ensure!(out.status.success(), "git {} failed: {}", args.join(" "), String::from_utf8_lossy(&out.stderr).trim()); Ok(String::from_utf8(out.stdout)?.trim().to_owned()) }
 
 #[rustfmt::skip]
 pub fn repository(start: &Path) -> Result<PathBuf> { Ok(PathBuf::from(git(start, &["rev-parse", "--show-toplevel"]).context("not inside a Git repository")?)) }

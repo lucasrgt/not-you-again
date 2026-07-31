@@ -1,0 +1,19 @@
+schema = 1
+id = "NYA-01KYW4FJGRJHQXQPBP4J433KJW"
+title = "Git subprocesses flashed Windows Terminal inside GUI consumers"
+lesson = "Every Git command created by the library must set CREATE_NO_WINDOW on Windows before spawning. Library callers can be GUI-subsystem processes with no inherited console, so relying on the caller to hide Git allows the default terminal broker to create a visible, focus-stealing window during repository, recall, or check operations. Preserve stdout and stderr capture and keep the flag scoped to Windows."
+scope = ["src/**"]
+tags = [
+    "windows",
+    "git",
+    "subprocess",
+]
+created_at = "2026-07-31T13:05:40Z"
+
+[[occurrences]]
+occurred_at = "2026-07-31T13:05:40Z"
+source = "user report and EVENT_OBJECT_SHOW capture: an incoming AeroFortress turn produced CASCADIA_HOSTING_WINDOW_CLASS Terminal followed by PseudoConsoleWindow for git.exe whose parent was aerofortress-harness.exe"
+reported_by = "user:lucas"
+corrected_by = "codex:openai"
+recorded_by = "codex:openai"
+commit = "df9ff11"
