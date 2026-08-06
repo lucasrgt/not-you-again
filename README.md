@@ -564,6 +564,16 @@ Add `--local` when the custom command applies only to the current repository.
 
 ## Integrations
 
+### Prime Agent
+
+The optional package at `integrations/prime-agent` provides bounded automatic
+`recall`, explicit `/nya` checks, and a conditional model skill for
+repositories already adopted through `.nya/SKILL.md`. A root
+`csm.toml` has precedence and suppresses this standalone adapter to prevent
+duplicate retrieval and verification. It never initializes the repository or
+writes semantic records. See the [Prime Agent guide](docs/prime-agent.md).
+
+
 | Surface | Role | Required |
 | --- | --- | --- |
 | CLI | Universal interface for agents, humans, hooks, CI, and scripts | Yes |
