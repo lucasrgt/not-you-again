@@ -1,0 +1,17 @@
+schema = 1
+id = "NYA-01M1XJJYDNM8FFCX540MEPQHEG"
+title = "Skill discovery test assumed POSIX path separators on Windows"
+lesson = "When asserting a discovered native filesystem path, normalize separators or accept both platform separators before matching its relative suffix. Keep the adapter native path unchanged and preserve the full expected skill location."
+scope = ["integrations/prime-agent/test/**"]
+tags = [
+    "windows",
+    "tests",
+]
+created_at = "2026-09-07T09:18:30Z"
+
+[[occurrences]]
+occurred_at = "2026-09-07T09:18:30Z"
+source = "The Prime adapter returned the correct Windows skill path, but its forward-slash-only suffix assertion failed. The normalized-path assertion passes with all six adapter tests and typecheck."
+corrected_by = "agent:codex"
+recorded_by = "git:lucas.tinoco@hotmail.com"
+commit = "5136905"

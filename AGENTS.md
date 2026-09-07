@@ -68,3 +68,16 @@ This repository uses Not You Again (`nya`) as a required recurrence-prevention g
 13. If the built-in evaluator reports a network-disabled agent sandbox, do not retry it from the same shell. Delegate the operation to the host, MCP server, or CI.
 14. Use `nya replay` only for explicit corpus maintenance or evaluation. It validates historical correction patches against their scars; it does not execute an agent or prove a prevention rate.
 <!-- nya:instructions:end -->
+
+
+## Optional Prime Agent adapter
+
+`integrations/prime-agent` is a thin optional host adapter. It may invoke only
+the `nya` CLI with literal argv and must never parse semantic records or
+reimplement Rust behavior. It activates only for `.nya/SKILL.md` and
+must remain completely inactive when the Git root contains `csm.toml`. CSM has
+absolute Prime-integration precedence.
+
+When changing the adapter, run `npm ci`, `npm test`, `npm run typecheck`, and
+`npm pack --dry-run` from `integrations/prime-agent` in addition to
+`cargo xtask verify`.

@@ -11,7 +11,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, llvm-tools-preview, rustfmt
@@ -19,6 +19,19 @@ jobs:
         with:
           tool: cargo-llvm-cov,tokei
       - run: cargo xtask verify
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: integrations/prime-agent/package-lock.json
+      - run: npm ci
+        working-directory: integrations/prime-agent
+      - run: npm test
+        working-directory: integrations/prime-agent
+      - run: npm run typecheck
+        working-directory: integrations/prime-agent
+      - run: npm pack --dry-run
+        working-directory: integrations/prime-agent
 
   platform:
     name: ${{ matrix.name }}
@@ -43,14 +56,12 @@ jobs:
             target: x86_64-apple-darwin
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - uses: mlugg/setup-zig@v2
+      - uses: ./.github/actions/setup-zig
         if: runner.os == 'Linux'
-        with:
-          version: 0.16.0
       - uses: taiki-e/install-action@v2
         if: runner.os == 'Linux'
         with:
