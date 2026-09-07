@@ -177,26 +177,11 @@ pub fn matching_judge(needle: &str, verdict: &str) -> Vec<String> {
 }
 
 pub fn recording_matching_judge(path: &Path, needle: &str, verdict: &str) -> Vec<String> {
-    let path = path.to_string_lossy().replace('\'', "''");
-    let needle = needle.replace('\'', "''");
-    if cfg!(windows) {
-        vec![
-            "powershell".into(),
-            "-NoProfile".into(),
-            "-Command".into(),
-            format!(
-                "$text=[Console]::In.ReadToEnd(); Add-Content -LiteralPath '{path}' -Value ([Text.Encoding]::UTF8.GetByteCount($text)); if ($text.Contains('{needle}')) {{ Write-Output '{verdict}' }} else {{ Write-Output '{{\"findings\":[]}}' }}"
-            ),
-        ]
-    } else {
-        vec![
-            "sh".into(),
-            "-c".into(),
-            format!(
-                "text=$(cat); printf '%s\\n' \"$(printf '%s' \"$text\" | wc -c)\" >> '{path}'; if printf '%s' \"$text\" | grep -Fq '{needle}'; then printf '%s' '{verdict}'; else printf '%s' '{{\"findings\":[]}}'; fi"
-            ),
-        ]
-    }
+    let body = format!(
+        "use std::io::{{Read, Write}}; let mut prompt = String::new(); std::io::stdin().read_to_string(&mut prompt).unwrap(); let mut log = std::fs::OpenOptions::new().create(true).append(true).open({:?}).unwrap(); log.write_all(format!(\"{{}}\\n\", prompt.len()).as_bytes()).unwrap(); let verdict = if prompt.contains({needle:?}) {{ {verdict:?} }} else {{ \"{{\\\"findings\\\":[]}}\" }}; print!(\"{{}}\", verdict);",
+        path.to_string_lossy()
+    );
+    vec![fake_program(path.parent().unwrap(), "recording-judge", &body).to_string_lossy().into_owned()]
 }
 
 pub fn failing_judge() -> Vec<String> {
@@ -229,15 +214,5 @@ pub fn slow_judge() -> Vec<String> {
 }
 
 pub fn recording_judge(path: &Path, verdict: &str) -> Vec<String> {
-    let path = path.to_string_lossy();
-    if cfg!(windows) {
-        vec![
-            "powershell".into(),
-            "-NoProfile".into(),
-            "-Command".into(),
-            format!("$text=[Console]::In.ReadToEnd(); Add-Content -LiteralPath '{}' -Value ([Text.Encoding]::UTF8.GetByteCount($text)); Write-Output '{}'", path.replace('\'', "''"), verdict),
-        ]
-    } else {
-        vec!["sh".into(), "-c".into(), format!("text=$(cat); printf '%s\\n' \"$(printf '%s' \"$text\" | wc -c)\" >> '{}'; printf '%s' '{}'", path.replace('\'', "'\\''"), verdict)]
-    }
+    recording_matching_judge(path, "", verdict)
 }

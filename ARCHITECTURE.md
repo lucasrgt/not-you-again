@@ -11,8 +11,8 @@ Not You Again is a repository-local scar runtime for coding agents.
 
 It gives every agent working in a repository the same durable record of real
 mistakes, their corrections, and their provenance. Before a task, the agent
-recalls relevant scars. Before completion, a fresh isolated judge audits the
-task diff against those scars. Mature repositories can first recover
+recalls relevant scars. Before completion, isolated judges audit the task diff
+against those scars, reusing clean receipts only for identical inputs. Mature repositories can first recover
 evidence-backed scars from Git history and corrected GitHub reviews. Proposed
 specifications can be checked for omitted scar requirements, and historical
 correction pairs can be replayed to audit the scar corpus itself.
@@ -195,7 +195,19 @@ changed path it deterministically selects every matching-scope scar. Applicable
 scars are audited in batches of 24. File diffs are independently divided into
 overlapping windows of at most 80,000 characters, so neither scar count nor
 diff size can silently truncate an audit. Every scar batch is crossed with
-every diff window through a fresh judge process.
+every diff window. A local pool runs at most four judge processes concurrently,
+preserves result order, and joins in-flight work before returning. A required
+evaluation failure fails the operation; it cannot become a partial pass.
+
+Validated empty audit batches can be reused through disposable receipts under
+the repository's absolute Git metadata directory, outside tracked content. A
+SHA-256 key includes the complete prompt and schema, NYA version, command and
+readable executable/script fingerprints, timeout, and isolation settings.
+Separator-only trailing patch newlines are canonicalized so an unchanged patch
+can be reused across the staged and committed boundaries. All changed-code
+evidence remains validated against the corresponding patch. Invalid or
+unavailable receipts cause a fresh evaluation. Findings and evaluator failures
+never create clean receipts, and finding confirmation remains independent.
 
 The judge may answer one question only:
 

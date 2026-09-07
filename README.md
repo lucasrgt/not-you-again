@@ -217,10 +217,21 @@ real failure
 1. Resolve staged, unstaged, and untracked changes relative to `HEAD`.
 2. Retrieve every scar whose scope matches each changed path.
 3. Split scars into batches of 24 and large file diffs into overlapping 80,000-character windows.
-4. Cross every applicable scar batch with every matching diff window in a fresh isolated judge process.
+4. Cross every applicable scar batch with every matching diff window, using at most four isolated judge processes concurrently.
 5. Accept findings only for supplied scars and concrete changed code.
 6. Confirm every proposed finding with a second independent judge call.
 7. Return human output, JSON output, and a stable exit code.
+
+Clean audit batches leave disposable receipts in Git's local metadata directory.
+An identical batch can reuse its receipt during a later task check, pre-commit,
+or pre-push. The key covers the complete prompt and output schema, NYA version,
+judge command and readable executable/script contents, timeout, and isolation
+settings. Changed code, paths, scars, or evaluator inputs trigger a new audit.
+Only validated empty verdicts are cached; proposed findings still require fresh
+independent confirmation. Missing, corrupt, or unwritable receipts fall back to
+the judge. Any required judge failure prevents a passing result. Receipts are
+never tracked and can be removed from the Git metadata `nya-audit-cache-v1`
+directory to force reevaluation.
 
 ### Deterministic coverage, probabilistic judgment
 

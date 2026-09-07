@@ -1,0 +1,21 @@
+schema = 1
+id = "NYA-01M1XJ85KXCAVR4XEVFZDVBXW2"
+title = "Serial repeated scar audits made large deliveries impractical"
+lesson = "Keep the full scar and diff window cross-product, but evaluate independent batches with a bounded pool. Reuse only previously validated empty batches keyed by the exact prompt, schema, evaluator identity and NYA version in local Git metadata. Changes to code, scars, paths or evaluator files invalidate the receipt; findings and evaluator failures never create clean receipts, and any required failed batch prevents a pass."
+scope = [
+    "src/lib.rs",
+    "tests/check.rs",
+    "tests/audit_batches.rs",
+]
+tags = [
+    "audit",
+    "performance",
+]
+created_at = "2026-09-07T09:12:37Z"
+
+[[occurrences]]
+occurred_at = "2026-09-07T09:12:37Z"
+source = "A 2948-file Hostpoint delivery planned approximately 249 sequential judge calls and repeated them across checked boundaries. Six audit batch regressions now prove cache invalidation, reuse across commit boundaries, bounded concurrency and fail-closed behavior; cargo xtask verify passes with 95.16 percent line coverage."
+corrected_by = "agent:codex"
+recorded_by = "git:lucas.tinoco@hotmail.com"
+commit = "5b269cb"
