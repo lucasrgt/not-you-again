@@ -309,7 +309,7 @@ or model tools.
 ## Engineering constitution
 
 ```text
-Production code: <= 500 LOC
+Production code: <= 500 tokei code lines total; <= 500 per file
 Line coverage:  >= 95%
 Test code:      unlimited
 ```

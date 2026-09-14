@@ -844,7 +844,7 @@ complete test suite, and line coverage through the same implementation.
 
 | Invariant | Gate |
 | --- | --- |
-| Maintained runtime code | At most 500 lines |
+| Maintained runtime code | At most 500 tokei code lines total; at most 500 per file |
 | Line coverage | At least 95 percent without rounding |
 | Product model | One scar across six focused operations |
 | Failure behavior | Judge and protocol failures fail closed |

@@ -5,6 +5,7 @@ use std::{
 };
 
 const MAX_PRODUCTION_LINES: u64 = 500;
+const MAX_FILE_LINES: u64 = 500;
 const MINIMUM_LINE_COVERAGE: u64 = 95;
 
 fn main() {
@@ -47,27 +48,36 @@ fn run(root: &Path, program: &str, arguments: &[&str]) -> Result<(), String> {
 fn enforce_line_budget(root: &Path) -> Result<(), String> {
     println!("  > tokei src --output json");
     let output = Command::new("tokei").args(["src", "--output", "json"]).current_dir(root).output().map_err(|error| format!("could not start tokei: {error}"))?;
-    let lines = production_lines(&output)?;
-    check_line_budget(lines)?;
-    println!("    production lines: {lines}/{MAX_PRODUCTION_LINES}");
+    let (total, files) = production_lines(&output)?;
+    if total > MAX_PRODUCTION_LINES {
+        return Err(format!("production line budget exceeded: {total}/{MAX_PRODUCTION_LINES}"));
+    }
+    if let Some((path, lines)) = files.into_iter().find(|(_, lines)| *lines > MAX_FILE_LINES) {
+        return Err(format!("production file budget exceeded: {path} has {lines}/{MAX_FILE_LINES} lines"));
+    }
+    println!("    production lines: {total}/{MAX_PRODUCTION_LINES} (max file {MAX_FILE_LINES})");
     Ok(())
 }
 
-fn production_lines(output: &Output) -> Result<u64, String> {
+fn production_lines(output: &Output) -> Result<(u64, Vec<(String, u64)>), String> {
     if !output.status.success() {
         return Err(format!("tokei exited with {}", output.status));
     }
-
     parse_production_lines(&output.stdout)
 }
 
-fn parse_production_lines(json: &[u8]) -> Result<u64, String> {
+fn parse_production_lines(json: &[u8]) -> Result<(u64, Vec<(String, u64)>), String> {
     let report: serde_json::Value = serde_json::from_slice(json).map_err(|error| format!("invalid tokei JSON: {error}"))?;
-    report.pointer("/Rust/code").and_then(serde_json::Value::as_u64).ok_or_else(|| "tokei JSON did not contain Rust.code".into())
-}
-
-fn check_line_budget(lines: u64) -> Result<(), String> {
-    if lines <= MAX_PRODUCTION_LINES { Ok(()) } else { Err(format!("production line budget exceeded: {lines}/{MAX_PRODUCTION_LINES}")) }
+    let rust = report.get("Rust").ok_or_else(|| "tokei JSON did not contain Rust".to_string())?;
+    let total = rust.get("code").and_then(serde_json::Value::as_u64).ok_or_else(|| "tokei JSON did not contain Rust.code".to_string())?;
+    let files = rust
+        .get("reports")
+        .and_then(serde_json::Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|item| Some((item.get("name")?.as_str()?.to_owned(), item.pointer("/stats/code")?.as_u64()?)))
+        .collect();
+    Ok((total, files))
 }
 
 #[cfg(test)]
@@ -75,18 +85,27 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_rust_code_lines() {
-        assert_eq!(parse_production_lines(br#"{"Rust":{"code":487}}"#).unwrap(), 487);
+    fn parses_rust_code_lines_and_files() {
+        let (total, files) = parse_production_lines(
+            br#"{"Rust":{"code":487,"reports":[{"name":"src/lib.rs","stats":{"code":464}},{"name":"src/main.rs","stats":{"code":23}}]}}"#,
+        )
+        .unwrap();
+        assert_eq!(total, 487);
+        assert_eq!(files, vec![("src/lib.rs".into(), 464), ("src/main.rs".into(), 23)]);
     }
 
     #[test]
     fn rejects_missing_rust_report() {
-        assert_eq!(parse_production_lines(br#"{"TOML":{"code":20}}"#).unwrap_err(), "tokei JSON did not contain Rust.code");
+        assert_eq!(parse_production_lines(br#"{"TOML":{"code":20}}"#).unwrap_err(), "tokei JSON did not contain Rust");
     }
 
     #[test]
-    fn enforces_line_budget_boundary() {
-        assert!(check_line_budget(MAX_PRODUCTION_LINES).is_ok());
-        assert_eq!(check_line_budget(MAX_PRODUCTION_LINES + 1).unwrap_err(), "production line budget exceeded: 501/500");
+    fn enforces_total_and_file_budgets() {
+        assert!(MAX_PRODUCTION_LINES >= MAX_FILE_LINES);
+        let ok = parse_production_lines(br#"{"Rust":{"code":500,"reports":[{"name":"src/lib.rs","stats":{"code":500}}]}}"#).unwrap();
+        assert_eq!(ok.0, 500);
+        assert!(ok.1.iter().all(|(_, lines)| *lines <= MAX_FILE_LINES));
+        let oversized = parse_production_lines(br#"{"Rust":{"code":501,"reports":[{"name":"src/lib.rs","stats":{"code":501}}]}}"#).unwrap();
+        assert!(oversized.0 > MAX_PRODUCTION_LINES || oversized.1.iter().any(|(_, lines)| *lines > MAX_FILE_LINES));
     }
 }

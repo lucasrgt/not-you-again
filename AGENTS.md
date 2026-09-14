@@ -29,7 +29,7 @@ generic AI review.
 ## Engineering constitution
 
 1. Production code under `src/` must remain at or below 500 code lines as
-   measured by `tokei`.
+   measured by `tokei`; no production file may exceed 500 code lines.
 2. Line coverage must remain at or above 95 percent without rounding.
 3. Test code is unlimited and must live under `tests/`.
 4. Production behavior may not be moved into scripts, generated files,
