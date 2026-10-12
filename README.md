@@ -260,13 +260,53 @@ nya check --base origin/main
 nya check --format json
 ```
 
+### Host verdicts: the reviewing agent as judge
+
+The isolated judge rereads the diff in fresh processes. An agent that already
+reviewed that diff can answer the same question in its own context, with no
+extra model call:
+
+```bash
+# 1. Ask which scars apply to the current diff. No judge is started.
+nya --format json check --brief --task "Review the checkout modal"
+
+# 2. Answer for every listed scar.
+nya check --verdict '{
+  "audit": "<audit value from the brief>",
+  "clear": ["NYA-01J2M6Y7R2W8Y0F7K5Q3C9A1B4"],
+  "findings": []
+}'
+```
+
+`--brief` exits with `0` when no scar applies to the changed paths. Otherwise
+it exits with `2` and prints a `pending` block: the applicable scars, the
+changed paths, and an `audit` digest of the exact diff and scars.
+
+`--verdict` takes inline JSON or a file path and starts no judge. NYA still
+enforces what does not need a model:
+
+| Rule | Failure |
+| --- | --- |
+| The verdict carries the briefed `audit` | The diff or its scars changed; request a new brief |
+| Every applicable scar is listed exactly once, in `clear` or with findings | A scar was skipped or answered twice |
+| Every finding names a supplied scar and a changed path inside its scope | The finding is invented |
+| Every finding quotes exact text from one line of that path's diff | The evidence is paraphrased |
+
+Keep a verdict file outside the worktree. An untracked file inside it is part
+of the diff and makes the verdict stale.
+
+Host verdicts trade the isolated judge's fresh context, bounded batches, and
+second confirmation for one process and no additional tokens. Use them when
+the reviewing agent holds the diff and every applicable scar in one context.
+Keep the configured judge for hooks, CI, and scar sets too large for that.
+
 ### Exit codes
 
 | Code | Meaning | Required action |
 | --- | --- | --- |
 | `0` | The requested scar operation passed | Continue |
 | `1` | A recurrence, specification gap, or failed replay case was confirmed | Correct the result and rerun |
-| `2` | Configuration, repository, runner, timeout, or verdict failure | Treat the audit as failed |
+| `2` | Configuration, repository, runner, timeout, or verdict failure, or a brief waiting for its host verdict | Treat the audit as failed |
 
 Provider and protocol failures never produce a passing result.
 

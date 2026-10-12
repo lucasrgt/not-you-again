@@ -41,7 +41,7 @@ fn identical_clean_audits_reuse_receipts_across_task_labels_and_commit_boundarie
     assert!(nya::check(&repo.root, CheckRequest::default()).unwrap().passed);
     assert!(nya::check(&repo.root, CheckRequest { task: Some("pre-commit".into()), ..Default::default() }).unwrap().passed);
     repo.commit_all("add checked code");
-    assert!(nya::check(&repo.root, CheckRequest { base: Some("HEAD^".into()), task: Some("pre-push".into()) }).unwrap().passed);
+    assert!(nya::check(&repo.root, CheckRequest { base: Some("HEAD^".into()), task: Some("pre-push".into()), ..Default::default() }).unwrap().passed);
     assert_eq!(calls(&repo), 1);
     assert!(!common::output(&repo.root, &["ls-files"]).contains("nya-audit-cache"));
 }

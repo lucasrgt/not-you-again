@@ -14,8 +14,19 @@ description: Recover and prevent repository-specific mistakes with the nya CLI. 
 7. When reviewing committed work, preparing a pull request, or reviewing before push, run `nya check --base <target-branch-or-revision> --task "<review context>"`. Plain `nya check` defaults to `HEAD` and cannot see work that is already committed.
 8. Rerun the applicable check whenever the reviewed diff changes. Exit code 1 requires correction and another check. Exit code 2 is a failed audit and must never be reported as a pass.
 
+When you are the agent reviewing the diff, you may judge it yourself instead of
+starting an isolated judge. Run `nya check --brief` with the same `--base` and
+`--task`. Exit code 0 means no scar applies. Exit code 2 with a `pending` block
+lists every applicable scar and an `audit` value. Judge each scar against the
+diff you reviewed and rerun with
+`--verdict '{"audit":"<value>","clear":["<id>"],"findings":[...]}'`. Every scar
+appears exactly once, in `clear` or with findings whose evidence is exact text
+copied from one line of the diff. Pass the verdict inline or from a file outside the worktree, and
+request a new brief whenever the diff changes.
+
 If the built-in judge reports a network-disabled agent sandbox, do not retry it
-from the same shell. Delegate `nya check` to the host, MCP server, or CI.
+from the same shell. Use a host verdict, or delegate `nya check` to the host,
+MCP server, or CI.
 
 Never treat collector output as a code review. It may persist only a real failure
 paired with an actual correction and verbatim evidence.

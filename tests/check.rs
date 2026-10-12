@@ -65,6 +65,21 @@ fn check_requires_focused_confirmation_before_blocking() {
 }
 
 #[test]
+fn check_audits_the_diff_under_any_configured_diff_prefix() {
+    for setting in ["diff.mnemonicPrefix", "diff.noprefix"] {
+        let (repo, scar) = changed_repo();
+        common::run(&repo.root, &["add", "src/new.rs"]);
+        common::run(&repo.root, &["config", setting, "true"]);
+        repo.configure(judge(&finding(&scar.id, "src/new.rs")), 5);
+
+        let result = nya::check(&repo.root, CheckRequest::default()).unwrap();
+
+        assert!(!result.passed, "{setting} hid the changed file from the audit");
+        assert_eq!(result.findings[0].scar_id, scar.id);
+    }
+}
+
+#[test]
 fn check_honors_explicit_base_for_committed_work() {
     let (repo, scar) = changed_repo();
     repo.configure(judge(&finding(&scar.id, "src/new.rs")), 5);

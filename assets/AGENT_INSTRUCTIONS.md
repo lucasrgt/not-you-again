@@ -15,6 +15,7 @@ This repository uses Not You Again (`nya`) as a required recurrence-prevention g
 10. Exit code 1 means a known scar was repeated. Fix every confirmed recurrence and run the same check again.
 11. Exit code 2 means collection or audit could not be completed. Report the failure explicitly and never claim that the operation passed.
 12. Tests, linters, and prior review do not replace `nya check`. Never skip the gate because the change appears small.
-13. If the built-in evaluator reports a network-disabled agent sandbox, do not retry it from the same shell. Delegate the operation to the host, MCP server, or CI.
-14. Use `nya replay` only for explicit corpus maintenance or evaluation. It validates historical correction patches against their scars; it does not execute an agent or prove a prevention rate.
+13. When you are the agent reviewing the diff, you may be the judge yourself instead of starting an isolated one. Run `nya check --brief` with the same `--base` and `--task`. Exit code 0 means no scar applies. Exit code 2 with a `pending` block lists every applicable scar and an `audit` value; judge each scar against the diff you reviewed, then rerun with `--verdict '{"audit":"<value>","clear":["<id>"],"findings":[...]}'`. List every scar exactly once, either in `clear` or with findings whose evidence is exact text copied from one line of the diff. Pass the verdict inline or from a file outside the worktree, and request a new brief whenever the diff changes.
+14. If the built-in evaluator reports a network-disabled agent sandbox, do not retry it from the same shell. Use a host verdict, or delegate the operation to the host, MCP server, or CI.
+15. Use `nya replay` only for explicit corpus maintenance or evaluation. It validates historical correction patches against their scars; it does not execute an agent or prove a prevention rate.
 <!-- nya:instructions:end -->

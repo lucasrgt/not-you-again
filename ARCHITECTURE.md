@@ -190,7 +190,8 @@ matches append occurrences rather than creating another scar.
 
 ## Check
 
-`nya check` resolves tracked and untracked changes outside `.nya/`. For each
+`nya check` resolves tracked and untracked changes outside `.nya/` with fixed
+`a/` and `b/` patch prefixes, independent of the user's Git diff settings. For each
 changed path it deterministically selects every matching-scope scar. Applicable
 scars are audited in batches of 24. File diffs are independently divided into
 overlapping windows of at most 80,000 characters, so neither scar count nor
@@ -222,13 +223,34 @@ that implements its named remedy. This keeps `recall` bounded for agent context
 while making the final gate exhaustive over repository policy that applies to
 the changed paths.
 
+### Host verdict
+
+An agent that already reviewed the diff can be the judge in its own context.
+`nya check --brief` performs the same deterministic diff resolution and scope
+selection, starts no process, and returns every applicable scar with an `audit`
+digest of the exact diff and scars. `nya check --verdict` accepts that agent's
+answer and applies the same finding validation as the isolated path: a supplied
+scar, a changed path inside its scope, and verbatim evidence from that path's
+patch.
+
+Exhaustive batching is replaced by an accounting rule. The verdict must name
+every applicable scar exactly once, either as clear or with findings, so an
+omitted scar fails the operation instead of passing unseen. The verdict must
+also carry the briefed digest; a changed diff or scar set makes it stale.
+
+The host path gives up three properties of the isolated judge: the fresh
+context, the bounded prompt per batch, and the second independent confirmation.
+It is intended for a reviewing agent whose context holds the diff and the
+applicable scars at once. Hooks, CI, and corpora too large for one context keep
+using the configured judge.
+
 Exit codes are:
 
 | Code | Meaning |
 | --- | --- |
 | `0` | No supplied scar was repeated |
 | `1` | At least one recurrence was confirmed |
-| `2` | Repository, configuration, runner, timeout, or verdict failure |
+| `2` | Repository, configuration, runner, timeout, or verdict failure, or a brief still waiting for its host verdict |
 
 ## Specification review
 
